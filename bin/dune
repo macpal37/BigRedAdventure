@@ -1,4 +1,4 @@
 (executable
  (public_name PokemonGame)
  (name main)
- (libraries PokemonGame Graphics Unix))
+ (libraries PokemonGame Graphics))

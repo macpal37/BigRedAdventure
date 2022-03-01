@@ -96,3 +96,4 @@ let () =
         Printf.printf "Background color: %d %d %d\n" r g b;
         try event_loop 0 0
         with Graphic_failure _ -> print_endline "Exiting..."
+
