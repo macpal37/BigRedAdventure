@@ -1,0 +1,33 @@
+{
+  "name": "Clefairy",
+  "catch_rate": 150,
+  "base_exp": 113,
+  "level_rate": "Fast",
+  "type1": "Fairy",
+  "type2": "None",
+  "base_stats": {
+    "hp": 70,
+    "attack": 45,
+    "defense": 48,
+    "sp_attack": 60,
+    "sp_defense": 65,
+    "speed": 35
+  },
+  "move_list": [
+    {
+      "move": "Pound",
+      "move_id": 1,
+      "level": 1
+    },
+    {
+      "move": "Growl",
+      "move_id": 2,
+      "level": 3
+    },
+    {
+      "move": "Disarming Voice",
+      "move_id": 3,
+      "level": 6
+    }
+  ]
+}
