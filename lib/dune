@@ -1,2 +1,3 @@
 (library
- (name PokemonGame))
+ (name PokemonGame)
+ (libraries yojson ANSITerminal))
