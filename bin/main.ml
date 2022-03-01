@@ -1,4 +1,5 @@
 open Graphics
+open PokemonGame.Draw
 
 let white = rgb 55 255 255
 let blue  = rgb 200 200 240
@@ -51,13 +52,31 @@ let count x = if (x mod 60) = 1 then print_endline " "; if (x mod 2) = 1 then pr
           None
 
 
-let pixel draw x y = draw x y
-
-let mega_pixel size x y = (fun () -> fill_rect (x - size/2) (y-size/2) size size)
-
 let cool c = (fun () -> draw_char c)
+let size = 240
+let rec damage_render c = (fun () ->
+    if c = 0 
+    then 
+        draw_pokemon "rayquaza" (width-size/2-50) (height-size/2-50) () 
+else begin 
+    
+    if c mod 2 = 0 
+        then draw_pokemon "rayquaza" (width-size/2-50) (height-size/2-50) ()
+    else begin
+        set_color blue;
+        draw_pixel (size+4) (width-size/2-50) (height-size/2-50) ();
+    end;
+    Unix.sleepf 0.15;
+    damage_render (c-1) ()
+end; set_color black
+)
 
-let clear  = (fun () -> set_color blue;  fill_rect 0 100 640 200 ;set_color black; moveto 100 200)
+
+
+
+
+
+let clear  = (fun () -> set_color blue;  fill_rect 0 0 width height ;set_color black; moveto 100 200)
 let rec event_loop wx wy = 
     (* there's no resize event so polling in required *)
     let _ = wait_next_event [Poll]
@@ -71,17 +90,20 @@ let rec event_loop wx wy =
         Unix.sleepf 0.05;
        
           (* cool draw_string; *)
-       let size = 256 in
+       let size = 240 in
        let font = 30 in
             let xx = get_move () in 
         (* print_char (match xx with | Some 'a' -> '?'| Some c -> c | None -> ' '); *)
         (match xx with | Some '.' ->  clear ()
-        |Some 'p' -> mega_pixel size (width-size/2-50) (height-size/2-50) ()
-        | Some 'o' -> mega_pixel size (size/2+50) (size/2+160) ()
-        | Some 'm' -> set_color red; fill_rect 0 0 width 240;set_color black
-        | Some 'c' -> moveto 80 (height-50-font) ;draw_string "CLEFAIRY :L5"
+        |Some 'p' -> draw_pokemon "rayquaza" (width-size/2-50) (height-size/2-50) (); set_color black
+        | Some 'o' -> draw_pokemon "clefairy_back" (size/2+50) (size/2+160) ()
+        | Some 'm' -> set_color red; fill_rect 0 0 width 212;set_color black
+        | Some 'c' -> moveto 80 (height-50-font) ;draw_string "RAYQUAZA :L80"
+        | Some 'd' -> damage_render (7) ()
         | Some c -> cool c ()| None -> plot 0 0);
        
+       
+
         (* match get_move () with Some c -> pp draw_char c | None -> pp draw_char ' '; *)
         event_loop wx' wy'
 

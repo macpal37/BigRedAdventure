@@ -3,4 +3,8 @@
  type pixel
 
 
- val draw_pokemon: string -> pixel list
+ val draw_pixel: int -> int -> int -> unit -> unit
+
+ val draw_pokemon: string -> int -> int -> unit -> unit
+
+
