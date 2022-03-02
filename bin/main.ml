@@ -54,27 +54,47 @@ let count x = if (x mod 60) = 1 then print_endline " "; if (x mod 2) = 1 then pr
 
 let cool c = (fun () -> draw_char c)
 let size = 240
+
+let rayquaza = load_pokemon "rayquaza" ()
+let clefairy_back = load_pokemon "clefairy_back" ()
 let rec damage_render c = (fun () ->
     if c = 0 
     then 
-        draw_pokemon "rayquaza" (width-size/2-50) (height-size/2-50) () 
+        draw_pokemon rayquaza (width-size/2-50) (height-size/2-50) () 
 else begin 
     
     if c mod 2 = 0 
-        then draw_pokemon "rayquaza" (width-size/2-50) (height-size/2-50) ()
+        then 
+    begin
+        
+            draw_pokemon rayquaza (width-size/2-50) (height-size/2-50) ()
+    
+    end
     else begin
         set_color blue;
         draw_pixel (size+4) (width-size/2-50) (height-size/2-50) ();
     end;
-    Unix.sleepf 0.15;
+    Unix.sleepf 0.10;
     damage_render (c-1) ()
 end; set_color black
 )
-
-
-
-
-
+let rec faint base c  = (fun () ->
+    if c = base-2 
+        then 
+        draw_pixel (size+4) (width-size/2-50) (height-size/2-50) ()
+else begin
+    
+    set_color blue;
+    draw_pixel (size+4) (width-size/2-50) (height-size/2-50) ();
+    draw_sprite rayquaza (width-size/2-50) (height-size/2-50-(size - (size/c))) 240 ((240/c)) () ;
+    Unix.sleepf 0.05;
+    set_color blue;
+    (* draw_pixel (size+4) (width-size/2-50) (height-size/2-50-size+40) (); *)
+    
+    faint base (c+1) ()
+end;set_color black
+    
+    )
 
 let clear  = (fun () -> set_color blue;  fill_rect 0 0 width height ;set_color black; moveto 100 200)
 let rec event_loop wx wy = 
@@ -87,7 +107,7 @@ let rec event_loop wx wy =
                 clear_window (blue);
                 
             end;
-        Unix.sleepf 0.05;
+        Unix.sleepf 0.005;
        
           (* cool draw_string; *)
        let size = 240 in
@@ -95,11 +115,12 @@ let rec event_loop wx wy =
             let xx = get_move () in 
         (* print_char (match xx with | Some 'a' -> '?'| Some c -> c | None -> ' '); *)
         (match xx with | Some '.' ->  clear ()
-        |Some 'p' -> draw_pokemon "rayquaza" (width-size/2-50) (height-size/2-50) (); set_color black
-        | Some 'o' -> draw_pokemon "clefairy_back" (size/2+50) (size/2+160) ()
+        |Some 'p' -> draw_sprite rayquaza (width-size/2-50) (height-size/2-50) 120 240(); set_color black
+        | Some 'o' -> draw_pokemon clefairy_back (size/2+50) (size/2+160) ()
         | Some 'm' -> set_color red; fill_rect 0 0 width 212;set_color black
         | Some 'c' -> moveto 80 (height-50-font) ;draw_string "RAYQUAZA :L80"
         | Some 'd' -> damage_render (7) ()
+        | Some 'f' -> faint 20 2   ()
         | Some c -> cool c ()| None -> plot 0 0);
        
        
