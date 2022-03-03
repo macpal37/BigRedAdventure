@@ -12,10 +12,10 @@ val draw_pixel : int -> int -> int -> unit -> unit
 (** Draws a pixel of a given (size) to the screen on the (x,y)
     coordinate provided*)
 
-val load_pet : string -> unit -> string list
+val load_creature : string -> unit -> string list
 (** Loads a given (filename) from the pokemon_sprites*)
 
 val draw_sprite :
   string list -> int -> int -> int -> int -> unit -> unit
 
-val draw_pet : string list -> int -> int -> unit -> unit
+val draw_creature : string list -> int -> int -> unit -> unit

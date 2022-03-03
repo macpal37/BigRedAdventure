@@ -1,0 +1,48 @@
+{
+  "Normal": {
+    "Supereffective": [],
+    "Resists": [],
+    "Immune": []
+  },
+  "Fire": {
+    "Supereffective": [
+      "Grass"
+    ],
+    "Resists": [
+      "Water",
+      "Fire"
+    ],
+    "Immune": []
+  },
+  "Water": {
+    "Supereffective": [
+      "Fire"
+    ],
+    "Resists": [
+      "Water",
+      "Grass"
+    ],
+    "Immune": []
+  },
+  "Grass": {
+    "Supereffective": [
+      "Water"
+    ],
+    "Resists": [
+      "Fire",
+      "Grass"
+    ],
+    "Immune": []
+  },
+  "Fairy": {
+    "Supereffective": [
+      "Fire",
+      "Grass",
+      "Water"
+    ],
+    "Resists": [
+      "Normal"
+    ],
+    "Immune": []
+  }
+}

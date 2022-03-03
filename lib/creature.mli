@@ -8,15 +8,41 @@ type creature
 (** The abstract type that represents a creature. All of a creature
     stats and features will be stored in this type. *)
 
-val create_creature : Yojson.Basic.t -> string -> int -> creature
-val get_nature : unit -> unit
-val gen_ivs : int list
+val create_creature : string -> int -> creature
+(** [create_creature name level] creates an instance of a creature of
+    the following [name] with the specify [level]. This creature is
+    unique, in the sense that its features differ slightly from creature
+    to creature of the name [name] *)
 
 val get_hp : creature -> int * int
-(** Returns the creature's current and max hp as the tuple:
-    (current_hp*max_hp) Used to display values*)
+(** [get_hp creature] Returns the [creature]'s current and max hp as the
+    tuple: (current_hp,max_hp). Used to display values*)
+
+val get_stat : creature -> int list
+
+val get_stat : creature -> string -> int
+(** [get_stat creature stat] returns the value of the specific [stat]
+    from that [creature]*)
+
+val get_types : creature -> string * string
+(** [get_types creature] returns the types of the creature as a tuple of
+    strings*)
 
 val get_stats : creature -> int list
-(** Returns all of the creature's stats as a list The list can be ready
-    as this: 1 - current_hp 2 - max_hp 3 - attack 4 - defense 5 -
-    sp_attack 6 - sp_defense 7 - speed *)
+(** [get_stats creature] returns all of the [creature]'s stats as a
+    list. Here is the the list of value by index:
+
+    - 1: Max HP
+    - 2: Current HP
+    - 3: Attack
+    - 4: Defense
+    - 5: Special Attack
+    - 6: Special Defense
+    - 7: Speed The list is ended by the blank line.*)
+
+(** Combat-Related Functions*)
+
+val get_type_mod : string -> creature -> float
+(** [get_type_mod attack_type defender] returns the damage modification
+    caused by type resistances, weaknesses or immunities from the
+    [defender] by the [attack_type].*)

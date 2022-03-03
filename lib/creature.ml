@@ -11,13 +11,7 @@ type stats = {
 
 type status = Healthy
 
-type etype =
-  | Normal
-  | Fire
-  | Water
-  | Grass
-  | Fairy
-  | None
+(* type etype = | Normal | Fire | Water | Grass | Fairy | None *)
 
 type leveling_rate =
   | Fast
@@ -42,7 +36,7 @@ type creature = {
   iv_stats : stats;
   ev_stats : stats;
   current_status : status;
-  etypes : etype * etype;
+  etypes : string * string;
   nature : nature;
   leveling_rate : leveling_rate;
   ev_gain : string * int;
@@ -62,17 +56,12 @@ let stats_of_json json =
     speed = json |> member "speed" |> to_int;
   }
 
+(* let etype_from_json json num = let etype_string = json |> member
+   ("type" ^ string_of_int num) |> to_string in match etype_string with
+   | "Normal" -> Normal | "Fire" -> Fire | "Water" -> Water | "Grass" ->
+   Grass | "Fairy" -> Fairy | _ -> None *)
 let etype_from_json json num =
-  let etype_string =
-    json |> member ("type" ^ string_of_int num) |> to_string
-  in
-  match etype_string with
-  | "Normal" -> Normal
-  | "Fire" -> Fire
-  | "Water" -> Water
-  | "Grass" -> Grass
-  | "Fairy" -> Fairy
-  | _ -> None
+  json |> member ("type" ^ string_of_int num) |> to_string
 
 let level_rate_from_json json =
   let rate_strint = json |> member "level_rate" |> to_string in
@@ -245,28 +234,66 @@ let creature_from_json json level =
     friendship = 70;
   }
 
-let create_creature json name level =
+let create_creature name level =
+  let json = Yojson.Basic.from_file "assets/util/creature_list" in
   creature_from_json (json |> member name) level
 
-let get_nature () =
-  let nat = generate_nature (rand 25 ()) in
-  print_endline nat.name;
-  print_endline nat.buff;
-  print_endline nat.nerf
+let get_nature creature () =
+  [ creature.nature.name; creature.nature.buff; creature.nature.nerf ]
 
-let get_hp p = (p.current_hp, p.current_stats.max_hp)
+let get_hp creature =
+  (creature.current_hp, creature.current_stats.max_hp)
 
-let get_stats p =
+let get_stats creature =
   [
-    p.current_hp;
-    p.current_stats.max_hp;
-    p.current_stats.attack;
-    p.current_stats.defense;
-    p.current_stats.sp_attack;
-    p.current_stats.sp_defense;
-    p.current_stats.speed;
+    creature.current_hp;
+    creature.current_stats.max_hp;
+    creature.current_stats.attack;
+    creature.current_stats.defense;
+    creature.current_stats.sp_attack;
+    creature.current_stats.sp_defense;
+    creature.current_stats.speed;
   ]
 
-let gen_ivs =
-  let p = generate_ivs rand in
-  [ p.max_hp; p.attack; p.defense; p.sp_attack; p.sp_defense; p.speed ]
+(* let get_types creature = let etype_to_string t = match t with |
+   Normal -> "Normal" | Fire -> "Fire" | Water -> "Water" | Grass ->
+   "Grass" | _ -> "None" in match creature.etypes with | t1, t2 ->
+   (etype_to_string t1, etype_to_string t2) *)
+
+let get_types creature = creature.etypes
+
+let get_stat creature stat =
+  match stat with
+  | "current_hp" -> creature.current_hp
+  | "max_hp" -> creature.current_stats.max_hp
+  | "attack" -> creature.current_stats.attack
+  | "defense" -> creature.current_stats.defense
+  | "sp_defense" -> creature.current_stats.sp_attack
+  | "sp_attack" -> creature.current_stats.sp_defense
+  | "speed" -> creature.current_stats.speed
+  | "level" -> creature.level
+  | "exp" -> creature.exp
+  | _ -> -1
+
+let get_type_mod etype defender =
+  let json = Yojson.Basic.from_file "assets/util/type_chart" in
+  let effective =
+    json |> member etype |> member "Supereffective" |> to_list
+    |> List.map to_string
+  in
+  let noteffective =
+    json |> member etype |> member "Resists" |> to_list
+    |> List.map to_string
+  in
+  let noeffect =
+    json |> member etype |> member "Immune" |> to_list
+    |> List.map to_string
+  in
+  let type_mod def_type =
+    if List.mem def_type effective then 2.
+    else if List.mem def_type noteffective then 0.5
+    else if List.mem def_type noeffect then 0.
+    else 1.
+  in
+  match defender.etypes with
+  | t1, t2 -> type_mod t1 *. type_mod t2

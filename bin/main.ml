@@ -53,18 +53,18 @@ let get_move () : char option =
 
 let cool c () = draw_char c
 let size = 240
-let rayquaza = load_pet "rayquaza" ()
-let clefairy_back = load_pet "clefairy_back" ()
+let rayquaza = load_creature "rayquaza" ()
+let clefairy_back = load_creature "clefairy_back" ()
 
 let rec damage_render c () =
   if c = 0 then
-    draw_pet rayquaza
+    draw_creature rayquaza
       (width - (size / 2) - 50)
       (height - (size / 2) - 50)
       ()
   else begin
     if c mod 2 = 0 then
-      draw_pet rayquaza
+      draw_creature rayquaza
         (width - (size / 2) - 50)
         (height - (size / 2) - 50)
         ()
@@ -128,13 +128,16 @@ let rec event_loop wx wy =
   (match xx with
   | Some '.' -> clear ()
   | Some 'p' ->
-      draw_pet rayquaza
+      draw_creature rayquaza
         (width - (size / 2) - 50)
         (height - (size / 2) - 50)
         ();
       set_color black
   | Some 'o' ->
-      draw_pet clefairy_back ((size / 2) + 50) ((size / 2) + 160) ()
+      draw_creature clefairy_back
+        ((size / 2) + 50)
+        ((size / 2) + 160)
+        ()
   | Some 'm' ->
       set_color red;
       fill_rect 0 0 width 212;

@@ -45,7 +45,7 @@ let rec draw_from_pixels list img_size o_x o_y width height =
       draw_xyrgb h img_size o_x o_y width height;
       draw_from_pixels t img_size o_x o_y width height
 
-let load_pet name () =
+let load_creature name () =
   let json =
     Yojson.Basic.from_file ("assets/creature_sprites/" ^ name ^ ".json")
   in
@@ -59,6 +59,6 @@ let load_pet name () =
 let draw_sprite pixels o_x o_y width height () =
   draw_from_pixels pixels pokemon_sprite_size o_x o_y width height
 
-let draw_pet pixels o_x o_y () =
+let draw_creature pixels o_x o_y () =
   draw_from_pixels pixels pokemon_sprite_size o_x o_y
     pokemon_sprite_size pokemon_sprite_size

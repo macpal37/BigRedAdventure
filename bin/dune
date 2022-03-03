@@ -1,4 +1,3 @@
 (executable
- (public_name CreatureGame)
  (name main)
  (libraries CreatureGame Graphics))
