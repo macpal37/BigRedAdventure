@@ -47,7 +47,7 @@ let rec draw_from_pixels list img_size o_x o_y width height =
 
 let load_pet name () =
   let json =
-    Yojson.Basic.from_file ("assets/pokemon_sprites/" ^ name ^ ".json")
+    Yojson.Basic.from_file ("assets/creature_sprites/" ^ name ^ ".json")
   in
   let pixel_divs =
     json |> member "pixels" |> to_list |> List.map pixels_of_json

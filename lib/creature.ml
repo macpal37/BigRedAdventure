@@ -32,7 +32,7 @@ type nature = {
   id : int;
 }
 
-type pokemon = {
+type creature = {
   name : string;
   level : int;
   current_hp : int;
@@ -142,7 +142,7 @@ let calculate_stats level bstats ivs evs nature =
   let mod_stats_nerf = mod_stat un_mod_stats nature.buff 90 in
   mod_stat mod_stats_nerf nature.buff 110
 
-(** Generate Indiviudal Values (IVs) for the pokemon, randomizng the
+(** Generate Indiviudal Values (IVs) for the creature, randomizng the
     seed each time*)
 let generate_ivs rand_func =
   Random.init (rand 107374184 ());
@@ -215,7 +215,7 @@ let exp_calc level rate =
       + (100 * level) - 140
   | Slow -> 5 * level * level * level / 4
 
-let pokemon_from_json json level =
+let creature_from_json json level =
   let bstats = stats_of_json (json |> member "base_stats") in
   let ivs = generate_ivs rand in
   let random_nature = generate_nature (rand 25 ()) in
@@ -245,8 +245,8 @@ let pokemon_from_json json level =
     friendship = 70;
   }
 
-let create_pokemon json name level =
-  pokemon_from_json (json |> member name) level
+let create_creature json name level =
+  creature_from_json (json |> member name) level
 
 let get_nature () =
   let nat = generate_nature (rand 25 ()) in

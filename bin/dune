@@ -1,4 +1,4 @@
 (executable
- (public_name PokemonGame)
+ (public_name CreatureGame)
  (name main)
- (libraries PokemonGame Graphics))
+ (libraries CreatureGame Graphics))

@@ -1,5 +1,5 @@
 open Graphics
-open PokemonGame.Draw
+open CreatureGame.Draw
 
 let white = rgb 55 255 255
 let blue = rgb 200 200 240
@@ -128,10 +128,10 @@ let rec event_loop wx wy =
   (match xx with
   | Some '.' -> clear ()
   | Some 'p' ->
-      draw_sprite rayquaza
+      draw_pet rayquaza
         (width - (size / 2) - 50)
         (height - (size / 2) - 50)
-        120 240 ();
+        ();
       set_color black
   | Some 'o' ->
       draw_pet clefairy_back ((size / 2) + 50) ((size / 2) + 160) ()
