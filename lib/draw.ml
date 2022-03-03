@@ -1,6 +1,12 @@
 open Yojson.Basic.Util
 open Graphics
 
+type pixel = {
+  x : int;
+  y : int;
+  rgb : int * int * int;
+}
+
 let pokemon_sprite_size = 240
 let div = 8
 
@@ -39,7 +45,7 @@ let rec draw_from_pixels list img_size o_x o_y width height =
       draw_xyrgb h img_size o_x o_y width height;
       draw_from_pixels t img_size o_x o_y width height
 
-let load_pokemon name () =
+let load_pet name () =
   let json =
     Yojson.Basic.from_file ("assets/pokemon_sprites/" ^ name ^ ".json")
   in
@@ -53,6 +59,6 @@ let load_pokemon name () =
 let draw_sprite pixels o_x o_y width height () =
   draw_from_pixels pixels pokemon_sprite_size o_x o_y width height
 
-let draw_pokemon pixels o_x o_y () =
+let draw_pet pixels o_x o_y () =
   draw_from_pixels pixels pokemon_sprite_size o_x o_y
     pokemon_sprite_size pokemon_sprite_size
