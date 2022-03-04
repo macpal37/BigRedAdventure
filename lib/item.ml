@@ -1,0 +1,3 @@
+type item =
+  | Cool
+  | No
