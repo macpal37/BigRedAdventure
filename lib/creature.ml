@@ -238,8 +238,8 @@ let create_creature name level =
   let json = Yojson.Basic.from_file "assets/util/creature_list" in
   creature_from_json (json |> member name) level
 
-let get_nature creature () =
-  [ creature.nature.name; creature.nature.buff; creature.nature.nerf ]
+(* let get_nature creature () = [ creature.nature.name;
+   creature.nature.buff; creature.nature.nerf ] *)
 
 let get_hp creature =
   (creature.current_hp, creature.current_stats.max_hp)

@@ -18,8 +18,6 @@ val get_hp : creature -> int * int
 (** [get_hp creature] Returns the [creature]'s current and max hp as the
     tuple: (current_hp,max_hp). Used to display values*)
 
-val get_stat : creature -> int list
-
 val get_stat : creature -> string -> int
 (** [get_stat creature stat] returns the value of the specific [stat]
     from that [creature]*)
