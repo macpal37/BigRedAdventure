@@ -1,4 +1,4 @@
 (library
  (name CreatureGame)
  (public_name CreatureGame)
- (libraries Yojson ANSITerminal Graphics))
+ (libraries yojson ANSITerminal graphics))

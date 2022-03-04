@@ -297,3 +297,9 @@ let get_type_mod etype defender =
   in
   match defender.etypes with
   | t1, t2 -> type_mod t1 *. type_mod t2
+
+(* let affect_stat target stat stages = match stat with | "attack" ->
+   target. | "defense" -> creature.current_stats.defense | "sp_defense"
+   -> creature.current_stats.sp_attack | "sp_attack" ->
+   creature.current_stats.sp_defense | "speed" ->
+   creature.current_stats.speed *)

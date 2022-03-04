@@ -44,3 +44,7 @@ val get_type_mod : string -> creature -> float
 (** [get_type_mod attack_type defender] returns the damage modification
     caused by type resistances, weaknesses or immunities from the
     [defender] by the [attack_type].*)
+
+(* val affect_stat : creature -> string -> int -> creature *)
+(** [affect_stat target stat stages] returns a creature with the stats
+    modified by the number of stages increased or decresed. *)
