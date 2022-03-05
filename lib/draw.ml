@@ -7,6 +7,9 @@ type pixel = {
   rgb : int * int * int;
 }
 
+(* let width = 800 *)
+
+(* let height = 720 *)
 let pokemon_sprite_size = 240
 let div = 8
 
@@ -62,3 +65,62 @@ let draw_sprite pixels o_x o_y width height () =
 let draw_creature pixels o_x o_y () =
   draw_from_pixels pixels pokemon_sprite_size o_x o_y
     pokemon_sprite_size pokemon_sprite_size
+
+let string_to_char_list s =
+  let rec exp i l = if i < 0 then l else exp (i - 1) (s.[i] :: l) in
+  exp (String.length s - 1) []
+
+let remove_space text =
+  if String.sub text 0 1 = " " then
+    String.sub text 1 (String.length text - 1)
+  else text
+
+let rec wait () =
+  if Graphics.key_pressed () then begin
+    print_endline "Stop?";
+    if Graphics.read_key () = 'x' then ()
+  end
+  else wait ()
+
+let draw_text text () =
+  moveto 30 145;
+  let len = String.length text in
+  let levels = len / 32 in
+  let rec scroll_text text start max =
+    if start mod 3 = 0 then
+      if start <> 0 then begin
+        wait ();
+        set_color (rgb 200 50 50);
+        fill_rect 0 0 800 212;
+        set_color black;
+        print_endline text;
+        print_endline (string_of_int start)
+      end;
+    if start <> max + 1 then begin
+      let text = remove_space text in
+      let short_text =
+        if String.length text > 32 then String.sub text 0 32 else text
+      in
+      let rest_text =
+        if String.length text > 32 then
+          String.sub text 32
+            (String.length text - String.length short_text)
+        else ""
+      in
+      let char_list = string_to_char_list short_text in
+      let rec draw_chars chars =
+        match chars with
+        | [] -> ()
+        | h :: t ->
+            draw_char h;
+            rmoveto 2 0;
+            Unix.sleepf 0.025;
+            draw_chars t
+      in
+      moveto 30 (145 - (50 * (start mod 3)));
+      draw_chars char_list;
+
+      scroll_text rest_text (start + 1) max
+    end
+  in
+  scroll_text text 0 levels

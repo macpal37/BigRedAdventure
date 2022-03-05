@@ -123,8 +123,6 @@ let rec event_loop wx wy =
   let size = 240 in
   let font = 30 in
   let xx = get_move () in
-  (* print_char (match xx with | Some 'a' -> '?'| Some c -> c | None ->
-     ' '); *)
   (match xx with
   | Some '.' -> clear ()
   | Some 'p' ->
@@ -147,6 +145,14 @@ let rec event_loop wx wy =
       draw_string "RAYQUAZA :L80"
   | Some 'd' -> damage_render 7 ()
   | Some 'f' -> faint 20 2 ()
+  | Some 'w' ->
+      draw_text
+        "It was super-effective! Water is Weak to Fire Cool beans can \
+         tell you when to cook them.It was super-effective! Water is \
+         Weak to Fire Cool beans can tell you when to cook them.It was \
+         super-effective! Water is Weak to Fire Cool beans can tell \
+         you when to cook them."
+        ()
   | Some c -> cool c ()
   | None -> plot 0 0);
 

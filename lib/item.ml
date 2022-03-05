@@ -1,3 +1,1 @@
-type item =
-  | Cool
-  | No
+(* type item = | Cool | No *)

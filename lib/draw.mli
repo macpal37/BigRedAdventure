@@ -19,3 +19,4 @@ val draw_sprite :
   string list -> int -> int -> int -> int -> unit -> unit
 
 val draw_creature : string list -> int -> int -> unit -> unit
+val draw_text : string -> unit -> unit
