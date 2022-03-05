@@ -8,6 +8,8 @@ type pixel
     position and the r,g,b values of the pixel. It is used to render
     images ont the screen.*)
 
+val pokemon_sprite_size : int
+
 val draw_pixel : int -> int -> int -> unit -> unit
 (** Draws a pixel of a given (size) to the screen on the (x,y)
     coordinate provided*)
@@ -20,3 +22,5 @@ val draw_sprite :
 
 val draw_creature : string list -> int -> int -> unit -> unit
 val draw_text : string -> unit -> unit
+val gradient : int array array -> int -> int -> unit
+val draw_gradient : int -> int -> unit

@@ -124,3 +124,18 @@ let draw_text text () =
     end
   in
   scroll_text text 0 levels
+
+(* create a gradient of colors from black at 0,0 to white at w-1,h-1 *)
+let gradient arr w h =
+  for y = 0 to h - 1 do
+    for x = 0 to w - 1 do
+      let s = 255 * (x + y) / (w + h - 2) in
+      arr.(y).(x) <- rgb s s s
+    done
+  done
+
+let draw_gradient w h =
+  (* w and h are flipped from perspective of the matrix *)
+  let arr = Array.make_matrix h w white in
+  gradient arr w h;
+  draw_image (make_image arr) 0 0
