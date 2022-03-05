@@ -1,0 +1,9 @@
+{
+  "pound": {
+    "power": 40,
+    "accuracy": 100,
+    "pp": 35,
+    "effect_ids": [],
+    "description": "Charges the target with a full-body tackle."
+  }
+}

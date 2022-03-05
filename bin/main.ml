@@ -154,7 +154,7 @@ let rec event_loop wx wy =
          you when to cook them."
         ()
   | Some c -> cool c ()
-  | None -> plot 0 0);
+  | None -> ());
 
   (* match get_move () with Some c -> pp draw_char c | None -> pp
      draw_char ' '; *)

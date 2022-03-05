@@ -1,17 +1,20 @@
 open Yojson.Basic.Util
 
 type stats = {
-  max_hp : int;
-  attack : int;
-  defense : int;
-  sp_attack : int;
-  sp_defense : int;
-  speed : int;
+  mutable max_hp : int;
+  mutable attack : int;
+  mutable defense : int;
+  mutable sp_attack : int;
+  mutable sp_defense : int;
+  mutable speed : int;
+}
+
+type learnset_moves = {
+  move : string;
+  level : int;
 }
 
 type status = Healthy
-
-(* type etype = | Normal | Fire | Water | Grass | Fairy | None *)
 
 type leveling_rate =
   | Fast
@@ -28,14 +31,14 @@ type nature = {
 
 type creature = {
   name : string;
-  level : int;
-  current_hp : int;
-  exp : int;
+  mutable level : int;
+  mutable current_hp : int;
+  mutable exp : int;
   base_stats : stats;
-  current_stats : stats;
+  mutable current_stats : stats;
   iv_stats : stats;
-  ev_stats : stats;
-  current_status : status;
+  mutable ev_stats : stats;
+  mutable current_status : status;
   etypes : string * string;
   nature : nature;
   leveling_rate : leveling_rate;
@@ -43,8 +46,12 @@ type creature = {
   poke_id : int;
   catch_rate : int;
   base_exp : int;
-  friendship : int;
+  mutable friendship : int;
+  learnset : learnset_moves list;
+  mutable moves : string list;
 }
+
+let get_moves creature = creature.moves
 
 let stats_of_json json =
   {
@@ -60,6 +67,7 @@ let stats_of_json json =
    ("type" ^ string_of_int num) |> to_string in match etype_string with
    | "Normal" -> Normal | "Fire" -> Fire | "Water" -> Water | "Grass" ->
    Grass | "Fairy" -> Fairy | _ -> None *)
+
 let etype_from_json json num =
   json |> member ("type" ^ string_of_int num) |> to_string
 
@@ -232,6 +240,8 @@ let creature_from_json json level =
     catch_rate = json |> member "catch_rate" |> to_int;
     base_exp = json |> member "base_exp" |> to_int;
     friendship = 70;
+    learnset = [];
+    moves = [];
   }
 
 let create_creature name level =
@@ -297,9 +307,3 @@ let get_type_mod etype defender =
   in
   match defender.etypes with
   | t1, t2 -> type_mod t1 *. type_mod t2
-
-(* let affect_stat target stat stages = match stat with | "attack" ->
-   target. | "defense" -> creature.current_stats.defense | "sp_defense"
-   -> creature.current_stats.sp_attack | "sp_attack" ->
-   creature.current_stats.sp_defense | "speed" ->
-   creature.current_stats.speed *)

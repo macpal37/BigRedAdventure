@@ -55,9 +55,9 @@ let load_creature name () =
   let pixel_divs =
     json |> member "pixels" |> to_list |> List.map pixels_of_json
   in
-  List.fold_left
-    (fun x y -> x @ String.split_on_char ',' y)
-    [] pixel_divs
+  List.fold_right
+    (fun y x -> x @ String.split_on_char ',' y)
+    pixel_divs []
 
 let draw_sprite pixels o_x o_y width height () =
   draw_from_pixels pixels pokemon_sprite_size o_x o_y width height

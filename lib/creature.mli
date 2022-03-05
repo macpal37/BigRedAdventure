@@ -8,6 +8,15 @@ type creature
 (** The abstract type that represents a creature. All of a creature
     stats and features will be stored in this type. *)
 
+type stats = {
+  mutable max_hp : int;
+  mutable attack : int;
+  mutable defense : int;
+  mutable sp_attack : int;
+  mutable sp_defense : int;
+  mutable speed : int;
+}
+
 val create_creature : string -> int -> creature
 (** [create_creature name level] creates an instance of a creature of
     the following [name] with the specify [level]. This creature is
@@ -17,6 +26,8 @@ val create_creature : string -> int -> creature
 val get_hp : creature -> int * int
 (** [get_hp creature] Returns the [creature]'s current and max hp as the
     tuple: (current_hp,max_hp). Used to display values*)
+
+(* val get_current_stats : creature -> stats *)
 
 val get_stat : creature -> string -> int
 (** [get_stat creature stat] returns the value of the specific [stat]
@@ -48,3 +59,5 @@ val get_type_mod : string -> creature -> float
 (* val affect_stat : creature -> string -> int -> creature *)
 (** [affect_stat target stat stages] returns a creature with the stats
     modified by the number of stages increased or decresed. *)
+
+val get_moves : creature -> string list
