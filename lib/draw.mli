@@ -20,7 +20,11 @@ val load_creature : string -> unit -> string list
 val draw_sprite :
   string list -> int -> int -> int -> int -> unit -> unit
 
-val draw_creature : string list -> int -> int -> unit -> unit
+val draw_creature_pos : string list -> int -> int -> unit -> unit
+val draw_creature : string list -> bool -> unit -> unit
 val draw_text : string -> unit -> unit
 val gradient : int array array -> int -> int -> unit
 val draw_gradient : int -> int -> unit
+val faint : int -> int -> string list -> unit -> unit
+val damage_render : string list -> bool -> unit -> unit
+val draw_health_bar : int -> int -> int -> bool -> unit -> unit

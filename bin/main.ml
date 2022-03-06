@@ -8,7 +8,12 @@ let red = rgb 200 50 50
 let width = 800
 let height = 720
 
-(* no function for converting color back to rgb in Graphics *)
+type mode =
+  | Adventure
+  | Combat
+  | Menu
+
+let game_mode = Adventure
 
 let open_window =
   open_graph (" " ^ string_of_int width ^ "x" ^ string_of_int height);
@@ -21,6 +26,7 @@ let clear_window color =
   fill_rect 0 0 (size_x ()) (size_y ());
   set_color fg
 
+(* no function for converting color back to rgb in Graphics *)
 let color_to_rgb color =
   let r = (color land 0xFF0000) asr 0x10
   and g = (color land 0x00FF00) asr 0x8
@@ -33,120 +39,106 @@ let get_move () : char option =
 let rayquaza = load_creature "rayquaza" ()
 let clefairy_back = load_creature "clefairy_back" ()
 
-let rec damage_render c () =
-  if c = 0 then
-    draw_creature rayquaza
-      (width - (pokemon_sprite_size / 2) - 50)
-      (height - (pokemon_sprite_size / 2) - 50)
-      ()
-  else begin
-    if c mod 2 = 0 then
-      draw_creature rayquaza
-        (width - (pokemon_sprite_size / 2) - 50)
-        (height - (pokemon_sprite_size / 2) - 50)
-        ()
-    else begin
-      set_color blue;
-      draw_pixel
-        (pokemon_sprite_size + 4)
-        (width - (pokemon_sprite_size / 2) - 50)
-        (height - (pokemon_sprite_size / 2) - 50)
-        ()
-    end;
-    Unix.sleepf 0.10;
-    damage_render (c - 1) ()
-  end;
-  set_color black
-
-let rec faint base c () =
-  if c = base - 2 then
-    draw_pixel
-      (pokemon_sprite_size + 4)
-      (width - (pokemon_sprite_size / 2) - 50)
-      (height - (pokemon_sprite_size / 2) - 50)
-      ()
-  else begin
-    set_color blue;
-    draw_pixel
-      (pokemon_sprite_size + 4)
-      (width - (pokemon_sprite_size / 2) - 50)
-      (height - (pokemon_sprite_size / 2) - 50)
-      ();
-    draw_sprite rayquaza
-      (width - (pokemon_sprite_size / 2) - 50)
-      (height
-      - (pokemon_sprite_size / 2)
-      - 50
-      - (pokemon_sprite_size - (pokemon_sprite_size / c)))
-      240 (240 / c) ();
-    Unix.sleepf 0.05;
-    set_color blue;
-
-    (* draw_pixel (pokemon_sprite_size+4) (width-size/2-50)
-       (height-size/2-50-size+40) (); *)
-    faint base (c + 1) ()
-  end;
-  set_color black
-
 let clear () =
   set_color blue;
   fill_rect 0 0 width height;
   set_color black;
   moveto 100 200
 
-let rec event_loop wx wy =
+let start_up () =
+  set_color red;
+  fill_rect 0 0 width 212;
+  set_color black;
+  moveto 80 (height - 50 - 40);
+  draw_string "RAYQUAZA :L80";
+  draw_health_bar 100 100 100 true ();
+  draw_health_bar 100 100 100 false ();
+  draw_creature rayquaza false ();
+  draw_creature clefairy_back true ();
+  Unix.sleep 1;
+  damage_render rayquaza false ();
+  draw_health_bar 356 356 0 false ();
+  Unix.sleepf 1.5;
+  faint 20 2 rayquaza ();
+  draw_text "It was super-effective!" ();
+  draw_text "Clefairy is the best!!" ()
+
+let rec event_loop wx wy start =
   (* there's no resize event so polling in required *)
   let _ = wait_next_event [ Poll ]
   and wx' = size_x ()
   and wy' = size_y () in
   if wx' <> wx || wy' <> wy then clear_window blue;
   Unix.sleepf 0.005;
+  if start then start_up ();
 
-  (* cool draw_string; *)
-  let font = 30 in
+  let font = 40 in
   let xx = get_move () in
   (match xx with
   | Some '.' -> clear ()
   | Some 'p' ->
-      draw_creature rayquaza
-        (width - (pokemon_sprite_size / 2) - 50)
-        (height - (pokemon_sprite_size / 2) - 50)
-        ();
+      draw_creature rayquaza false ();
+
       set_color black
-  | Some 'o' ->
-      draw_creature clefairy_back
-        ((pokemon_sprite_size / 2) + 50)
-        ((pokemon_sprite_size / 2) + 160)
-        ()
-  | Some 'm' ->
-      set_color red;
-      fill_rect 0 0 width 212;
-      set_color black
+  | Some 'o' -> draw_creature clefairy_back true ()
+  | Some 'm' -> start_up ()
   | Some 'c' ->
       moveto 80 (height - 50 - font);
       draw_string "RAYQUAZA :L80"
-  | Some 'd' -> damage_render 7 ()
-  | Some 'f' -> faint 20 2 ()
+  | Some 'd' ->
+      damage_render rayquaza false ();
+      draw_health_bar 356 356 0 false ();
+      Unix.sleepf 1.5;
+      faint 20 2 rayquaza ()
+  | Some 'f' -> faint 20 2 rayquaza ()
+  | Some 'g' ->
+      draw_health_bar 100 100 100 true ();
+      draw_health_bar 100 100 100 false ()
+  | Some 'h' -> draw_health_bar 15 15 6 true ()
+  | Some 'y' -> draw_health_bar 100 99 0 false ()
   | Some 'w' ->
       draw_text
-        "It was super-effective! Water is Weak to Fire Cool beans can \
-         tell you when to cook them.It was super-effective! Water is \
-         Weak to Fire Cool beans can tell you when to cook them.It was \
-         super-effective! Water is Weak to Fire Cool beans can tell \
-         you when to cook them."
+        "I know that a lot of people want to catch em' all, but my job \
+         is a much bigger challenge. It is my goal to masturbate to \
+         all 807 Pokemon, plain and simple. I usually try to do it \
+         twice a day, regardless of the difficulties. At the end, I \
+         always win. I go on places like Deviantart, rule 34 and, \
+         occasionally e621 in order to achieve this massive goal, and \
+         when I finally do, I will become a Pokemon Master. Sometimes, \
+         it is easy. I can come in five minutes looking at Gardevoir \
+         or Lopunny pornos. Sometimes I come across major challenges \
+         that I have to overcome, in the case of Garbodor and Magikarp \
+         especially. I have to imagine the wet, sloppy fish mouth \
+         sucking on my cock without thinking about the actual fish \
+         itself. It is very hard, but the satisfaction you get when \
+         you achieve victory is immense. Not only do you get the \
+         generally pleasurable feeling from ejaculation, but you also \
+         know that you overcame an obstacle few men have dared to try. \
+         I have a total of 347 successful ejaculations total, but it \
+         only gets harder as I move on. When I see a Serperior, for \
+         instance, I have to think to myself In what way can I imagine \
+         this creature in order to get off to it? It is a puzzle for \
+         sure, considering I do not have a thing for (most) of these \
+         creatures, making it extremely entertaining and interesting \
+         for others to watch. I try to focus in on its somewhat \
+         beautiful face, and think about that more than the yards of \
+         snake behind it. I sometimes have issues with Pokemon like \
+         Machamp, who appear extremely male. But I always find a way. \
+         There has been no hurdle too steep for me. I want to be the \
+         very best. Anything lower does not cut it. And that is why I \
+         am beating off to pictures of Lucario on the Internet, mom"
         ()
   | Some c -> (fun () -> draw_char c) ()
   | None -> ());
 
-  (* match get_move () with Some c -> pp draw_char c | None -> pp
-     draw_char ' '; *)
-  event_loop wx' wy'
+  event_loop wx' wy' false
 
 let () =
   open_window;
+
   moveto 100 200;
   set_font "-*-fixed-bold-r-semicondensed--40-*-*-*-*-*-iso8859-1";
   let r, g, b = color_to_rgb background in
   Printf.printf "Background color: %d %d %d\n" r g b;
-  try event_loop 0 0
+  try event_loop 0 0 true
   with Graphic_failure _ -> print_endline "Exiting..."
