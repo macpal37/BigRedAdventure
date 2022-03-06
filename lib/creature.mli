@@ -17,41 +17,47 @@ type stats = {
   mutable speed : int;
 }
 
+type stat =
+  | HP
+  | Attack
+  | Defense
+  | Sp_Attack
+  | Sp_Defense
+  | Speed
+
+type etype =
+  | Normal
+  | Fire
+  | Water
+  | Grass
+  | Fairy
+  | None
+
+val stat_to_string : stat -> string
+val get_nature : creature -> string * stat * stat
+val etype_to_string : etype -> string
+val mod_stat : stats -> stat -> float -> int
+
 val create_creature : string -> int -> creature
 (** [create_creature name level] creates an instance of a creature of
     the following [name] with the specify [level]. This creature is
     unique, in the sense that its features differ slightly from creature
     to creature of the name [name] *)
 
-val get_hp : creature -> int * int
-(** [get_hp creature] Returns the [creature]'s current and max hp as the
-    tuple: (current_hp,max_hp). Used to display values*)
+val get_current_hp : creature -> int
+(** [get_current_hp creature] Returns the [creature]'s current hp *)
 
-(* val get_current_stats : creature -> stats *)
+val set_current_hp : creature -> int -> unit
+(** [set_current_hp creature] Sets the [creature]'s current hp to
+    [amount] *)
 
-val get_stat : creature -> string -> int
-(** [get_stat creature stat] returns the value of the specific [stat]
-    from that [creature]*)
-
-val get_types : creature -> string * string
+val get_types : creature -> etype * etype
 (** [get_types creature] returns the types of the creature as a tuple of
     strings*)
 
-val get_stats : creature -> int list
-(** [get_stats creature] returns all of the [creature]'s stats as a
-    list. Here is the the list of value by index:
+val get_stats : creature -> stats
 
-    - 1: Max HP
-    - 2: Current HP
-    - 3: Attack
-    - 4: Defense
-    - 5: Special Attack
-    - 6: Special Defense
-    - 7: Speed The list is ended by the blank line.*)
-
-(** Combat-Related Functions*)
-
-val get_type_mod : string -> creature -> float
+val get_type_mod : etype -> creature -> float
 (** [get_type_mod attack_type defender] returns the damage modification
     caused by type resistances, weaknesses or immunities from the
     [defender] by the [attack_type].*)
@@ -60,4 +66,5 @@ val get_type_mod : string -> creature -> float
 (** [affect_stat target stat stages] returns a creature with the stats
     modified by the number of stages increased or decresed. *)
 
+val get_stab_mod : creature -> etype -> float
 val get_moves : creature -> string list

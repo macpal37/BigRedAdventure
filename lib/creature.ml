@@ -9,12 +9,28 @@ type stats = {
   mutable speed : int;
 }
 
+type stat =
+  | HP
+  | Attack
+  | Defense
+  | Sp_Attack
+  | Sp_Defense
+  | Speed
+
 type learnset_moves = {
   move : string;
   level : int;
 }
 
 type status = Healthy
+
+type etype =
+  | Normal
+  | Fire
+  | Water
+  | Grass
+  | Fairy
+  | None
 
 type leveling_rate =
   | Fast
@@ -24,8 +40,8 @@ type leveling_rate =
 
 type nature = {
   name : string;
-  buff : string;
-  nerf : string;
+  buff : stat;
+  nerf : stat;
   id : int;
 }
 
@@ -39,7 +55,7 @@ type creature = {
   iv_stats : stats;
   mutable ev_stats : stats;
   mutable current_status : status;
-  etypes : string * string;
+  etypes : etype * etype;
   nature : nature;
   leveling_rate : leveling_rate;
   ev_gain : string * int;
@@ -63,13 +79,42 @@ let stats_of_json json =
     speed = json |> member "speed" |> to_int;
   }
 
-(* let etype_from_json json num = let etype_string = json |> member
-   ("type" ^ string_of_int num) |> to_string in match etype_string with
-   | "Normal" -> Normal | "Fire" -> Fire | "Water" -> Water | "Grass" ->
-   Grass | "Fairy" -> Fairy | _ -> None *)
+let stat_to_string stat_var =
+  match stat_var with
+  | HP -> "HP"
+  | Attack -> "Attack"
+  | Defense -> "Defense"
+  | Sp_Attack -> "Sp_Attack"
+  | Sp_Defense -> "Sp_Defense"
+  | Speed -> "Speed"
+
+(* let string_to_stat stat_string = match stat_string with | "HP" -> HP
+   | "Attack" -> Attack | "Defense" -> Defense | "Sp_Attack" ->
+   Sp_Attack | "Sp_Defense" -> Sp_Defense | "Speed" -> Speed | _ ->
+   HP *)
+
+let etype_to_string etype_var =
+  match etype_var with
+  | Normal -> "Normal"
+  | Fire -> "Fire"
+  | Water -> "Water"
+  | Grass -> "Grass"
+  | Fairy -> "Fairy"
+  | _ -> "None"
+
+let string_to_etype etype_string =
+  match etype_string with
+  | "Normal" -> Normal
+  | "Fire" -> Fire
+  | "Water" -> Water
+  | "Grass" -> Grass
+  | "Fairy" -> Fairy
+  | _ -> None
 
 let etype_from_json json num =
-  json |> member ("type" ^ string_of_int num) |> to_string
+  json
+  |> member ("type" ^ string_of_int num)
+  |> to_string |> string_to_etype
 
 let level_rate_from_json json =
   let rate_strint = json |> member "level_rate" |> to_string in
@@ -83,29 +128,32 @@ let level_rate_from_json json =
 let rand max () = Random.int max
 
 let mod_stat stats stat_name pow =
-  {
-    max_hp = stats.max_hp;
-    attack =
-      stats.attack
-      * (if stat_name == "attack" then pow + 50 else 100)
-      / 100;
-    defense =
-      stats.defense
-      * (if stat_name == "defense" then pow + 50 else 100)
-      / 100;
-    sp_attack =
-      stats.sp_attack
-      * (if stat_name == "sp_attack" then pow + 50 else 100)
-      / 100;
-    sp_defense =
-      stats.sp_defense
-      * (if stat_name == "sp_defense" then pow + 50 else 100)
-      / 100;
-    speed =
-      stats.speed
-      * (if stat_name == "speed" then pow + 50 else 100)
-      / 100;
-  }
+  let d a b c =
+    let x = (a * b) + 50 in
+    x / c
+  in
+  let pow = int_of_float (100. *. pow) in
+  match stat_name with
+  | Attack -> d stats.attack pow 100
+  | Defense -> d stats.defense pow 100
+  | Sp_Attack -> d stats.sp_attack pow 100
+  | Sp_Defense -> d stats.sp_defense pow 100
+  | Speed -> d stats.speed pow 100
+  | _ -> -1
+
+let mod_statc stats stat_name pow =
+  let d a b c =
+    let x = (a * b) + 50 in
+    x / c
+  in
+  let pow = int_of_float (100. *. pow) in
+  match stat_name with
+  | Attack -> stats.attack <- d stats.attack pow 100
+  | Defense -> stats.defense <- d stats.defense pow 100
+  | Sp_Attack -> stats.sp_attack <- d stats.sp_attack pow 100
+  | Sp_Defense -> stats.sp_defense <- d stats.sp_defense pow 100
+  | Speed -> stats.speed <- d stats.speed pow 100
+  | _ -> ()
 
 let calculate_stats level bstats ivs evs nature =
   let un_mod_stats =
@@ -136,8 +184,9 @@ let calculate_stats level bstats ivs evs nature =
         + 5;
     }
   in
-  let mod_stats_nerf = mod_stat un_mod_stats nature.buff 90 in
-  mod_stat mod_stats_nerf nature.buff 110
+  mod_statc un_mod_stats nature.nerf 0.90;
+  mod_statc un_mod_stats nature.buff 1.1;
+  un_mod_stats
 
 (** Generate Indiviudal Values (IVs) for the creature, randomizng the
     seed each time*)
@@ -192,9 +241,7 @@ let generate_nature nat_rand =
       "Serious";
     ]
   in
-  let stat_list =
-    [ "attack"; "defense"; "sp_atk"; "sp_defense"; "speed" ]
-  in
+  let stat_list = [ Attack; Defense; Sp_Attack; Sp_Defense; Speed ] in
   {
     name = List.nth nat_list nat_rand;
     buff = List.nth stat_list (nat_rand / 5);
@@ -245,48 +292,20 @@ let creature_from_json json level =
   }
 
 let create_creature name level =
-  let json = Yojson.Basic.from_file "assets/util/creature_list" in
+  let json = Yojson.Basic.from_file "assets/util/creature_list.json" in
   creature_from_json (json |> member name) level
 
-(* let get_nature creature () = [ creature.nature.name;
-   creature.nature.buff; creature.nature.nerf ] *)
-
-let get_hp creature =
-  (creature.current_hp, creature.current_stats.max_hp)
-
-let get_stats creature =
-  [
-    creature.current_hp;
-    creature.current_stats.max_hp;
-    creature.current_stats.attack;
-    creature.current_stats.defense;
-    creature.current_stats.sp_attack;
-    creature.current_stats.sp_defense;
-    creature.current_stats.speed;
-  ]
-
-(* let get_types creature = let etype_to_string t = match t with |
-   Normal -> "Normal" | Fire -> "Fire" | Water -> "Water" | Grass ->
-   "Grass" | _ -> "None" in match creature.etypes with | t1, t2 ->
-   (etype_to_string t1, etype_to_string t2) *)
+let get_nature creature =
+  (creature.nature.name, creature.nature.buff, creature.nature.nerf)
 
 let get_types creature = creature.etypes
+let get_stats creature = creature.current_stats
+let get_current_hp creature = creature.current_hp
+let set_current_hp creature amount = creature.current_hp <- amount
 
-let get_stat creature stat =
-  match stat with
-  | "current_hp" -> creature.current_hp
-  | "max_hp" -> creature.current_stats.max_hp
-  | "attack" -> creature.current_stats.attack
-  | "defense" -> creature.current_stats.defense
-  | "sp_defense" -> creature.current_stats.sp_attack
-  | "sp_attack" -> creature.current_stats.sp_defense
-  | "speed" -> creature.current_stats.speed
-  | "level" -> creature.level
-  | "exp" -> creature.exp
-  | _ -> -1
-
-let get_type_mod etype defender =
-  let json = Yojson.Basic.from_file "assets/util/type_chart" in
+let get_type_mod etype_var defender =
+  let etype = etype_to_string etype_var in
+  let json = Yojson.Basic.from_file "assets/util/type_chart.json" in
   let effective =
     json |> member etype |> member "Supereffective" |> to_list
     |> List.map to_string
@@ -306,4 +325,9 @@ let get_type_mod etype defender =
     else 1.
   in
   match defender.etypes with
-  | t1, t2 -> type_mod t1 *. type_mod t2
+  | t1, t2 ->
+      type_mod (etype_to_string t1) *. type_mod (etype_to_string t2)
+
+let get_stab_mod creature etype =
+  let e1, e2 = creature.etypes in
+  if e1 = etype then 1.5 else if e2 = etype then 1.5 else 1.0
