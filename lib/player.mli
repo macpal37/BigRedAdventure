@@ -29,4 +29,4 @@ val add_time_played : int -> player -> player
 (** [add_time_played i p] is player [p] with [i] more time played*)
 
 val add_badge : string -> player -> player
-(** [add_badge b p] is player [p] with added badeg [b]*)
+(** [add_badge b p] is player [p] with added badge [b]*)
