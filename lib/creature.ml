@@ -19,7 +19,7 @@ type stat =
 
 type learnset_moves = {
   move : string;
-  level : int;
+  level_learned : int;
 }
 
 type status = Healthy
@@ -68,6 +68,24 @@ type creature = {
 }
 
 let get_moves creature = creature.moves
+
+let generate_moves learnset level =
+  let possible_moves =
+    List.rev (List.filter (fun a -> a.level_learned <= level) learnset)
+  in
+  let rec get_four_moves moves count =
+    match moves with
+    | [] -> []
+    | h :: t ->
+        if count < 4 then h.move :: get_four_moves t (count + 1) else []
+  in
+  get_four_moves possible_moves 0
+
+let parse_learn_set json =
+  {
+    move = json |> member "move" |> to_string;
+    level_learned = json |> member "level" |> to_int;
+  }
 
 let stats_of_json json =
   {
@@ -267,6 +285,9 @@ let creature_from_json json level =
     calculate_stats level bstats ivs blank_evs random_nature
   in
   let lev_rate = level_rate_from_json json in
+  let learnset =
+    json |> member "learnset" |> to_list |> List.map parse_learn_set
+  in
   {
     name = json |> member "name" |> to_string;
     level;
@@ -287,8 +308,8 @@ let creature_from_json json level =
     catch_rate = json |> member "catch_rate" |> to_int;
     base_exp = json |> member "base_exp" |> to_int;
     friendship = 70;
-    learnset = [];
-    moves = [];
+    learnset;
+    moves = generate_moves learnset level;
   }
 
 let create_creature name level =

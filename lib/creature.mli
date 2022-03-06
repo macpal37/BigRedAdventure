@@ -36,6 +36,7 @@ type etype =
 val stat_to_string : stat -> string
 val get_nature : creature -> string * stat * stat
 val etype_to_string : etype -> string
+val string_to_etype : string -> etype
 val mod_stat : stats -> stat -> float -> int
 
 val create_creature : string -> int -> creature

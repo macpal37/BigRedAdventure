@@ -1,13 +1,20 @@
 open Creature
 (** Loads and handles all the moves performed during combat*)
 
+type move_catgeory =
+  | Physical
+  | Special
+  | Status
+
 type move = {
   name : string;
   power : int;
   accuracy : int;
   mutable pp : int;
-  effect_ids : int list;
+  etype : etype;
+  category : move_catgeory;
   description : string;
+  effect_ids : int list;
 }
 (** Loads and handles all the moves performed during combat*)
 

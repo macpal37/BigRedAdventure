@@ -22,7 +22,7 @@
       "poke_id": 11,
       "level_up": 12
     },
-    "move_list": [
+    "learnset": [
       {
         "move": "Pound",
         "move_id": 1,
@@ -63,7 +63,7 @@
       "poke_id": 12,
       "level_up": 35
     },
-    "move_list": [
+    "learnset": [
       {
         "move": "Pound",
         "move_id": 1,
@@ -104,7 +104,7 @@
       "poke_id": 0,
       "level_up": -1
     },
-    "move_list": [
+    "learnset": [
       {
         "move": "Pound",
         "move_id": 1,

@@ -1,9 +1,35 @@
 {
-  "pound": {
+  "Pound": {
     "power": 40,
     "accuracy": 100,
     "pp": 35,
-    "effect_ids": [],
-    "description": "Charges the target with a full-body tackle."
+    "category": "Physical",
+    "type": "Normal",
+    "description": "Charges the target with a full-body tackle.",
+    "effect_ids": [
+      0
+    ]
+  },
+  "Growl": {
+    "power": 0,
+    "accuracy": -1,
+    "pp": 40,
+    "category": "Status",
+    "type": "Normal",
+    "description": "Growls cutely to reduce the foe's Attack.",
+    "effect_ids": [
+      1
+    ]
+  },
+  "Disarming Voice": {
+    "power": 50,
+    "accuracy": -1,
+    "pp": 20,
+    "category": "Special",
+    "type": "Fairy",
+    "description": "Letting out a charming cry, the user does emotional damage to opposing Pokémon. This attack never misses.",
+    "effect_ids": [
+      0
+    ]
   }
 }
