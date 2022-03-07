@@ -323,6 +323,7 @@ let get_types creature = creature.etypes
 let get_stats creature = creature.current_stats
 let get_current_hp creature = creature.current_hp
 let set_current_hp creature amount = creature.current_hp <- amount
+let get_catch_rate creature = creature.catch_rate
 
 let get_type_mod etype_var defender =
   let etype = etype_to_string etype_var in

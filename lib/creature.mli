@@ -1,4 +1,4 @@
-(** Representation of static creature data.
+(** Representation of creature data.
 
     This module represents the data stored in creature_list files,
     including the stats and moves. It handles loading of that data from
@@ -57,6 +57,9 @@ val get_types : creature -> etype * etype
     strings*)
 
 val get_stats : creature -> stats
+(** [get_type_mod attack_type defender] returns the damage modification
+    caused by type resistances, weaknesses or immunities from the
+    [defender] by the [attack_type].*)
 
 val get_type_mod : etype -> creature -> float
 (** [get_type_mod attack_type defender] returns the damage modification
@@ -69,3 +72,4 @@ val get_type_mod : etype -> creature -> float
 
 val get_stab_mod : creature -> etype -> float
 val get_moves : creature -> string list
+val get_catch_rate : creature -> int
