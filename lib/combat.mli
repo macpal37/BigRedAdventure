@@ -1,7 +1,5 @@
-open Creature
-
 (*Parsing of player commands. *)
-type battle_record
+(* type battle_record *)
 (** The abstract type that represents the standing data of a Pokemon
     battle at a given turn. This type will store the pokemon engaged in
     battle, as well as their evolving victory status.*)
@@ -9,12 +7,13 @@ type battle_record
 (*val get_moves : creature -> string list (**Given a creature,
   [get_moves] returns a string of all moves it current knows.*)*)
 
-val execute_move : creature -> string -> battle_record
+val execute_move : bool -> string -> battle_record -> battle_record
 (**Given a creature, as well as a string containing the move ID,
    [execute_move] produces an updated battle record.*)
 
-(*val rand_move : creature -> string (**Given a creature, a move is
-  randomly chosen from its list of acceptable moves*)*)
+val rand_move : creature -> string
+(**Given a creature, a move is randomly chosen from its list of
+   acceptable moves*)
 
 val run_away : battle_record -> battle_record
 (**Given a battle record, checks if the player is able to run away. If

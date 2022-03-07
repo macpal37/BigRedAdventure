@@ -22,7 +22,13 @@ type learnset_moves = {
   level_learned : int;
 }
 
-type status = Healthy
+type status =
+  | Healthy
+  | Sleep
+  | Freeze
+  | Paralyze
+  | Poison
+  | Burn
 
 type etype =
   | Normal
@@ -67,7 +73,17 @@ type creature = {
   mutable moves : string list;
 }
 
+let status_to_string stat_var =
+  match stat_var with
+  | Sleep -> "Sleep"
+  | Poison -> "Posion"
+  | Burn -> "Burn"
+  | Freeze -> "Freeze"
+  | Paralyze -> "Paralyze"
+  | Healthy -> "Healhthy"
+
 let get_moves creature = creature.moves
+let get_status creature = creature.current_status
 
 let generate_moves learnset level =
   let possible_moves =
