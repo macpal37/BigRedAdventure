@@ -1,4 +1,4 @@
-(** Representation of static creature data.
+(** Representation of creature data.
 
     This module represents the data stored in creature_list files,
     including the stats and moves. It handles loading of that data from
@@ -16,6 +16,14 @@ type stats = {
   mutable sp_defense : int;
   mutable speed : int;
 }
+
+type status =
+  | Healthy
+  | Sleep
+  | Freeze
+  | Paralyze
+  | Poison
+  | Burn
 
 type stat =
   | HP
@@ -38,6 +46,8 @@ val get_nature : creature -> string * stat * stat
 val etype_to_string : etype -> string
 val string_to_etype : string -> etype
 val mod_stat : stats -> stat -> float -> int
+val get_status : creature -> status
+val status_to_string : status -> string
 
 val create_creature : string -> int -> creature
 (** [create_creature name level] creates an instance of a creature of
@@ -57,6 +67,9 @@ val get_types : creature -> etype * etype
     strings*)
 
 val get_stats : creature -> stats
+(** [get_type_mod attack_type defender] returns the damage modification
+    caused by type resistances, weaknesses or immunities from the
+    [defender] by the [attack_type].*)
 
 val get_type_mod : etype -> creature -> float
 (** [get_type_mod attack_type defender] returns the damage modification
@@ -69,3 +82,4 @@ val get_type_mod : etype -> creature -> float
 
 val get_stab_mod : creature -> etype -> float
 val get_moves : creature -> string list
+val get_catch_rate : creature -> int

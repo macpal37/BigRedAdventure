@@ -1,5 +1,4 @@
 open Creature
-open Move
 
 type bstatus =
   | Victory
@@ -89,7 +88,8 @@ let run_away brecord =
     pspeed >= espeed || odds_escape > 255
     || Random.int 256 > odds_escape
   then { brecord with battle_status = Flee }
-  else { brecord with escape_attempts = brecord.escape_attempts + 1 }
+  else { brecord with battle_status = Victory }
+(*{ brecord with escape_attempts = brecord.escape_attempts + 1 }*)
 
 let capture brecord =
   let e_currHP = get_current_hp (List.nth brecord.enemy_creatures 0) in

@@ -19,8 +19,9 @@ val execute_move : bool -> string -> battle_record -> battle_record
 (**Given a creature, as well as a string containing the move ID,
    [execute_move] produces an updated battle record.*)
 
-(*val rand_move : creature -> string (**Given a creature, a move is
-  randomly chosen from its list of acceptable moves*)*)
+(* val rand_move : creature -> string *)
+(**Given a creature, a move is randomly chosen from its list of
+   acceptable moves*)
 
 val run_away : battle_record -> battle_record
 (**Given a battle record, checks if the player is able to run away. If
