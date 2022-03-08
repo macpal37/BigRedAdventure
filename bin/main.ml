@@ -63,6 +63,7 @@ let start_up () =
   draw_text "It was super-effective!" ();
   draw_text "Clefairy is the best!!" ()
 
+<<<<<<< HEAD
 let run_game key_pressed game () =
   let c = String.make 1 key_pressed in
   match game.mode with
@@ -73,6 +74,9 @@ let run_game key_pressed game () =
   | Menu -> game.mode <- Adventure
 
 let rec event_loop wx wy start game =
+=======
+let rec event_loop wx wy =
+>>>>>>> 6789b9fe9a5093271b4132b02da6707446c075f1
   (* there's no resize event so polling in required *)
   let _ = wait_next_event [ Poll ]
   and wx' = size_x ()
@@ -89,6 +93,7 @@ let rec event_loop wx wy start game =
   | Some 'p' ->
       draw_creature rayquaza false ();
 
+<<<<<<< HEAD
       set_color black
   | Some 'o' -> draw_creature clefairy_back true ()
   | Some 'm' -> start_up ()
@@ -142,6 +147,9 @@ let rec event_loop wx wy start game =
   | None -> run_game '#' game ());
 
   event_loop wx' wy' false game
+=======
+  event_loop wx' wy'
+>>>>>>> 6789b9fe9a5093271b4132b02da6707446c075f1
 
 let () =
   open_window;
@@ -150,5 +158,9 @@ let () =
   set_font "-*-fixed-bold-r-semicondensed--40-*-*-*-*-*-iso8859-1";
   let r, g, b = color_to_rgb background in
   Printf.printf "Background color: %d %d %d\n" r g b;
+<<<<<<< HEAD
   try event_loop 0 0 true game
+=======
+  try event_loop 0 0
+>>>>>>> 6789b9fe9a5093271b4132b02da6707446c075f1
   with Graphic_failure _ -> print_endline "Exiting..."

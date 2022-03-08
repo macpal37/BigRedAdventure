@@ -42,12 +42,12 @@ type etype =
   | None
 
 val stat_to_string : stat -> string
-val get_nature : creature -> string * stat * stat
 val etype_to_string : etype -> string
 val string_to_etype : string -> etype
+val status_to_string : status -> string
+val get_nature : creature -> string * stat * stat
 val mod_stat : stats -> stat -> float -> int
 val get_status : creature -> status
-val status_to_string : status -> string
 
 val create_creature : string -> int -> creature
 (** [create_creature name level] creates an instance of a creature of

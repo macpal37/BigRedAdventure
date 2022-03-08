@@ -8,6 +8,14 @@
    enemy_creatures : creature list; battle_type : btype; battle_status :
    bstatus; escape_attempts : int; }
 
+   let wild_init plist elist = { player_creatures = plist;
+   enemy_creatures = elist; battle_type = Wild; battle_status = Ongoing;
+   escape_attempts = 0; }
+
+   let trainer_init plist elist = { player_creatures = plist;
+   enemy_creatures = elist; battle_type = Trainer; battle_status =
+   Ongoing; escape_attempts = 0; }
+
    exception Empty
 
    let reset_clist_player cpair brecord = match brecord.player_creatures
@@ -29,14 +37,20 @@
    { brecord with player_creatures = reset_clist_player out_pair
    brecord; enemy_creatures = reset_clist_enemy out_pair brecord; }
 
-   let run_away brecord = let pspeed = List.nth (get_stats (List.nth
-   brecord.player_creatures 0)) 6 in let espeed = List.nth (get_stats
-   (List.nth brecord.enemy_creatures 0)) 6 in let odds_escape = ((pspeed
-   * 32 / (espeed / 4 mod 256)) + 30) * brecord.escape_attempts in if
-   pspeed >= espeed || odds_escape > 255 || Random.int 256 > odds_escape
-   then { brecord with battle_status = Flee } else { brecord with
-   escape_attempts = brecord.escape_attempts + 1 }
+   let run_away brecord = let pspeed = (get_stats (List.nth
+   brecord.player_creatures 0)).speed in let espeed = (get_stats
+   (List.nth brecord.enemy_creatures 0)).speed in let odds_escape =
+   ((pspeed * 32 / (espeed / 4 mod 256)) + 30) * brecord.escape_attempts
+   in if pspeed >= espeed || odds_escape > 255 || Random.int 256 >
+   odds_escape then { brecord with battle_status = Flee } else { brecord
+   with battle_status = Victory } (*{ brecord with escape_attempts =
+   brecord.escape_attempts + 1 }*)
 
-   (*let capture brecord = let e_currHP = List.nth (get_stats (List.nth
-   brecord.enemy_creatures 0)) 1 let e_maxHP = List.nth (get_stats
-   (List.nth brecord.enemy_creatures 0)) 0 let e_rate = *) *)
+   let capture brecord = let e_currHP = get_current_hp (List.nth
+   brecord.enemy_creatures 0) in let e_maxHP = (get_stats (List.nth
+   brecord.enemy_creatures 0)).max_hp in let e_rate = 150 in let
+   e_status = 1 (*Get status effect here*) in let ball_bonus = 1 in let
+   odds_catch = ((3 * e_maxHP) - (2 * e_currHP * e_rate * ball_bonus)) /
+   (3 * e_maxHP) * e_status in if odds_catch >= 255 then { brecord with
+   battle_status = Catch } else { brecord with battle_status = Loss } *)
+(*Filler, implement rest here*)
