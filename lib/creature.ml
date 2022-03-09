@@ -52,7 +52,8 @@ type nature = {
 }
 
 type creature = {
-  name : string;
+  mutable nickname : string;
+  species : string;
   mutable level : int;
   mutable current_hp : int;
   mutable exp : int;
@@ -121,11 +122,6 @@ let stat_to_string stat_var =
   | Sp_Attack -> "Sp_Attack"
   | Sp_Defense -> "Sp_Defense"
   | Speed -> "Speed"
-
-(* let string_to_stat stat_string = match stat_string with | "HP" -> HP
-   | "Attack" -> Attack | "Defense" -> Defense | "Sp_Attack" ->
-   Sp_Attack | "Sp_Defense" -> Sp_Defense | "Speed" -> Speed | _ ->
-   HP *)
 
 let etype_to_string etype_var =
   match etype_var with
@@ -305,7 +301,8 @@ let creature_from_json json level =
     json |> member "learnset" |> to_list |> List.map parse_learn_set
   in
   {
-    name = json |> member "name" |> to_string;
+    nickname = json |> member "name" |> to_string;
+    species = json |> member "name" |> to_string;
     level;
     current_hp = curr_stats.max_hp;
     exp = exp_calc level lev_rate;
@@ -339,7 +336,7 @@ let get_types creature = creature.etypes
 let get_stats creature = creature.current_stats
 let get_current_hp creature = creature.current_hp
 let set_current_hp creature amount = creature.current_hp <- amount
-let get_catch_rate creature = creature.catch_rate
+let get_catch_rate creature = float_of_int creature.catch_rate
 
 let get_type_mod etype_var defender =
   let etype = etype_to_string etype_var in
@@ -369,3 +366,22 @@ let get_type_mod etype_var defender =
 let get_stab_mod creature etype =
   let e1, e2 = creature.etypes in
   if e1 = etype then 1.5 else if e2 = etype then 1.5 else 1.0
+
+(** [get_level creature] returns a [creature]'s current level*)
+let get_level creature = creature.level
+
+(** [get_exp creature] returns a [creature]'s current exp*)
+let get_exp creature = creature.exp
+
+(** [add_exp creature amount] add [amount] to the current exp of
+    [creature]*)
+let add_exp creature amount =
+  creature.exp <- amount + creature.exp;
+  creature.exp
+
+(** [get_nickname creature] returns a [creature]'s nickname*)
+let get_nickname creature = creature.nickname
+(** [get_nickname creature] returns a [creature]'s nickname*)
+
+(** [get_nickname creature] returns a [creature]'s nickname*)
+let set_nickname creature nickname = creature.nickname <- nickname

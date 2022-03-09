@@ -2,17 +2,23 @@ open Yojson.Basic.Util
 open Graphics
 
 type pixel = {
-  x : int;
-  y : int;
-  rgb : int * int * int;
+  r : int;
+  g : int;
+  b : int;
 }
 
+let text_bg1 = ref [ "" ]
+let text_bg2 = ref [ "" ]
 let blue = rgb 200 200 240
 let width = 800
 let height = 720
 let pokemon_sprite_size = 240
 let div = 8
 let sync flag () = auto_synchronize flag
+
+let set_text_bg bg1 bg2 =
+  text_bg1.contents <- bg1;
+  text_bg2.contents <- bg2
 
 let sync_draw draw () =
   sync false ();
@@ -54,6 +60,19 @@ let rec draw_from_pixels list img_size o_x o_y width height =
       draw_xyrgb h img_size o_x o_y width height;
       draw_from_pixels t img_size o_x o_y width height
 
+(* let divs_to_rgb acc pixel = let vals = String.split_on_char '|' pixel
+   in match vals with | [] -> acc | [ a; b; c ] -> (a, b, c) :: acc | _
+   -> acc *)
+
+let load_sprite filename () =
+  let json = Yojson.Basic.from_file ("assets/" ^ filename ^ ".json") in
+  let pixel_divs =
+    json |> member "pixels" |> to_list |> List.map pixels_of_json
+  in
+  List.fold_left
+    (fun x y -> x @ String.split_on_char ',' y)
+    [] pixel_divs
+
 let load_creature name () =
   let json =
     Yojson.Basic.from_file ("assets/creature_sprites/" ^ name ^ ".json")
@@ -61,12 +80,14 @@ let load_creature name () =
   let pixel_divs =
     json |> member "pixels" |> to_list |> List.map pixels_of_json
   in
-  List.fold_right
-    (fun y x -> x @ String.split_on_char ',' y)
-    pixel_divs []
+  List.fold_left
+    (fun x y -> x @ String.split_on_char ',' y)
+    [] pixel_divs
 
 let draw_sprite pixels o_x o_y width height () =
-  draw_from_pixels pixels pokemon_sprite_size o_x o_y width height
+  sync false ();
+  draw_from_pixels pixels pokemon_sprite_size o_x o_y width height;
+  sync true ()
 
 let draw_creature_pos pixels o_x o_y () =
   sync false ();
@@ -91,7 +112,7 @@ let string_to_char_list s =
   exp (String.length s - 1) []
 
 let remove_space text =
-  if String.sub text 0 1 = " " then
+  if String.length text > 0 && String.sub text 0 1 = " " then
     String.sub text 1 (String.length text - 1)
   else text
 
@@ -102,31 +123,39 @@ let rec wait () =
   end
   else wait ()
 
+let clear_text () =
+  draw_sprite text_bg1.contents 128 88 396 216 ();
+  draw_sprite text_bg2.contents 524 88 396 216 ()
+
+let text_char_cap = ref 28
+let set_text_char_cap cap = text_char_cap.contents <- cap
+
 let draw_text text () =
-  set_color (rgb 200 50 50);
-  fill_rect 0 0 width 212;
+  let char_cap = text_char_cap.contents in
+  (* set_color (rgb 200 50 50); fill_rect 0 0 width 212; *)
+  clear_text ();
   set_color black;
-  moveto 30 145;
+  let start_x = 35 in
+  let start_y = 132 in
+  moveto start_x start_y;
   let len = String.length text in
-  let levels = len / 32 in
+  let levels = len / char_cap in
   let rec scroll_text text start max =
     if start mod 3 = 0 then
       if start <> 0 then begin
         wait ();
-        set_color (rgb 200 50 50);
-        fill_rect 0 0 800 212;
-        set_color black;
-        print_endline text;
-        print_endline (string_of_int start)
+        clear_text ();
+        set_color black
       end;
     if start <> max + 1 then begin
       let text = remove_space text in
       let short_text =
-        if String.length text > 32 then String.sub text 0 32 else text
+        if String.length text > char_cap then String.sub text 0 char_cap
+        else text
       in
       let rest_text =
-        if String.length text > 32 then
-          String.sub text 32
+        if String.length text > char_cap then
+          String.sub text char_cap
             (String.length text - String.length short_text)
         else ""
       in
@@ -135,12 +164,20 @@ let draw_text text () =
         match chars with
         | [] -> ()
         | h :: t ->
+            set_color black;
+            let x = current_x () in
             draw_char h;
-            rmoveto 2 0;
+            print_endline (string_of_int (current_x () - x));
+            rmoveto (-15) 4;
+            set_color white;
+            draw_char h;
+            rmoveto 2 (-4);
+            set_color black;
             Unix.sleepf 0.025;
             draw_chars t
       in
-      moveto 30 (145 - (50 * (start mod 3)));
+
+      moveto start_x (start_y - (50 * (start mod 3)));
       draw_chars char_list;
 
       scroll_text rest_text (start + 1) max
@@ -216,6 +253,8 @@ let rec faint base c creature_pixels () =
     faint base (c + 1) creature_pixels ()
   end;
   set_color black
+
+let animate_faint creature () = faint 20 2 creature ()
 
 let draw_health_bar max before after player () =
   let blank = rgb 84 97 89 in

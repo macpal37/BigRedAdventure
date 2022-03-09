@@ -38,6 +38,9 @@ let get_move () : char option =
 
 let rayquaza = load_creature "rayquaza" ()
 let clefairy_back = load_creature "clefairy_back" ()
+let battle_bot_right = load_sprite "other_sprites/battle_bot_right" ()
+let battle_bot_left = load_sprite "other_sprites/battle_bot_left" ()
+let battle_right = load_sprite "other_sprites/battle_top" ()
 
 let clear () =
   set_color blue;
@@ -46,8 +49,9 @@ let clear () =
   moveto 100 200
 
 let start_up () =
-  set_color red;
-  fill_rect 0 0 width 212;
+  set_text_char_cap 28;
+  set_text_bg battle_bot_left battle_bot_right;
+  draw_text " " ();
   set_color black;
   moveto 80 (height - 50 - 40);
   draw_string "RAYQUAZA :L80";
@@ -59,24 +63,61 @@ let start_up () =
   damage_render rayquaza false ();
   draw_health_bar 356 356 0 false ();
   Unix.sleepf 1.5;
-  faint 20 2 rayquaza ();
-  draw_text "It was super-effective!" ();
-  draw_text "Clefairy is the best!!" ()
+  animate_faint rayquaza ();
 
-<<<<<<< HEAD
+  draw_text "It was super-effective!" ();
+  draw_text "Clefairy is the best!!" ();
+  set_text_char_cap 14;
+  set_text_bg battle_bot_left battle_right;
+  draw_text "What will     Clefairy do?   Should it die?" ()
+
+let combat_button = ref 0
+
 let run_game key_pressed game () =
-  let c = String.make 1 key_pressed in
+  let c = key_pressed in
   match game.mode with
   | Adventure ->
-      print_endline ("Adventure" ^ c);
+      print_endline "Start of Adventure";
+      draw_sprite battle_bot_left (198 - 66 - 4) (108 - 20) 396 216 ();
+      draw_sprite battle_right (594 - 66 - 4) (108 - 20) 396 216 ();
       game.mode <- Combat
-  | Combat -> game.mode <- Menu
+  | Combat ->
+      let b = !combat_button in
+      if c = 'd' && (b = 0 || b = 2) then
+        combat_button.contents <- b + 1;
+      if c = 'a' && (b = 1 || b = 3) then
+        combat_button.contents <- b - 1;
+      if c = 'w' && (b = 2 || b = 3) then
+        combat_button.contents <- b - 2;
+      if c = 's' && (b = 0 || b = 1) then
+        combat_button.contents <- b + 2;
+      if b != combat_button.contents then
+        draw_sprite battle_right 524 88 396 216 ();
+
+      set_font "-*-fixed-bold-r-semicondensed--50-*-*-*-*-*-iso8859-1";
+      let x, y = (475, 110) in
+      moveto x y;
+      draw_string "FIGHT";
+      moveto x (y - 75);
+      draw_string "PARTY";
+      moveto (x + 200) y;
+      draw_string "BAG";
+      moveto (x + 200) (y - 75);
+      draw_string "RUN";
+      moveto
+        (x - 40
+        + 200
+          *
+          if combat_button.contents = 1 || combat_button.contents = 3
+          then 1
+          else 0)
+        (y - (75 * if combat_button.contents >= 2 then 1 else 0));
+      draw_char '>';
+      set_font "-*-fixed-bold-r-semicondensed--40-*-*-*-*-*-iso8859-1"
+      (* print_endline (string_of_int b) *)
   | Menu -> game.mode <- Adventure
 
 let rec event_loop wx wy start game =
-=======
-let rec event_loop wx wy =
->>>>>>> 6789b9fe9a5093271b4132b02da6707446c075f1
   (* there's no resize event so polling in required *)
   let _ = wait_next_event [ Poll ]
   and wx' = size_x ()
@@ -86,81 +127,73 @@ let rec event_loop wx wy =
 
   if start then start_up ();
 
-  let font = 40 in
   let xx = get_move () in
   (match xx with
-  | Some '.' -> clear ()
-  | Some 'p' ->
-      draw_creature rayquaza false ();
+  (* | Some '.' -> clear () | Some 'p' -> draw_creature rayquaza false
+     ();
 
-<<<<<<< HEAD
-      set_color black
-  | Some 'o' -> draw_creature clefairy_back true ()
-  | Some 'm' -> start_up ()
-  | Some 'c' ->
-      moveto 80 (height - 50 - font);
-      draw_string "RAYQUAZA :L80"
-  | Some 'd' ->
-      damage_render rayquaza false ();
-      draw_health_bar 356 356 0 false ();
-      Unix.sleepf 1.5;
-      faint 20 2 rayquaza ()
-  | Some 'f' -> faint 20 2 rayquaza ()
-  | Some 'g' ->
-      draw_health_bar 100 100 100 true ();
-      draw_health_bar 100 100 100 false ()
-  | Some 'h' -> draw_health_bar 15 15 6 true ()
-  | Some 'y' -> draw_health_bar 100 99 0 false ()
-  | Some 'w' ->
+     set_color black | Some 'o' -> draw_creature clefairy_back true () |
+     Some 'm' -> start_up () | Some 'c' -> moveto 80 (height - 50 -
+     font); draw_string "RAYQUAZA :L80" | Some 'd' -> damage_render
+     rayquaza false (); draw_health_bar 356 356 0 false (); Unix.sleepf
+     1.5; animate_faint rayquaza () | Some 'f' -> animate_faint rayquaza
+     () | Some 'g' -> draw_health_bar 100 100 100 true ();
+     draw_health_bar 100 100 100 false () | Some 'h' -> draw_health_bar
+     15 15 6 true () | Some 'y' -> draw_health_bar 100 99 0 false () |
+     Some 'w' -> draw_text "I know that a lot of people want to catch
+     em' all, but my job \ is a much bigger challenge. It is my goal to
+     masturbate to \ all 807 Pokemon, plain and simple. I usually try to
+     do it \ twice a day, regardless of the difficulties. At the end, I
+     \ always win. I go on places like Deviantart, rule 34 and, \
+     occasionally e621 in order to achieve this massive goal, and \ when
+     I finally do, I will become a Pokemon Master. Sometimes, \ it is
+     easy. I can come in five minutes looking at Gardevoir \ or Lopunny
+     pornos. Sometimes I come across major challenges \ that I have to
+     overcome, in the case of Garbodor and Magikarp \ especially. I have
+     to imagine the wet, sloppy fish mouth \ sucking on my cock without
+     thinking about the actual fish \ itself. It is very hard, but the
+     satisfaction you get when \ you achieve victory is immense. Not
+     only do you get the \ generally pleasurable feeling from
+     ejaculation, but you also \ know that you overcame an obstacle few
+     men have dared to try. \ I have a total of 347 successful
+     ejaculations total, but it \ only gets harder as I move on. When I
+     see a Serperior, for \ instance, I have to think to myself In what
+     way can I imagine \ this creature in order to get off to it? It is
+     a puzzle for \ sure, considering I do not have a thing for (most)
+     of these \ creatures, making it extremely entertaining and
+     interesting \ for others to watch. I try to focus in on its
+     somewhat \ beautiful face, and think about that more than the yards
+     of \ snake behind it. I sometimes have issues with Pokemon like \
+     Machamp, who appear extremely male. But I always find a way. \
+     There has been no hurdle too steep for me. I want to be the \ very
+     best. Anything lower does not cut it. And that is why I \ am
+     beating off to pictures of Lucario on the Internet, mom" () *)
+  | Some 'c' -> start_up ()
+  | Some 'm' ->
+      set_text_char_cap 28;
+      set_text_bg battle_bot_left battle_bot_right;
       draw_text
-        "I know that a lot of people want to catch em' all, but my job \
-         is a much bigger challenge. It is my goal to masturbate to \
-         all 807 Pokemon, plain and simple. I usually try to do it \
-         twice a day, regardless of the difficulties. At the end, I \
-         always win. I go on places like Deviantart, rule 34 and, \
-         occasionally e621 in order to achieve this massive goal, and \
-         when I finally do, I will become a Pokemon Master. Sometimes, \
-         it is easy. I can come in five minutes looking at Gardevoir \
-         or Lopunny pornos. Sometimes I come across major challenges \
-         that I have to overcome, in the case of Garbodor and Magikarp \
-         especially. I have to imagine the wet, sloppy fish mouth \
-         sucking on my cock without thinking about the actual fish \
-         itself. It is very hard, but the satisfaction you get when \
-         you achieve victory is immense. Not only do you get the \
-         generally pleasurable feeling from ejaculation, but you also \
-         know that you overcame an obstacle few men have dared to try. \
-         I have a total of 347 successful ejaculations total, but it \
-         only gets harder as I move on. When I see a Serperior, for \
-         instance, I have to think to myself In what way can I imagine \
-         this creature in order to get off to it? It is a puzzle for \
-         sure, considering I do not have a thing for (most) of these \
-         creatures, making it extremely entertaining and interesting \
-         for others to watch. I try to focus in on its somewhat \
-         beautiful face, and think about that more than the yards of \
-         snake behind it. I sometimes have issues with Pokemon like \
-         Machamp, who appear extremely male. But I always find a way. \
-         There has been no hurdle too steep for me. I want to be the \
-         very best. Anything lower does not cut it. And that is why I \
-         am beating off to pictures of Lucario on the Internet, mom"
-        ()
+        "I can come in five minutes looking at Gardevoir  or Lopunny\n\
+        \       ee a Serperior, for  instance, I have to think I can \
+         come in five minutes looking at Gardevoir  or Lopunny\n\
+        \       ee a Serperior, for  instance, I have to think" ();
+      set_text_bg battle_bot_left battle_right
+  | Some 'n' ->
+      set_text_char_cap 14;
+      set_text_bg battle_bot_left battle_right;
+      draw_text "What will     Clefairy do?   Should it die?" ()
   | Some c -> run_game c game ()
   | None -> run_game '#' game ());
 
   event_loop wx' wy' false game
-=======
-  event_loop wx' wy'
->>>>>>> 6789b9fe9a5093271b4132b02da6707446c075f1
 
 let () =
   open_window;
   let game = { mode = Adventure } in
   moveto 100 200;
+  set_text_bg battle_bot_left battle_bot_right;
   set_font "-*-fixed-bold-r-semicondensed--40-*-*-*-*-*-iso8859-1";
   let r, g, b = color_to_rgb background in
   Printf.printf "Background color: %d %d %d\n" r g b;
-<<<<<<< HEAD
-  try event_loop 0 0 true game
-=======
-  try event_loop 0 0
->>>>>>> 6789b9fe9a5093271b4132b02da6707446c075f1
+  try event_loop 0 0 false game
   with Graphic_failure _ -> print_endline "Exiting..."

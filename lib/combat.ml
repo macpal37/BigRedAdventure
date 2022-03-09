@@ -53,4 +53,3 @@
    odds_catch = ((3 * e_maxHP) - (2 * e_currHP * e_rate * ball_bonus)) /
    (3 * e_maxHP) * e_status in if odds_catch >= 255 then { brecord with
    battle_status = Catch } else { brecord with battle_status = Loss } *)
-(*Filler, implement rest here*)
