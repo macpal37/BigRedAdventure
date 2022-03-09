@@ -36,51 +36,60 @@ let color_to_rgb color =
 let get_move () : char option =
   if Graphics.key_pressed () then Some (Graphics.read_key ()) else None
 
-let rayquaza = load_creature "rayquaza" ()
+let rayquaza = load_creature "rayquaza_front" ()
 let clefairy_back = load_creature "clefairy_back" ()
 let battle_bot_right = load_sprite "other_sprites/battle_bot_right" ()
 let battle_bot_left = load_sprite "other_sprites/battle_bot_left" ()
 let battle_right = load_sprite "other_sprites/battle_top" ()
+let combat_hud = load_sprite "other_sprites/opponent_hud" ()
+let player_hud = load_sprite "other_sprites/player_hud" ()
 
 let clear () =
   set_color blue;
   fill_rect 0 0 width height;
-  set_color black;
+  set_color text_color;
   moveto 100 200
 
 let start_up () =
   set_text_char_cap 28;
   set_text_bg battle_bot_left battle_bot_right;
-  draw_text " " ();
-  set_color black;
-  moveto 80 (height - 50 - 40);
-  draw_string "RAYQUAZA :L80";
-  draw_health_bar 100 100 100 true ();
-  draw_health_bar 100 100 100 false ();
+  clear_text ();
+  draw_combat_hud combat_hud "Weepingbellooo" 100 false ();
+  draw_combat_hud player_hud "Clefairy" 5 true ();
   draw_creature rayquaza false ();
   draw_creature clefairy_back true ();
-  Unix.sleep 1;
-  damage_render rayquaza false ();
-  draw_health_bar 356 356 0 false ();
-  Unix.sleepf 1.5;
-  animate_faint rayquaza ();
+  (* damage_render rayquaza false (); *)
+  (* draw_health_bar 10 10 5 true () *)
+  draw_health_bar 211 192 8 true ();
+  draw_health_bar 211 192 8 false ()
+(* draw_health_bar 356 356 0 false (); Unix.sleepf 1.5; animate_faint
+   rayquaza ();
 
-  draw_text "It was super-effective!" ();
-  draw_text "Clefairy is the best!!" ();
-  set_text_char_cap 14;
-  set_text_bg battle_bot_left battle_right;
-  draw_text "What will     Clefairy do?   Should it die?" ()
+   draw_text "It was super-effective!" (); draw_text "Clefairy is the
+   best!!" (); set_text_char_cap 14; set_text_bg battle_bot_left
+   battle_right; set_sticky_text true; draw_text "What will Clefairy
+   do?" (); set_sticky_text false; set_text_bg empty_sprite
+   battle_right *)
 
 let combat_button = ref 0
 
+(*****************************************************************)
+(***************      Game Loop      *****************************)
+(*****************************************************************)
 let run_game key_pressed game () =
   let c = key_pressed in
   match game.mode with
+  (*****************************************************************)
+  (***************      Adventure      *****************************)
+  (*****************************************************************)
   | Adventure ->
       print_endline "Start of Adventure";
-      draw_sprite battle_bot_left (198 - 66 - 4) (108 - 20) 396 216 ();
-      draw_sprite battle_right (594 - 66 - 4) (108 - 20) 396 216 ();
+      set_text_bg battle_bot_left battle_right;
+      clear_text ();
       game.mode <- Combat
+  (*****************************************************************)
+  (***************        Combat       *****************************)
+  (*****************************************************************)
   | Combat ->
       let b = !combat_button in
       if c = 'd' && (b = 0 || b = 2) then
@@ -92,29 +101,11 @@ let run_game key_pressed game () =
       if c = 's' && (b = 0 || b = 1) then
         combat_button.contents <- b + 2;
       if b != combat_button.contents then
-        draw_sprite battle_right 524 88 396 216 ();
-
-      set_font "-*-fixed-bold-r-semicondensed--50-*-*-*-*-*-iso8859-1";
-      let x, y = (475, 110) in
-      moveto x y;
-      draw_string "FIGHT";
-      moveto x (y - 75);
-      draw_string "PARTY";
-      moveto (x + 200) y;
-      draw_string "BAG";
-      moveto (x + 200) (y - 75);
-      draw_string "RUN";
-      moveto
-        (x - 40
-        + 200
-          *
-          if combat_button.contents = 1 || combat_button.contents = 3
-          then 1
-          else 0)
-        (y - (75 * if combat_button.contents >= 2 then 1 else 0));
-      draw_char '>';
-      set_font "-*-fixed-bold-r-semicondensed--40-*-*-*-*-*-iso8859-1"
-      (* print_endline (string_of_int b) *)
+        draw_combat_commands combat_button.contents true ()
+      else draw_combat_commands combat_button.contents false ()
+  (*****************************************************************)
+  (***************         Menu        *****************************)
+  (*****************************************************************)
   | Menu -> game.mode <- Adventure
 
 let rec event_loop wx wy start game =
@@ -132,8 +123,8 @@ let rec event_loop wx wy start game =
   (* | Some '.' -> clear () | Some 'p' -> draw_creature rayquaza false
      ();
 
-     set_color black | Some 'o' -> draw_creature clefairy_back true () |
-     Some 'm' -> start_up () | Some 'c' -> moveto 80 (height - 50 -
+     set_color text_color | Some 'o' -> draw_creature clefairy_back true
+     () | Some 'm' -> start_up () | Some 'c' -> moveto 80 (height - 50 -
      font); draw_string "RAYQUAZA :L80" | Some 'd' -> damage_render
      rayquaza false (); draw_health_bar 356 356 0 false (); Unix.sleepf
      1.5; animate_faint rayquaza () | Some 'f' -> animate_faint rayquaza
@@ -173,15 +164,21 @@ let rec event_loop wx wy start game =
       set_text_char_cap 28;
       set_text_bg battle_bot_left battle_bot_right;
       draw_text
-        "I can come in five minutes looking at Gardevoir  or Lopunny\n\
-        \       ee a Serperior, for  instance, I have to think I can \
-         come in five minutes looking at Gardevoir  or Lopunny\n\
-        \       ee a Serperior, for  instance, I have to think" ();
+        "I can come in five minutes looking at Gardevoir  or Lopunny \
+         ee a Serperior, for  instance, I have to think I can \n\
+        \ come in five minutes looking at Gardevoir  or Lopunny ee a \
+         Serperior, for  instance, I have to think"
+        ();
       set_text_bg battle_bot_left battle_right
   | Some 'n' ->
       set_text_char_cap 14;
       set_text_bg battle_bot_left battle_right;
-      draw_text "What will     Clefairy do?   Should it die?" ()
+      clear_text ();
+      set_text_bg battle_bot_left empty_sprite;
+      set_sticky_text true;
+      draw_text "What will     Clefairy do?   " ();
+      set_text_bg empty_sprite battle_right;
+      set_sticky_text false
   | Some c -> run_game c game ()
   | None -> run_game '#' game ());
 
