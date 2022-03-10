@@ -7,7 +7,7 @@ type move_catgeory =
   | Status
 
 type move = {
-  name : string;
+  move_name : string;
   power : int;
   accuracy : float;
   mutable pp : int;

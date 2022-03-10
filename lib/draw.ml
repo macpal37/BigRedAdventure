@@ -288,19 +288,25 @@ let draw_hp_val x y curr max player () =
     set_color text_color;
     draw_string (hp_to_string curr ^ "/" ^ hp_to_string max)
 
+let bound num min max =
+  if num >= max + 1 then max else if num <= min + 1 then min else num
+
 let draw_health_bar max before after player () =
+  let max, before, after =
+    (bound max 0 max, bound before 0 max, bound after 0 max)
+  in
   let blank = rgb 84 97 89 in
-  let yellow = rgb 221 193 64 in
-  let red = rgb 246 85 55 in
-  let green = rgb 103 221 144 in
+  let bar_yellow = rgb 221 193 64 in
+  let bar_red = rgb 246 85 55 in
+  let bar_green = rgb 103 221 144 in
   let d a b c =
     let x = a * b in
     x / c
   in
-  let hwidth = 220 in
+  let hwidth = 210 in
   let hheight = 6 in
   let xh, yh =
-    if player then (width - hwidth - 31, 296) else (130, 615)
+    if player then (width - hwidth - 31 - 10, 296) else (130, 615)
   in
   set_color text_color;
   set_line_width 8;
@@ -312,18 +318,19 @@ let draw_health_bar max before after player () =
       before max player ();
   set_color blank;
   fill_rect xh yh hwidth hheight;
-  set_color green;
+  set_color bar_green;
   let before_bar = d before 100 max in
   fill_rect xh yh (d before_bar hwidth 100) hheight;
 
   let after_bar = d after 100 max in
   let rec render_health start target =
-    if start = target then ()
+    if start = target || start <= 0 then ()
     else if start > target then begin
+      (*=====LOSING HEALTH=====*)
       if start == 1 then set_color blank
-      else if start <= 20 then set_color red
-      else if start <= 50 then set_color yellow
-      else set_color green;
+      else if start <= 20 then set_color bar_red
+      else if start <= 50 then set_color bar_yellow
+      else set_color bar_green;
       fill_rect xh yh (d start hwidth 100) hheight;
       set_color blank;
       fill_rect (xh + d start hwidth 100 - 4) yh 4 hheight;
@@ -337,10 +344,16 @@ let draw_health_bar max before after player () =
       render_health (start - 1) target
     end
     else begin
+      (*=====Gaining HEALTH=====*)
       if start == 1 then set_color blank
-      else if start <= 20 then set_color red
-      else if start <= 50 then set_color yellow
-      else set_color green;
+      else if start <= 20 then set_color bar_red
+      else if start <= 50 then set_color bar_yellow
+      else set_color bar_green;
+      (* HP NUMBER *)
+      draw_hp_val
+        (xh + (hwidth / 2))
+        (yh - hheight - 5 - 22)
+        (d max start 100) max player ();
 
       fill_rect xh yh (d hwidth start 100) hheight;
       Unix.sleepf 0.05;
@@ -351,9 +364,46 @@ let draw_health_bar max before after player () =
   draw_hp_val
     (xh + (hwidth / 2))
     (yh - hheight - 5 - 22)
-    after max player ()
+    (if after >= 0 then after else 0)
+    max player ()
 
-let draw_combat_hud sprite name level player () =
+let draw_exp_bar max before after () =
+  let max, before, after =
+    (bound max 0 max, bound before 0 after, bound after 0 max)
+  in
+  let blank = rgb 209 199 156 in
+  let bar_color = rgb 77 195 232 in
+  let d a b c =
+    let x = a * b in
+    x / c
+  in
+  let hwidth = 250 in
+  let hheight = 6 in
+  let xh, yh = (width - hwidth - 30, 240) in
+  set_color text_color;
+  (* set_line_width 8; draw_rect xh yh hwidth hheight; *)
+  set_color blank;
+  fill_rect xh yh hwidth hheight;
+  set_color bar_color;
+  let before_bar = d before 100 max in
+  fill_rect xh yh (d before_bar hwidth 100) hheight;
+
+  let after_bar = d after 100 max in
+  let rec render_bar_progress start target =
+    if start = target || start <= 0 then ()
+    else if start <= target then begin
+      set_color bar_color;
+      fill_rect xh yh (d start hwidth 100 + 4) hheight;
+      (* set_color blank; fill_rect (xh + d start hwidth 100) yh 2
+         hheight; *)
+      Unix.sleepf 0.05;
+      render_bar_progress (start + 1) target
+    end
+  in
+  render_bar_progress before_bar after_bar;
+  set_color text_color
+
+let draw_combat_hud sprite name level player (max, before, after) () =
   if player then begin
     set_font_size 30 ();
     draw_sprite sprite (width - 368 + 30) (456 - 100) ();
@@ -361,7 +411,7 @@ let draw_combat_hud sprite name level player () =
     draw_string (String.uppercase_ascii name);
     moveto (width - 100) 316;
     draw_string ("Lv" ^ string_of_int level);
-    draw_health_bar 100 100 100 player ()
+    draw_health_bar max before after player ()
   end
   else begin
     set_font_size 30 ();
@@ -370,7 +420,7 @@ let draw_combat_hud sprite name level player () =
     draw_string (String.uppercase_ascii name);
     moveto 280 (height - 85);
     draw_string ("Lv" ^ string_of_int level);
-    draw_health_bar 100 100 100 player ()
+    draw_health_bar max before after player ()
   end;
   set_font_size 40 ()
 

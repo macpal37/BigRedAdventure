@@ -8,7 +8,9 @@ type sprite
     position and the r,g,b values of the pixel. It is used to render
     images ont the screen.*)
 
-val draw_combat_hud : sprite -> string -> int -> bool -> unit -> unit
+val draw_combat_hud :
+  sprite -> string -> int -> bool -> int * int * int -> unit -> unit
+
 val empty_sprite : sprite
 val text_color : Graphics.color
 val set_text_bg : sprite -> sprite -> unit
@@ -17,6 +19,8 @@ val clear_text : unit -> unit
 val draw_combat_commands : int -> bool -> unit -> unit
 val set_sticky_text : bool -> unit
 val set_font_size : int -> unit -> unit
+val draw_exp_bar : int -> int -> int -> unit -> unit
+val wait : unit -> unit
 
 val draw_pixel : int -> int -> int -> unit -> unit
 (** Draws a pixel of a given (size) to the screen on the (x,y)

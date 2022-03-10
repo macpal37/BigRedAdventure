@@ -26,17 +26,20 @@
       {
         "move": "Pound",
         "move_id": 1,
-        "level": 1
+        "level": 1,
+        "max_pp": 20
       },
       {
         "move": "Growl",
         "move_id": 2,
-        "level": 3
+        "level": 3,
+        "max_pp": 20
       },
       {
         "move": "Disarming Voice",
         "move_id": 3,
-        "level": 6
+        "level": 6,
+        "max_pp": 20
       }
     ]
   },
@@ -67,17 +70,20 @@
       {
         "move": "Pound",
         "move_id": 1,
-        "level": 1
+        "level": 1,
+        "max_pp": 20
       },
       {
         "move": "Growl",
         "move_id": 2,
-        "level": 3
+        "level": 3,
+        "max_pp": 20
       },
       {
         "move": "Disarming Voice",
         "move_id": 3,
-        "level": 6
+        "level": 6,
+        "max_pp": 20
       }
     ]
   },
@@ -108,22 +114,26 @@
       {
         "move": "Pound",
         "move_id": 1,
-        "level": 1
+        "level": 1,
+        "max_pp": 20
       },
       {
         "move": "Growl",
         "move_id": 2,
-        "level": 3
+        "level": 3,
+        "max_pp": 20
       },
       {
         "move": "Disarming Voice",
         "move_id": 3,
-        "level": 6
+        "level": 6,
+        "max_pp": 20
       },
       {
         "move": "Meteor Mash",
         "move_id": 4,
-        "level": 20
+        "level": 20,
+        "max_pp": 20
       }
     ]
   }

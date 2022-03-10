@@ -52,6 +52,12 @@ type etype =
 
 (** Represents the elemental type of a creature*)
 
+type creature_move = {
+  move_name : string;
+  mutable curr_pp : int;
+  mutable max_pp : int;
+}
+
 (** {1 Creature Creation}*)
 
 val create_creature : string -> int -> creature
@@ -117,7 +123,7 @@ val get_stab_mod : creature -> etype -> float
     [etype] is one of the creature's type and returns a float of the
     damage modification*)
 
-val get_moves : creature -> string list
+val get_moves : creature -> Move.move list
 (** [get_moves creature] returns all of the moves of the [creature] by
     name. Used in conjuction with Move.execute_move. *)
 
@@ -131,9 +137,11 @@ val get_level : creature -> int
 val get_exp : creature -> int
 (** [get_exp creature] returns a [creature]'s current exp*)
 
-val add_exp : creature -> int -> int
+val add_exp : creature -> int -> unit
 (** [add_exp creature amount] add [amount] to the current exp of
     [creature]*)
+
+val add_pp : creature -> string -> int -> unit
 
 val get_nickname : creature -> string
 (** [get_nickname creature] returns a [creature]'s nickname*)

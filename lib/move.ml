@@ -7,7 +7,7 @@ type move_catgeory =
   | Status
 
 type move = {
-  name : string;
+  move_name : string;
   power : int;
   accuracy : float;
   mutable pp : int;
@@ -26,7 +26,7 @@ let string_to_category cat_string =
 
 let parse_move name json =
   {
-    name;
+    move_name = name;
     power = json |> member "power" |> to_int;
     accuracy = float_of_int (json |> member "accuracy" |> to_int);
     pp = json |> member "pp" |> to_int;

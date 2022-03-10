@@ -1,2 +1,2 @@
-(* Marco: 22 *)
-let hours_worked = 22
+(* Marco: 27 *)
+let hours_worked = 27

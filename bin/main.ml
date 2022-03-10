@@ -1,6 +1,8 @@
 open Graphics
 open CreatureGame.Draw
+open CreatureGame.Creature
 
+let init = Random.self_init ()
 let white = rgb 55 255 255
 let blue = rgb 200 200 240
 let black = rgb 0 0 0
@@ -43,6 +45,7 @@ let battle_bot_left = load_sprite "other_sprites/battle_bot_left" ()
 let battle_right = load_sprite "other_sprites/battle_top" ()
 let combat_hud = load_sprite "other_sprites/opponent_hud" ()
 let player_hud = load_sprite "other_sprites/player_hud" ()
+let clefairy = create_creature "clefairy" 50
 
 let clear () =
   set_color blue;
@@ -54,14 +57,21 @@ let start_up () =
   set_text_char_cap 28;
   set_text_bg battle_bot_left battle_bot_right;
   clear_text ();
-  draw_combat_hud combat_hud "Weepingbellooo" 100 false ();
-  draw_combat_hud player_hud "Clefairy" 5 true ();
+  set_current_hp clefairy (get_stats clefairy).max_hp;
+  draw_combat_hud combat_hud "Rayquaza" 100 false (100, 100, 100) ();
+
+  draw_combat_hud player_hud (get_nickname clefairy)
+    (get_level clefairy) true
+    ( (get_stats clefairy).max_hp,
+      get_current_hp clefairy,
+      get_current_hp clefairy )
+    ();
   draw_creature rayquaza false ();
   draw_creature clefairy_back true ();
-  (* damage_render rayquaza false (); *)
-  (* draw_health_bar 10 10 5 true () *)
-  draw_health_bar 211 192 8 true ();
-  draw_health_bar 211 192 8 false ()
+  draw_exp_bar 100 10 100 ()
+
+(* draw_health_bar 24 22 6 false () *)
+
 (* draw_health_bar 356 356 0 false (); Unix.sleepf 1.5; animate_faint
    rayquaza ();
 
@@ -70,6 +80,12 @@ let start_up () =
    battle_right; set_sticky_text true; draw_text "What will Clefairy
    do?" (); set_sticky_text false; set_text_bg empty_sprite
    battle_right *)
+
+let update_health creature before () =
+  let curr, max =
+    (get_current_hp creature, (get_stats creature).max_hp)
+  in
+  draw_health_bar max before curr true ()
 
 let combat_button = ref 0
 
@@ -160,6 +176,10 @@ let rec event_loop wx wy start game =
      best. Anything lower does not cut it. And that is why I \ am
      beating off to pictures of Lucario on the Internet, mom" () *)
   | Some 'c' -> start_up ()
+  | Some 'f' ->
+      let before = get_current_hp clefairy in
+      set_current_hp clefairy (before - Random.int 50);
+      update_health clefairy before ()
   | Some 'm' ->
       set_text_char_cap 28;
       set_text_bg battle_bot_left battle_bot_right;

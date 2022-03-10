@@ -1,4 +1,5 @@
 open Yojson.Basic.Util
+open Move
 
 type stats = {
   mutable max_hp : int;
@@ -20,6 +21,7 @@ type stat =
 type learnset_moves = {
   move : string;
   level_learned : int;
+  max_pp : int;
 }
 
 type status =
@@ -71,7 +73,7 @@ type creature = {
   base_exp : int;
   mutable friendship : int;
   learnset : learnset_moves list;
-  mutable moves : string list;
+  mutable moves : move list;
 }
 
 let status_to_string stat_var =
@@ -84,6 +86,15 @@ let status_to_string stat_var =
   | Healthy -> "Healhthy"
 
 let get_moves creature = creature.moves
+
+let add_pp creature move_name amount =
+  let move =
+    List.nth
+      (List.filter (fun x -> x.move_name = move_name) creature.moves)
+      0
+  in
+  move.pp <- move.pp + amount
+
 let get_status creature = creature.current_status
 
 let generate_moves learnset level =
@@ -94,7 +105,8 @@ let generate_moves learnset level =
     match moves with
     | [] -> []
     | h :: t ->
-        if count < 4 then h.move :: get_four_moves t (count + 1) else []
+        if count < 4 then get_move h.move :: get_four_moves t (count + 1)
+        else []
   in
   get_four_moves possible_moves 0
 
@@ -102,6 +114,7 @@ let parse_learn_set json =
   {
     move = json |> member "move" |> to_string;
     level_learned = json |> member "level" |> to_int;
+    max_pp = json |> member "pp" |> to_int;
   }
 
 let stats_of_json json =
@@ -373,11 +386,84 @@ let get_level creature = creature.level
 (** [get_exp creature] returns a [creature]'s current exp*)
 let get_exp creature = creature.exp
 
+let print_level_up creature () =
+  let old_stats = creature.current_stats in
+  let new_stats =
+    calculate_stats (creature.level + 1) creature.base_stats
+      creature.iv_stats creature.ev_stats creature.nature
+  in
+  print_endline
+    "=======================================================";
+  print_endline
+    ("LEVELUP: Lvl: " ^ string_of_int (get_level creature + 1));
+  print_endline
+    ("HP:\t"
+    ^ string_of_int old_stats.max_hp
+    ^ "\t--> "
+    ^ string_of_int new_stats.max_hp
+    ^ "\t+"
+    ^ string_of_int (new_stats.max_hp - old_stats.max_hp));
+  print_endline
+    ("ATK:\t"
+    ^ string_of_int old_stats.attack
+    ^ "\t--> "
+    ^ string_of_int new_stats.attack
+    ^ "\t+"
+    ^ string_of_int (new_stats.attack - old_stats.attack));
+  print_endline
+    ("DEF:\t"
+    ^ string_of_int old_stats.defense
+    ^ "\t--> "
+    ^ string_of_int new_stats.defense
+    ^ "\t+"
+    ^ string_of_int (new_stats.defense - old_stats.defense));
+  print_endline
+    ("SPATK:\t"
+    ^ string_of_int old_stats.sp_attack
+    ^ "\t--> "
+    ^ string_of_int new_stats.sp_attack
+    ^ "\t+"
+    ^ string_of_int (new_stats.sp_attack - old_stats.sp_attack));
+  print_endline
+    ("SPDEF:\t"
+    ^ string_of_int old_stats.sp_defense
+    ^ "\t--> "
+    ^ string_of_int new_stats.sp_defense
+    ^ "\t+"
+    ^ string_of_int (new_stats.sp_defense - old_stats.sp_defense));
+  print_endline
+    ("SPD:\t"
+    ^ string_of_int old_stats.speed
+    ^ "\t--> "
+    ^ string_of_int new_stats.speed
+    ^ "\t+"
+    ^ string_of_int (new_stats.speed - old_stats.speed));
+  print_endline
+    "======================================================="
+
 (** [add_exp creature amount] add [amount] to the current exp of
     [creature]*)
 let add_exp creature amount =
-  creature.exp <- amount + creature.exp;
-  creature.exp
+  let cap_exp = exp_calc (creature.level + 1) creature.leveling_rate in
+  let exp_dif = cap_exp - creature.exp in
+
+  let rec levelup_check amount dif =
+    if amount > dif then begin
+      print_level_up creature ();
+      creature.level <- creature.level + 1;
+      creature.exp <- creature.exp + dif;
+      creature.current_stats <-
+        calculate_stats creature.level creature.base_stats
+          creature.iv_stats creature.ev_stats creature.nature;
+      let new_dif =
+        exp_calc (creature.level + 1) creature.leveling_rate
+        - creature.exp
+      in
+      levelup_check (amount - dif) new_dif
+    end
+    else creature.exp <- creature.exp + amount
+  in
+  levelup_check amount exp_dif
 
 (** [get_nickname creature] returns a [creature]'s nickname*)
 let get_nickname creature = creature.nickname
