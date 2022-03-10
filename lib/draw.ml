@@ -1,5 +1,6 @@
 open Yojson.Basic.Util
 open Graphics
+open Util
 
 type sprite = {
   pixels : int list;
@@ -287,9 +288,6 @@ let draw_hp_val x y curr max player () =
     fill_rect (current_x () - 2) (current_y () + 4) 100 24;
     set_color text_color;
     draw_string (hp_to_string curr ^ "/" ^ hp_to_string max)
-
-let bound num min max =
-  if num >= max + 1 then max else if num <= min + 1 then min else num
 
 let draw_health_bar max before after player () =
   let max, before, after =

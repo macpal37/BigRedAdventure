@@ -52,11 +52,28 @@ type etype =
 
 (** Represents the elemental type of a creature*)
 
-type creature_move = {
+(**===========MOVES ==========**)
+
+type move_catgeory =
+  | Physical
+  | Special
+  | Status
+
+type move = {
   move_name : string;
+  power : int;
+  accuracy : float;
   mutable curr_pp : int;
   mutable max_pp : int;
+  etype : etype;
+  category : move_catgeory;
+  description : string;
+  effect_ids : int list;
 }
+(** Loads and handles all the moves performed during combat*)
+
+val get_move : string -> move
+(** [get_move move_name] returns the the move*)
 
 (** {1 Creature Creation}*)
 
@@ -72,18 +89,18 @@ val mod_stat : stats -> stat -> float -> int
 
 (** {1 String Formatting}*)
 
-val stat_to_string : stat -> string
+val string_of_stat : stat -> string
 (** [stat_to_string stat] returns a string representation of the [stat].*)
 
-val etype_to_string : etype -> string
+val string_of_etype : etype -> string
 (** [etype_to_string etype] returns a string representation of the
     [etype].*)
 
-val string_to_etype : string -> etype
+val etype_of_string : string -> etype
 (** [string_to_etype etype_name] returns the etype representation of the
     [etype_name] string.*)
 
-val status_to_string : status -> string
+val string_of_status : status -> string
 (** [status_to_string status] returns a string representation of the
     [status].*)
 
@@ -112,6 +129,10 @@ val get_stats : creature -> stats
     caused by type resistances, weaknesses or immunities from the
     [defender] by the [attack_type].*)
 
+val get_ivs : creature -> stats
+val get_evs : creature -> stats
+val get_ev_gain : creature -> stat * int
+
 val get_type_mod : etype -> creature -> float
 (** [get_type_mod attack_type defender] returns the damage modification
     caused by type resistances, weaknesses or immunities from the
@@ -123,7 +144,7 @@ val get_stab_mod : creature -> etype -> float
     [etype] is one of the creature's type and returns a float of the
     damage modification*)
 
-val get_moves : creature -> Move.move list
+val get_moves : creature -> move list
 (** [get_moves creature] returns all of the moves of the [creature] by
     name. Used in conjuction with Move.execute_move. *)
 

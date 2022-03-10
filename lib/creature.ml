@@ -1,5 +1,5 @@
 open Yojson.Basic.Util
-open Move
+open Util
 
 type stats = {
   mutable max_hp : int;
@@ -21,7 +21,6 @@ type stat =
 type learnset_moves = {
   move : string;
   level_learned : int;
-  max_pp : int;
 }
 
 type status =
@@ -53,6 +52,25 @@ type nature = {
   id : int;
 }
 
+(**=========== Moves===========**)
+
+type move_catgeory =
+  | Physical
+  | Special
+  | Status
+
+type move = {
+  move_name : string;
+  power : int;
+  accuracy : float;
+  mutable curr_pp : int;
+  mutable max_pp : int;
+  etype : etype;
+  category : move_catgeory;
+  description : string;
+  effect_ids : int list;
+}
+
 type creature = {
   mutable nickname : string;
   species : string;
@@ -67,7 +85,7 @@ type creature = {
   etypes : etype * etype;
   nature : nature;
   leveling_rate : leveling_rate;
-  ev_gain : string * int;
+  ev_gain : stat * int;
   poke_id : int;
   catch_rate : int;
   base_exp : int;
@@ -76,7 +94,7 @@ type creature = {
   mutable moves : move list;
 }
 
-let status_to_string stat_var =
+let string_of_status stat_var =
   match stat_var with
   | Sleep -> "Sleep"
   | Poison -> "Posion"
@@ -93,9 +111,105 @@ let add_pp creature move_name amount =
       (List.filter (fun x -> x.move_name = move_name) creature.moves)
       0
   in
-  move.pp <- move.pp + amount
+  let total_pp = bound (move.curr_pp + amount) 0 move.max_pp in
+  move.curr_pp <- total_pp
 
 let get_status creature = creature.current_status
+
+let string_of_stat stat_var =
+  match stat_var with
+  | HP -> "HP"
+  | Attack -> "Attack"
+  | Defense -> "Defense"
+  | Sp_Attack -> "Sp_Attack"
+  | Sp_Defense -> "Sp_Defense"
+  | Speed -> "Speed"
+
+let stat_of_string stat_var =
+  match stat_var with
+  | "HP" -> HP
+  | "Attack" -> Attack
+  | "Defense" -> Defense
+  | "Sp_Attack" -> Sp_Attack
+  | "Sp_Defense" -> Sp_Defense
+  | "Speed" -> Speed
+  | _ -> HP
+
+let string_of_etype etype_var =
+  match etype_var with
+  | Normal -> "Normal"
+  | Fire -> "Fire"
+  | Water -> "Water"
+  | Grass -> "Grass"
+  | Fairy -> "Fairy"
+  | _ -> "None"
+
+let etype_of_string etype_string =
+  match etype_string with
+  | "Normal" -> Normal
+  | "Fire" -> Fire
+  | "Water" -> Water
+  | "Grass" -> Grass
+  | "Fairy" -> Fairy
+  | _ -> None
+
+let category_of_string cat_string =
+  match cat_string with
+  | "Physical" -> Physical
+  | "Special" -> Special
+  | "Status" -> Status
+  | _ -> Status
+
+(**=============== JSON Parsing ============**)
+let parse_learn_set json =
+  {
+    move = json |> member "move" |> to_string;
+    level_learned = json |> member "level" |> to_int;
+  }
+
+let stats_of_json json =
+  {
+    max_hp = json |> member "hp" |> to_int;
+    attack = json |> member "attack" |> to_int;
+    defense = json |> member "defense" |> to_int;
+    sp_attack = json |> member "sp_attack" |> to_int;
+    sp_defense = json |> member "sp_defense" |> to_int;
+    speed = json |> member "speed" |> to_int;
+  }
+
+let etype_from_json json num =
+  json
+  |> member ("type" ^ string_of_int num)
+  |> to_string |> etype_of_string
+
+let level_rate_from_json json =
+  let rate_strint = json |> member "level_rate" |> to_string in
+  match rate_strint with
+  | "Fast" -> Fast
+  | "MediumFast" -> MediumFast
+  | "MediumSlow" -> MediumSlow
+  | "Slow" -> Slow
+  | _ -> Fast
+
+let parse_move name json =
+  {
+    move_name = name;
+    power = json |> member "power" |> to_int;
+    accuracy = float_of_int (json |> member "accuracy" |> to_int);
+    curr_pp = json |> member "pp" |> to_int;
+    max_pp = json |> member "pp" |> to_int;
+    etype = etype_of_string (json |> member "type" |> to_string);
+    category =
+      category_of_string (json |> member "category" |> to_string);
+    description = json |> member "description" |> to_string;
+    effect_ids =
+      json |> member "effect_ids" |> to_list |> List.map to_int;
+  }
+
+(**=============== Moves ============**)
+let get_move name =
+  let move_json = Yojson.Basic.from_file "assets/util/move_list.json" in
+  parse_move name (move_json |> member name)
 
 let generate_moves learnset level =
   let possible_moves =
@@ -109,66 +223,6 @@ let generate_moves learnset level =
         else []
   in
   get_four_moves possible_moves 0
-
-let parse_learn_set json =
-  {
-    move = json |> member "move" |> to_string;
-    level_learned = json |> member "level" |> to_int;
-    max_pp = json |> member "pp" |> to_int;
-  }
-
-let stats_of_json json =
-  {
-    max_hp = json |> member "hp" |> to_int;
-    attack = json |> member "attack" |> to_int;
-    defense = json |> member "defense" |> to_int;
-    sp_attack = json |> member "sp_attack" |> to_int;
-    sp_defense = json |> member "sp_defense" |> to_int;
-    speed = json |> member "speed" |> to_int;
-  }
-
-let stat_to_string stat_var =
-  match stat_var with
-  | HP -> "HP"
-  | Attack -> "Attack"
-  | Defense -> "Defense"
-  | Sp_Attack -> "Sp_Attack"
-  | Sp_Defense -> "Sp_Defense"
-  | Speed -> "Speed"
-
-let etype_to_string etype_var =
-  match etype_var with
-  | Normal -> "Normal"
-  | Fire -> "Fire"
-  | Water -> "Water"
-  | Grass -> "Grass"
-  | Fairy -> "Fairy"
-  | _ -> "None"
-
-let string_to_etype etype_string =
-  match etype_string with
-  | "Normal" -> Normal
-  | "Fire" -> Fire
-  | "Water" -> Water
-  | "Grass" -> Grass
-  | "Fairy" -> Fairy
-  | _ -> None
-
-let etype_from_json json num =
-  json
-  |> member ("type" ^ string_of_int num)
-  |> to_string |> string_to_etype
-
-let level_rate_from_json json =
-  let rate_strint = json |> member "level_rate" |> to_string in
-  match rate_strint with
-  | "Fast" -> Fast
-  | "MediumFast" -> MediumFast
-  | "MediumSlow" -> MediumSlow
-  | "Slow" -> Slow
-  | _ -> Fast
-
-let rand max () = Random.int max
 
 let mod_stat stats stat_name pow =
   let d a b c =
@@ -303,6 +357,7 @@ let exp_calc level rate =
   | Slow -> 5 * level * level * level / 4
 
 let creature_from_json json level =
+  Random.self_init ();
   let bstats = stats_of_json (json |> member "base_stats") in
   let ivs = generate_ivs rand in
   let random_nature = generate_nature (rand 25 ()) in
@@ -328,7 +383,7 @@ let creature_from_json json level =
     leveling_rate = lev_rate;
     nature = random_nature;
     ev_gain =
-      ( json |> member "ev_stat" |> to_string,
+      ( stat_of_string (json |> member "ev_stat" |> to_string),
         json |> member "ev_amount" |> to_int );
     poke_id = json |> member "poke_id" |> to_int;
     catch_rate = json |> member "catch_rate" |> to_int;
@@ -347,12 +402,15 @@ let get_nature creature =
 
 let get_types creature = creature.etypes
 let get_stats creature = creature.current_stats
+let get_ivs creature = creature.iv_stats
+let get_evs creature = creature.ev_stats
+let get_ev_gain creature = creature.ev_gain
 let get_current_hp creature = creature.current_hp
 let set_current_hp creature amount = creature.current_hp <- amount
 let get_catch_rate creature = float_of_int creature.catch_rate
 
 let get_type_mod etype_var defender =
-  let etype = etype_to_string etype_var in
+  let etype = string_of_etype etype_var in
   let json = Yojson.Basic.from_file "assets/util/type_chart.json" in
   let effective =
     json |> member etype |> member "Supereffective" |> to_list
@@ -374,7 +432,7 @@ let get_type_mod etype_var defender =
   in
   match defender.etypes with
   | t1, t2 ->
-      type_mod (etype_to_string t1) *. type_mod (etype_to_string t2)
+      type_mod (string_of_etype t1) *. type_mod (string_of_etype t2)
 
 let get_stab_mod creature etype =
   let e1, e2 = creature.etypes in
