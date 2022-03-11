@@ -15,12 +15,19 @@ val empty_sprite : sprite
 val text_color : Graphics.color
 val set_text_bg : sprite -> sprite -> unit
 val set_text_char_cap : int -> unit
-val clear_text : unit -> unit
+
+val clear_text : bool -> unit -> unit
+(** [draw_text is_synced] clears the text screen by redrawing the text
+    background sprites. The drawing function is synced if
+    [is_synced = true] *)
+
 val draw_combat_commands : int -> bool -> unit -> unit
 val set_sticky_text : bool -> unit
 val set_font_size : int -> unit -> unit
+val get_font_size : int
 val draw_exp_bar : int -> int -> int -> unit -> unit
 val wait : unit -> unit
+val sync_draw : (unit -> unit) -> unit -> unit
 
 val draw_pixel : int -> int -> int -> unit -> unit
 (** Draws a pixel of a given (size) to the screen on the (x,y)

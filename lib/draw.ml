@@ -10,6 +10,8 @@ type sprite = {
   mutable palette2 : color list;
 }
 
+let dpi = 3
+let font_size = ref 50
 let text_color = rgb 68 68 68
 
 let empty_sprite =
@@ -34,10 +36,12 @@ let set_text_bg bg1 bg2 =
   text_bg2.contents <- bg2
 
 let set_font_size size () =
+  font_size.contents <- size;
   set_font
     ("-*-fixed-bold-r-semicondensed--" ^ string_of_int size
    ^ "-*-*-*-*-*-iso8859-1")
 
+let get_font_size = font_size.contents
 let set_sticky_text flag = is_sticky.contents <- flag
 
 let sync_draw draw () =
@@ -56,12 +60,12 @@ let draw_from_pixels sprite x y width height () =
         if h <> 0 then begin
           let color = List.nth sprite.palette1 (h - 1) in
           set_color color;
-          draw_pixel 3 (x + tx) (y - ty) ()
+          draw_pixel dpi (x + tx) (y - ty) ()
         end;
-        if ty < height - 3 then
-          if tx < width - 3 then
-            draw_from_pixels_rec t x y (tx + 3) ty width height
-          else draw_from_pixels_rec t x y 0 (ty + 3) width height
+        if ty < height then
+          if tx < width - dpi then
+            draw_from_pixels_rec t x y (tx + dpi) ty width height
+          else draw_from_pixels_rec t x y 0 (ty + dpi) width height
         else set_color text_color
   in
 
@@ -85,8 +89,8 @@ let load_sprite filename () =
     pixels =
       json |> member "pixels" |> to_list |> List.map pixels_of_json
       |> List.fold_left (fun x y -> x @ y) [];
-    width = (json |> member "width" |> to_int) * 3;
-    height = (json |> member "height" |> to_int) * 3;
+    width = (json |> member "width" |> to_int) * dpi;
+    height = (json |> member "height" |> to_int) * dpi;
     palette1 =
       json |> member "color_palette1" |> to_list
       |> List.map string_to_color;
@@ -103,8 +107,8 @@ let load_creature name () =
     pixels =
       json |> member "pixels" |> to_list |> List.map pixels_of_json
       |> List.fold_left (fun x y -> x @ y) [];
-    width = (json |> member "width" |> to_int) * 3;
-    height = (json |> member "height" |> to_int) * 3;
+    width = (json |> member "width" |> to_int) * dpi;
+    height = (json |> member "height" |> to_int) * dpi;
     palette1 =
       json |> member "color_palette1" |> to_list
       |> List.map string_to_color;
@@ -137,18 +141,21 @@ let remove_space text =
   else text
 
 let rec wait () =
-  if is_sticky.contents = true then ();
-  if Graphics.key_pressed () then begin
+  if is_sticky.contents = true then ()
+  else if Graphics.key_pressed () then begin
     if Graphics.read_key () = 'x' then ()
   end
   else wait ()
 
-let clear_text () =
-  sync false ();
-  let h = 216 in
-  draw_sprite text_bg1.contents 3 h ();
-  draw_sprite text_bg2.contents 400 h ();
-  sync true ()
+let clear_text is_synced () =
+  if is_synced then begin
+    sync true ();
+    draw_sprite text_bg1.contents 3 text_bg1.contents.height ();
+    draw_sprite text_bg2.contents 400 text_bg2.contents.height ();
+    sync false ()
+  end
+  else draw_sprite text_bg1.contents 3 text_bg1.contents.height ();
+  draw_sprite text_bg2.contents 400 text_bg2.contents.height ()
 
 let text_char_cap = ref 28
 let set_text_char_cap cap = text_char_cap.contents <- cap
@@ -156,7 +163,7 @@ let set_text_char_cap cap = text_char_cap.contents <- cap
 let draw_text text () =
   let char_cap = text_char_cap.contents in
   (* set_color (rgb 200 50 50); fill_rect 0 0 width 212; *)
-  clear_text ();
+  clear_text true ();
   set_color text_color;
   let start_x = 35 in
   let start_y = 132 in
@@ -167,7 +174,7 @@ let draw_text text () =
     if start mod 2 = 0 then
       if start <> 0 && is_sticky.contents = false then begin
         wait ();
-        clear_text ();
+        clear_text true ();
         set_color text_color
       end;
     if start <> max + 1 then begin
@@ -426,7 +433,7 @@ let draw_combat_commands c redraw () =
   set_font_size 50 ();
   let x, y = (475, 120) in
   sync false ();
-  if redraw then clear_text ();
+  if redraw then clear_text false ();
   moveto x y;
   draw_string "FIGHT";
   moveto x (y - 75);
