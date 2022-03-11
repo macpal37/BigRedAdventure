@@ -1,5 +1,3 @@
-open Item
-
 exception Insufficient of int
 
 module ItemTypeMap = Stdlib.Map.Make (struct
@@ -27,24 +25,24 @@ let get_bag (i : inventory) (t : Item.item_type) =
       i := ItemTypeMap.add t b !i;
       b
 
-let list_items b = ItemMap.to_seq !b
+let list_items b = ItemMap.bindings !b
 
-let add b i ?(c = 1) =
+let add b ?(count = 1) i =
   b :=
     ItemMap.update i
       (fun k ->
         match k with
-        | Some v -> Some (v + c)
-        | None -> Some c)
+        | Some v -> Some (v + count)
+        | None -> Some count)
       !b
 
-let consume b i ?(c = 1) =
+let consume b ?(count = 1) i =
   b :=
     ItemMap.update i
       (fun k ->
         match k with
         | Some v ->
-            let new_count = v - c in
+            let new_count = v - count in
             if new_count >= 0 then Some new_count
             else raise (Insufficient v)
         | None -> raise (Insufficient 0))

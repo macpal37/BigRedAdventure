@@ -28,10 +28,10 @@ val list_items : bag -> (item * int) list
 (** [list_items b] is list of pairs of items and their number of copies
     present in [b]*)
 
-val add : bag -> item -> ?count:int -> unit
-(** [add b i c] adds [c] copies of item [t] in bag [b]. [c] is 1 by
-    default. This call mutates [b]*)
+val add : bag -> ?count:int -> item -> unit
+(** [add b ~count:c i] adds [c] copies of item [t] in bag [b]. [c] is 1
+    by default. This call mutates [b]*)
 
-val consume : bag -> item -> ?count:int -> unit
-(** [consume b i c] removes [c] copies of item [t] from bag [b]. [c] is
-    1 by default. This call mutates [b]*)
+val consume : bag -> ?count:int -> item -> unit
+(** [consume b ~count:c i] removes [c] copies of item [t] from bag [b].
+    [c] is 1 by default. This call mutates [b]*)
