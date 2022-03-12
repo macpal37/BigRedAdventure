@@ -18,7 +18,7 @@ type bag
     type*)
 
 val new_inventory : unit -> inventory
-(** [new_inventory] is an empty inventory*)
+(** [new_inventory _] is an empty inventory*)
 
 val get_bag : inventory -> item_type -> bag
 (** [get_bag i t] is the item bag in inventory [i] that stores item of
@@ -34,4 +34,5 @@ val add : bag -> ?count:int -> item -> unit
 
 val consume : bag -> ?count:int -> item -> unit
 (** [consume b ~count:c i] removes [c] copies of item [t] from bag [b].
-    [c] is 1 by default. This call mutates [b]*)
+    [c] is 1 by default. This call mutates [b]. Raises [Insufficient r]
+    if [r] the number of copies of item [t] is less than [c]*)
