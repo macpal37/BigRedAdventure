@@ -22,6 +22,10 @@ val clear_text : bool -> unit -> unit
     [is_synced = true] *)
 
 val draw_combat_commands : int -> bool -> unit -> unit
+
+val draw_string_colored :
+  int -> int -> int -> string -> Graphics.color -> unit -> unit
+
 val set_sticky_text : bool -> unit
 val set_font_size : int -> unit -> unit
 val get_font_size : int

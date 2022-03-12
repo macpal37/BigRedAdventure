@@ -222,7 +222,7 @@ let generate_moves learnset level =
         if count < 4 then get_move h.move :: get_four_moves t (count + 1)
         else []
   in
-  get_four_moves possible_moves 0
+  List.rev (get_four_moves possible_moves 0)
 
 let mod_stat stats stat_name pow =
   let d a b c =

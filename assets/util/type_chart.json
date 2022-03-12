@@ -6,7 +6,8 @@
   },
   "Fire": {
     "Supereffective": [
-      "Grass"
+      "Grass",
+      "Air"
     ],
     "Resists": [
       "Water",
@@ -22,6 +23,14 @@
       "Water",
       "Grass"
     ],
+    "Immune": []
+  },
+  "Air": {
+    "Supereffective": [
+      "Grass",
+      "Water"
+    ],
+    "Resists": [],
     "Immune": []
   },
   "Grass": {
@@ -44,5 +53,18 @@
       "Normal"
     ],
     "Immune": []
+  },
+  "Cosmic": {
+    "Supereffective": [
+      "Fire",
+      "Water",
+      "Air"
+    ],
+    "Resists": [
+      "Grass"
+    ],
+    "Immune": [
+      "Fairy"
+    ]
   }
 }

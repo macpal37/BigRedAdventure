@@ -31,3 +31,5 @@ let w () = find 'w' key_map.contents
 let a () = find 'a' key_map.contents
 let s () = find 's' key_map.contents
 let d () = find 'd' key_map.contents
+let f () = find 'f' key_map.contents
+let c () = find 'c' key_map.contents

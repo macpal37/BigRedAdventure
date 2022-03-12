@@ -8,3 +8,5 @@ val w : unit -> bool
 val a : unit -> bool
 val s : unit -> bool
 val d : unit -> bool
+val f : unit -> bool
+val c : unit -> bool

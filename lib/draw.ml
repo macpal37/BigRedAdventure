@@ -162,7 +162,6 @@ let set_text_char_cap cap = text_char_cap.contents <- cap
 
 let draw_text text () =
   let char_cap = text_char_cap.contents in
-  (* set_color (rgb 200 50 50); fill_rect 0 0 width 212; *)
   clear_text true ();
   set_color text_color;
   let start_x = 35 in
@@ -195,9 +194,7 @@ let draw_text text () =
         | [] -> ()
         | h :: t ->
             set_color text_color;
-            (* let x = current_x () in *)
             draw_char h;
-            (* print_endline (string_of_int (current_x () - x)); *)
             rmoveto (-15) 4;
             set_color white;
             draw_char h;
@@ -448,3 +445,12 @@ let draw_combat_commands c redraw () =
   draw_char '>';
   sync true ();
   set_font_size 40 ()
+
+let draw_string_colored x y dif text custom_color () =
+  moveto x y;
+  set_color text_color;
+  draw_string text;
+  moveto (x + dif - 1) (y + dif);
+  set_color custom_color;
+  draw_string text;
+  set_color text_color

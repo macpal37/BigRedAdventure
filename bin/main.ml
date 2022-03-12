@@ -21,7 +21,7 @@ let game = ref Adventure
 
 let open_window =
   open_graph (" " ^ string_of_int width ^ "x" ^ string_of_int height);
-  set_window_title "PokemonGame"
+  set_window_title "BigRedAdventures"
 
 (* no way of setting background color; resizing shows white *)
 let clear_window color =
@@ -37,10 +37,16 @@ let color_to_rgb color =
   and b = color land 0x0000FF in
   (r, g, b)
 
-let get_move () : char option =
-  if Graphics.key_pressed () then Some (Graphics.read_key ()) else None
+let clear () =
+  set_color blue;
+  fill_rect 0 0 width height;
+  set_color text_color;
+  moveto 100 200
 
-let rayquaza = load_creature "rayquaza_front" ()
+(*****************************************************************)
+(***************     Loading Some Assets     *********************)
+(*****************************************************************)
+let rayquaza_sprite = load_creature "rayquaza_front" ()
 let clefairy_back = load_creature "clefairy_back" ()
 let battle_bot_right = load_sprite "other_sprites/battle_bot_right" ()
 let battle_bot_left = load_sprite "other_sprites/battle_bot_left" ()
@@ -49,16 +55,15 @@ let moves_window = load_sprite "other_sprites/moves_window" ()
 let move_info1 = load_sprite "other_sprites/move_info1" ()
 let combat_hud = load_sprite "other_sprites/opponent_hud" ()
 let player_hud = load_sprite "other_sprites/player_hud" ()
-let clefairy = create_creature "clefairy" 50
+let clefairy = create_creature "clefairy" 100
+let rayquaza = create_creature "rayquaza" 80
 
-let clear () =
-  set_color blue;
-  fill_rect 0 0 width height;
-  set_color text_color;
-  moveto 100 200
-
+(*****************************************************************)
+(***************     Combat Drawing Commands     *********************)
+(*****************************************************************)
 let start_combat_hud () =
   set_text_char_cap 14;
+  set_font_size 40 ();
   set_text_bg battle_bot_left battle_right;
   clear_text true ();
   set_text_bg battle_bot_left empty_sprite;
@@ -67,78 +72,64 @@ let start_combat_hud () =
   set_text_bg empty_sprite battle_right;
   set_sticky_text false
 
-(* let fit_words x y words = *)
+let get_color_from_etype etype =
+  match etype with
+  | Normal -> rgb 166 166 166
+  | Fire -> rgb 235 47 0
+  | Water -> rgb 13 150 255
+  | Grass -> rgb 0 168 3
+  | Fairy -> rgb 255 122 244
+  | _ -> rgb 0 0 0
 
-let draw_moves creature c_b c_a re_draw () =
+let draw_moves creature c_b c_a () =
   let moves = get_moves creature in
   let size = List.length moves in
-  if size > 0 then begin
-    set_font_size 30 ();
-    moveto 30 (2 * text_box_height / 3);
-    draw_string (List.nth moves 0).move_name
-  end;
-  if size > 1 then begin
-    set_font_size 30 ();
-    moveto (30 + 278) (2 * text_box_height / 3);
-    draw_string (List.nth moves 1).move_name
-  end;
-  if size > 2 then begin
-    set_font_size 30 ();
-    moveto 30 ((2 * text_box_height / 3) + 15 - 95);
-    draw_string (List.nth moves 2).move_name
-  end;
-  if size > 3 then begin
-    set_font_size 30 ();
-    moveto (30 + 278) ((2 * text_box_height / 3) + 15 - 95);
-    draw_string (List.nth moves 3).move_name
-  end;
-  if re_draw then begin
-    set_line_width 5;
-    set_color (rgb 255 255 255);
-    draw_rect
-      (27 - 5 + ((283 - 5) * if c_b = 1 || c_b = 3 then 1 else 0))
-      ((2 * text_box_height / 3) - 30 - (80 * if c_b >= 2 then 1 else 0))
-      275 90;
-    set_color (rgb 0 0 0);
-    draw_rect
-      (27 - 5 + ((283 - 5) * if c_a = 1 || c_a = 3 then 1 else 0))
-      ((2 * text_box_height / 3) - 30 - (80 * if c_a >= 2 then 1 else 0))
-      275 90
-  end
+  let box_w, box_h = (378, 92) in
+  let box_x, box_y = (20, 200 - box_h) in
+  let text_x, text_y = (30, (4 * text_box_height / 5) - 6) in
+  let text_xdif, text_ydif = (376, 95) in
+  set_font_size 30 ();
+  set_line_width 6;
+  let rec draw_all_moves i j length =
+    if length <= 0 then ()
+    else
+      let move = List.nth moves (i + (j * 2)) in
+      let x, y = (text_x + (text_xdif * i), text_y - (text_ydif * j)) in
+      draw_string_colored x y 2 move.move_name
+        (get_color_from_etype move.etype)
+        ();
+      moveto x (y - 40);
+      set_color (get_color_from_etype move.etype);
+      draw_string (string_of_etype move.etype);
+      set_color text_color;
+      moveto (x + 120) (y - 40);
+      draw_string
+        ("PP:"
+        ^ string_of_int move.curr_pp
+        ^ "/"
+        ^ string_of_int move.max_pp);
 
-let start_up () =
-  set_text_char_cap 28;
-  set_text_bg battle_bot_left battle_bot_right;
-  clear_text true ();
-  set_current_hp clefairy (get_stats clefairy).max_hp;
-  draw_combat_hud combat_hud "Rayquaza" 100 false (100, 100, 100) ();
+      if i = 1 then draw_all_moves 0 (j + 1) (length - 1)
+      else draw_all_moves (i + 1) j (length - 1)
+  in
+  draw_all_moves 0 0 size;
 
-  draw_combat_hud player_hud (get_nickname clefairy)
-    (get_level clefairy) true
-    ( (get_stats clefairy).max_hp,
-      get_current_hp clefairy,
-      get_current_hp clefairy )
-    ();
-  draw_creature rayquaza false ();
-  draw_creature clefairy_back true ();
-  draw_exp_bar 100 10 100 ();
-  start_combat_hud ()
-(* draw_health_bar 24 22 6 false () *)
-
-(* draw_health_bar 356 356 0 false (); Unix.sleepf 1.5; animate_faint
-   rayquaza ();
-
-   draw_text "It was super-effective!" (); draw_text "Clefairy is the
-   best!!" (); set_text_char_cap 14; set_text_bg battle_bot_left
-   battle_right; set_sticky_text true; draw_text "What will Clefairy
-   do?" (); set_sticky_text false; set_text_bg empty_sprite
-   battle_right *)
+  draw_rect
+    (box_x + (box_w * if c_b = 1 || c_b = 3 then 1 else 0))
+    (box_y - (box_h * if c_b >= 2 then 1 else 0))
+    box_w box_h;
+  set_color (rgb 255 0 0);
+  draw_rect
+    (box_x + (box_w * if c_a = 1 || c_a = 3 then 1 else 0))
+    (box_y - (box_h * if c_a >= 2 then 1 else 0))
+    box_w box_h;
+  set_color text_color
 
 let update_health creature before () =
   let curr, max =
     (get_current_hp creature, (get_stats creature).max_hp)
   in
-  draw_health_bar max before curr true ()
+  draw_health_bar max before curr false ()
 
 type combat_m =
   | Commands
@@ -148,7 +139,38 @@ let combat_button = ref 0
 let combat_mode = ref Commands
 
 (*****************************************************************)
-(***************      Game Loop      *****************************)
+(***************     Test Demo Cmmands     *********************)
+(*****************************************************************)
+let start_up () =
+  combat_mode.contents <- Commands;
+  set_text_char_cap 28;
+  set_text_bg battle_bot_left battle_bot_right;
+  clear_text true ();
+  set_current_hp clefairy (get_stats clefairy).max_hp;
+  draw_combat_hud combat_hud "Rayquaza" 80 false
+    ( (get_stats rayquaza).max_hp,
+      get_current_hp rayquaza,
+      get_current_hp rayquaza )
+    ();
+
+  draw_combat_hud player_hud (get_nickname clefairy)
+    (get_level clefairy) true
+    ( (get_stats clefairy).max_hp,
+      get_current_hp clefairy,
+      get_current_hp clefairy )
+    ();
+  draw_creature rayquaza_sprite false ();
+  draw_creature clefairy_back true ();
+
+  draw_exp_bar 100 100 100 ();
+
+  (* draw_health_bar (get_stats rayquaza).max_hp (get_stats
+     rayquaza).max_hp 0 false (); Unix.sleepf 1.5; animate_faint
+     rayquaza_sprite (); *)
+  start_combat_hud ()
+
+(*****************************************************************)
+(***************      Game Run      *****************************)
 (*****************************************************************)
 let run_game game () =
   match game.contents with
@@ -180,26 +202,28 @@ let run_game game () =
               draw_combat_commands combat_button.contents true ()
             else draw_combat_commands combat_button.contents false ();
             if Input.e () && combat_button.contents = 0 then begin
-              set_text_bg moves_window move_info1;
+              set_text_bg moves_window empty_sprite;
               combat_mode.contents <- Moves;
-              clear_text true ()
+              clear_text true ();
+              draw_moves clefairy b combat_button.contents ()
             end
         | Moves ->
             if b != combat_button.contents then
-              draw_moves clefairy b combat_button.contents true ()
-            else draw_moves clefairy b combat_button.contents false ();
+              draw_moves clefairy b combat_button.contents ();
+
             if Input.q () then begin
-              set_text_bg battle_bot_left battle_right;
+              start_combat_hud ();
               combat_mode.contents <- Commands;
               clear_text true ()
             end
       in
       action
-  (*****************************************************************)
-  (***************         Menu        *****************************)
-  (*****************************************************************)
+  (*************** Menu *****************************)
   | Menu -> game.contents <- Adventure
 
+(*****************************************************************)
+(***************        Game Loop        *****************************)
+(*****************************************************************)
 let rec event_loop wx wy start game =
   (* there's no resize event so polling in required *)
   let _ = wait_next_event [ Poll ]
@@ -209,23 +233,21 @@ let rec event_loop wx wy start game =
 
   if start then start_up ();
 
-  let xx = get_move () in
-  (match xx with
+  (match
+     (fun () ->
+       if Graphics.key_pressed () then Some (Graphics.read_key ())
+       else None)
+       ()
+   with
   | Some 'c' -> start_up ()
   | Some 'f' ->
       let before = get_current_hp clefairy in
       set_current_hp clefairy (before - Random.int 50);
-      update_health clefairy before ()
-  | Some 'm' ->
-      set_text_char_cap 28;
-      set_text_bg battle_bot_left battle_bot_right;
-      draw_text
-        "I can come in five minutes looking at Gardevoir  or Lopunny \
-         ee a Serperior, for  instance, I have to think I can \n\
-        \ come in five minutes looking at Gardevoir  or Lopunny ee a \
-         Serperior, for  instance, I have to think"
-        ();
-      set_text_bg battle_bot_left battle_right
+      update_health clefairy before ();
+      if get_current_hp clefairy <= 0 then begin
+        Unix.sleepf 1.0;
+        animate_faint rayquaza_sprite ()
+      end
   | Some 'n' ->
       set_text_char_cap 14;
       set_text_bg battle_bot_left battle_right;
