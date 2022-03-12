@@ -160,10 +160,8 @@ let rec wait () =
   else wait ()
 
 let clear_text () =
-  usync true ();
   draw_sprite text_bg1.contents 3 text_bg1.contents.height ();
-  draw_sprite text_bg2.contents 400 text_bg2.contents.height ();
-  usync false ()
+  draw_sprite text_bg2.contents 400 text_bg2.contents.height ()
 
 let text_char_cap = ref 28
 let set_text_char_cap cap = text_char_cap.contents <- cap
@@ -440,10 +438,7 @@ let draw_combat_commands c redraw () =
   set_font_size 50 ();
   let x, y = (475, 120) in
   usync false ();
-  if redraw then begin
-    set_synced_mode false;
-    clear_text ()
-  end;
+  if redraw then clear_text ();
   moveto x y;
   draw_string "FIGHT";
   moveto x (y - 75);
@@ -457,7 +452,7 @@ let draw_combat_commands c redraw () =
     (y - (75 * if c >= 2 then 1 else 0));
   draw_char '>';
   usync true ();
-  set_synced_mode true;
+
   set_font_size 40 ()
 
 let draw_string_colored x y dif text custom_color () =

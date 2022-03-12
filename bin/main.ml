@@ -134,10 +134,12 @@ let update_health creature before () =
 type combat_m =
   | Commands
   | Moves
+  | Battle
 
 let combat_button = ref 0
 let combat_mode = ref Commands
 
+(* let battle_sim = ref empty_battle battle_sim.contents<- wild *)
 (*****************************************************************)
 (***************     Test Demo Cmmands     *********************)
 (*****************************************************************)
@@ -215,7 +217,13 @@ let run_game game () =
               start_combat_hud ();
               combat_mode.contents <- Commands;
               clear_text ()
+            end;
+            if Input.e () then begin
+              start_combat_hud ();
+              combat_mode.contents <- Commands;
+              clear_text ()
             end
+        | Battle -> ()
       in
       action
   (*************** Menu *****************************)
@@ -266,13 +274,11 @@ let rec event_loop wx wy start game =
       draw_text "What will     Clefairy do?   " ();
       set_text_bg empty_sprite battle_right;
       set_sticky_text false
-  | Some c ->
-      Input.key_press c;
-
-      run_game game ()
+  | Some c -> Input.key_press c
   | None -> run_game game ());
 
-  Unix.sleepf 0.005;
+  run_game game ();
+  Unix.sleepf 0.0017;
   event_loop wx' wy' false game
 
 let () =

@@ -1,9 +1,7 @@
 open Creature
 
-let rand max () = Random.int max
-
 let get_crit () =
-  let x = rand 16 () in
+  let x = Util.rand 16 () in
   if x = 0 then 2. else 1.
 
 let damage_calc move attacker defender =
@@ -27,24 +25,7 @@ let damage_calc move attacker defender =
     *. get_stab_mod attacker move.etype
     *. get_type_mod move.etype defender
     *. get_crit ()
-    *. (float_of_int (rand 16 ()) +. 85.0)
+    *. (float_of_int (Util.rand 16 ()) +. 85.0)
     /. 100.0
   in
   total_damage
-
-let handle_effect id move attacker defender =
-  Random.init (rand 107374184 ());
-  match id with
-  | 0 ->
-      let damage = int_of_float (damage_calc move attacker defender) in
-      set_current_hp defender (get_current_hp defender - damage)
-  | _ -> ()
-
-let execute_move move attacker defender =
-  let rec handle_all_effects = function
-    | [] -> (attacker, defender)
-    | h :: t ->
-        handle_effect h move attacker defender;
-        handle_all_effects t
-  in
-  handle_all_effects move.effect_ids
