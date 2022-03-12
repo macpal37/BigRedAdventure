@@ -9,7 +9,7 @@ end)
 module ItemMap = Stdlib.Map.Make (struct
   type t = Item.item
 
-  let compare = compare
+  let compare e1 e2 = Item.id e1 - Item.id e2
 end)
 
 type bag = int ItemMap.t ref
