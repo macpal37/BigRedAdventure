@@ -13,7 +13,7 @@ val trainer_init : creature list -> creature list -> battle_record
 (**Initializes a battle record for a trainer encounter.*)
 
 (*val get_moves : creature -> string list (**Given a creature,
-  [get_moves] returns a string of all moves it current knows.*)*)
+  [get_moves] returns a string list of all moves it currently knows.*)*)
 
 val execute_move : bool -> string -> battle_record -> battle_record
 (**Given a creature, as well as a string containing the move ID,

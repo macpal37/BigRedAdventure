@@ -88,8 +88,16 @@ let run_away brecord =
     pspeed >= espeed || odds_escape > 255
     || Random.int 256 > odds_escape
   then { brecord with battle_status = Flee }
-  else { brecord with battle_status = Victory }
-(*{ brecord with escape_attempts = brecord.escape_attempts + 1 }*)
+  else { brecord with escape_attempts = brecord.escape_attempts + 1 }
+
+let status_multiplier stt =
+  match stt with
+  | Sleep -> 4
+  | Freeze -> 4
+  | Paralyze -> 3
+  | Poison -> 3
+  | Burn -> 3
+  | _ -> 2
 
 let capture brecord =
   let e_currHP = get_current_hp (List.nth brecord.enemy_creatures 0) in
@@ -101,7 +109,8 @@ let capture brecord =
   let ball_bonus = 1 in
   let odds_catch =
     ((3 * e_maxHP) - (2 * e_currHP * e_rate * ball_bonus))
-    / (3 * e_maxHP) * e_status
+    / (3 * e_maxHP) * e_status / 2
+    (*might adjust to do floats instead*)
   in
   if odds_catch >= 255 then { brecord with battle_status = Catch }
   else { brecord with battle_status = Loss }
