@@ -26,10 +26,13 @@ let text_bg2 =
     { pixels = []; width = 0; height = 0; palette1 = []; palette2 = [] }
 
 let is_sticky = ref false
+let erase_mode = ref false
+let synced_mode = ref true
 let blue = rgb 200 200 240
 let width = 800
 let height = 720
 let sync flag () = auto_synchronize flag
+let usync flag () = if synced_mode.contents then auto_synchronize flag
 
 let set_text_bg bg1 bg2 =
   text_bg1.contents <- bg1;
@@ -43,23 +46,26 @@ let set_font_size size () =
 
 let get_font_size = font_size.contents
 let set_sticky_text flag = is_sticky.contents <- flag
+let set_erase_mode flag = erase_mode.contents <- flag
+let set_synced_mode flag = synced_mode.contents <- flag
 
 let sync_draw draw () =
-  sync false ();
+  usync false ();
   draw ();
-  sync true ()
+  usync true ()
 
 let draw_pixel size x y () =
   fill_rect (x - (size / 2)) (y - (size / 2)) size size
 
-let draw_from_pixels sprite x y width height () =
+let draw_from_pixels sprite x y width height is_clear () =
   let rec draw_from_pixels_rec pixels x y tx ty width height =
     match pixels with
     | [] -> set_color text_color
     | h :: t ->
         if h <> 0 then begin
-          let color = List.nth sprite.palette1 (h - 1) in
-          set_color color;
+          if is_clear then set_color (point_color 0 0)
+          else set_color (List.nth sprite.palette1 (h - 1));
+
           draw_pixel dpi (x + tx) (y - ty) ()
         end;
         if ty < height then
@@ -117,18 +123,24 @@ let load_creature name () =
       |> List.map string_to_color;
   }
 
+let clear_sprite sprite x y () =
+  usync false ();
+  draw_from_pixels sprite x y sprite.width sprite.height true ();
+  usync true ()
+
 let draw_sprite_crop sprite x y width height () =
-  sync false ();
-  draw_from_pixels sprite x y width height ();
-  sync true ()
+  usync false ();
+  draw_from_pixels sprite x y width height erase_mode.contents ();
+  usync true ()
 
 let draw_sprite sprite x y () =
-  sync false ();
-  draw_from_pixels sprite x y sprite.width sprite.height ();
-  sync true ()
+  usync false ();
+  draw_from_pixels sprite x y sprite.width sprite.height
+    erase_mode.contents ();
+  usync true ()
 
 let draw_creature sprite player () =
-  if player then draw_sprite sprite 50 (sprite.height + 164) ()
+  if player then draw_sprite sprite 50 (sprite.height + 166) ()
   else draw_sprite sprite (width - sprite.width - 50) (height - 50) ()
 
 let string_to_char_list s =
@@ -147,22 +159,18 @@ let rec wait () =
   end
   else wait ()
 
-let clear_text is_synced () =
-  if is_synced then begin
-    sync true ();
-    draw_sprite text_bg1.contents 3 text_bg1.contents.height ();
-    draw_sprite text_bg2.contents 400 text_bg2.contents.height ();
-    sync false ()
-  end
-  else draw_sprite text_bg1.contents 3 text_bg1.contents.height ();
-  draw_sprite text_bg2.contents 400 text_bg2.contents.height ()
+let clear_text () =
+  usync true ();
+  draw_sprite text_bg1.contents 3 text_bg1.contents.height ();
+  draw_sprite text_bg2.contents 400 text_bg2.contents.height ();
+  usync false ()
 
 let text_char_cap = ref 28
 let set_text_char_cap cap = text_char_cap.contents <- cap
 
 let draw_text text () =
   let char_cap = text_char_cap.contents in
-  clear_text true ();
+  clear_text ();
   set_color text_color;
   let start_x = 35 in
   let start_y = 132 in
@@ -173,7 +181,7 @@ let draw_text text () =
     if start mod 2 = 0 then
       if start <> 0 && is_sticky.contents = false then begin
         wait ();
-        clear_text true ();
+        clear_text ();
         set_color text_color
       end;
     if start <> max + 1 then begin
@@ -235,12 +243,11 @@ let damage_render sprite player () =
       if c mod 2 = 0 then draw_creature creature_pixels player ()
       else begin
         set_color blue;
-        sync false ();
-        draw_pixel (sprite.width + 4)
-          (width - (sprite.width / 2) - 50)
-          (height - (sprite.height / 2) - 50)
-          ();
-        sync true ()
+        usync false ();
+        set_erase_mode true;
+        draw_creature creature_pixels player ();
+        set_erase_mode false;
+        usync true ()
       end;
       Unix.sleepf 0.20;
       damage_render_rec (c - 1) creature_pixels player ()
@@ -257,9 +264,9 @@ let rec faint base c sprite () =
          (height - (sprite.height / 2) - 50))
       ()
   else begin
-    set_color blue;
+    set_color black;
 
-    sync false ();
+    usync false ();
     draw_pixel (sprite.width + 4)
       (width - (sprite.width / 2) - 50)
       (height - (sprite.height / 2) - 50)
@@ -268,6 +275,9 @@ let rec faint base c sprite () =
       (width - 50 - sprite.width)
       (height - 50 - (sprite.height - (sprite.height / c)))
       240 (240 / c) ();
+
+    usync true ();
+
     Unix.sleepf 0.05;
     set_color blue;
 
@@ -429,8 +439,11 @@ let draw_combat_hud sprite name level player (max, before, after) () =
 let draw_combat_commands c redraw () =
   set_font_size 50 ();
   let x, y = (475, 120) in
-  sync false ();
-  if redraw then clear_text false ();
+  usync false ();
+  if redraw then begin
+    set_synced_mode false;
+    clear_text ()
+  end;
   moveto x y;
   draw_string "FIGHT";
   moveto x (y - 75);
@@ -443,7 +456,8 @@ let draw_combat_commands c redraw () =
     (x - 40 + (200 * if c = 1 || c = 3 then 1 else 0))
     (y - (75 * if c >= 2 then 1 else 0));
   draw_char '>';
-  sync true ();
+  usync true ();
+  set_synced_mode true;
   set_font_size 40 ()
 
 let draw_string_colored x y dif text custom_color () =

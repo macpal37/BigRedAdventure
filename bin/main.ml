@@ -65,7 +65,7 @@ let start_combat_hud () =
   set_text_char_cap 14;
   set_font_size 40 ();
   set_text_bg battle_bot_left battle_right;
-  clear_text true ();
+  clear_text ();
   set_text_bg battle_bot_left empty_sprite;
   set_sticky_text true;
   draw_text "What will     Clefairy do?   " ();
@@ -145,7 +145,7 @@ let start_up () =
   combat_mode.contents <- Commands;
   set_text_char_cap 28;
   set_text_bg battle_bot_left battle_bot_right;
-  clear_text true ();
+  clear_text ();
   set_current_hp clefairy (get_stats clefairy).max_hp;
   draw_combat_hud combat_hud "Rayquaza" 80 false
     ( (get_stats rayquaza).max_hp,
@@ -180,7 +180,7 @@ let run_game game () =
   | Adventure ->
       print_endline "Start of Adventure";
       set_text_bg battle_bot_left battle_right;
-      clear_text true ();
+      clear_text ();
       game.contents <- Combat
   (*****************************************************************)
   (***************        Combat       *****************************)
@@ -204,7 +204,7 @@ let run_game game () =
             if Input.e () && combat_button.contents = 0 then begin
               set_text_bg moves_window empty_sprite;
               combat_mode.contents <- Moves;
-              clear_text true ();
+              clear_text ();
               draw_moves clefairy b combat_button.contents ()
             end
         | Moves ->
@@ -214,7 +214,7 @@ let run_game game () =
             if Input.q () then begin
               start_combat_hud ();
               combat_mode.contents <- Commands;
-              clear_text true ()
+              clear_text ()
             end
       in
       action
@@ -239,6 +239,15 @@ let rec event_loop wx wy start game =
        else None)
        ()
    with
+  | Some 'g' ->
+      damage_render rayquaza_sprite false ();
+      damage_render clefairy_back true ()
+  | Some 't' ->
+      draw_creature rayquaza_sprite false ();
+      wait ();
+      animate_faint rayquaza_sprite ();
+      Unix.sleepf 1.0;
+      draw_creature rayquaza_sprite false ()
   | Some 'c' -> start_up ()
   | Some 'f' ->
       let before = get_current_hp clefairy in
@@ -251,7 +260,7 @@ let rec event_loop wx wy start game =
   | Some 'n' ->
       set_text_char_cap 14;
       set_text_bg battle_bot_left battle_right;
-      clear_text true ();
+      clear_text ();
       set_text_bg battle_bot_left empty_sprite;
       set_sticky_text true;
       draw_text "What will     Clefairy do?   " ();
