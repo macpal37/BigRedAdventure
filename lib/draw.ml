@@ -57,25 +57,25 @@ let sync_draw draw () =
 let draw_pixel size x y () =
   fill_rect (x - (size / 2)) (y - (size / 2)) size size
 
-let draw_from_pixels sprite x y width height is_clear () =
-  let rec draw_from_pixels_rec pixels x y tx ty width height =
+let draw_from_pixels sprite x y min_w min_h max_w max_h () =
+  let rec draw_from_pixels_rec pixels x y tx ty =
     match pixels with
     | [] -> set_color text_color
     | h :: t ->
-        if h <> 0 then begin
-          if is_clear then set_color (point_color 0 0)
+        if h <> 0 && tx >= min_w && ty >= min_h then begin
+          if erase_mode.contents then set_color (point_color 0 0)
           else set_color (List.nth sprite.palette1 (h - 1));
 
-          draw_pixel dpi (x + tx) (y - ty) ()
+          draw_pixel dpi (x + tx) (y + ty) ()
         end;
-        if ty < height then
-          if tx < width - dpi then
-            draw_from_pixels_rec t x y (tx + dpi) ty width height
-          else draw_from_pixels_rec t x y 0 (ty + dpi) width height
+        if ty < max_h then
+          if tx < max_w - dpi then
+            draw_from_pixels_rec t x y (tx + dpi) ty
+          else draw_from_pixels_rec t x y 0 (ty + dpi)
         else set_color text_color
   in
 
-  draw_from_pixels_rec sprite.pixels x y 0 0 width height
+  draw_from_pixels_rec sprite.pixels x y 0 0
 
 let pixels_of_json json =
   let pixels_strings = String.split_on_char ',' (json |> to_string) in
@@ -89,13 +89,11 @@ let string_to_color color_json =
     (int_of_string (List.nth rgblist 1))
     (int_of_string (List.nth rgblist 2))
 
-let load_sprite filename () =
-  let json = Yojson.Basic.from_file ("assets/" ^ filename ^ ".json") in
+let load_json json =
   {
-    (* pixels = List.fold_right (fun y x -> y @ x) (json |> member
-       "pixels" |> to_list |> List.map pixels_of_json) []; *)
     pixels =
-      json |> member "pixels" |> to_list |> List.map pixels_of_json
+      List.rev
+        (json |> member "pixels" |> to_list |> List.map pixels_of_json)
       |> List.fold_left (fun y x -> y @ x) [];
     width = (json |> member "width" |> to_int) * dpi;
     height = (json |> member "height" |> to_int) * dpi;
@@ -107,43 +105,47 @@ let load_sprite filename () =
       |> List.map string_to_color;
   }
 
+let load_sprite filename () =
+  let json = Yojson.Basic.from_file ("assets/" ^ filename ^ ".json") in
+  load_json json
+
 let load_creature name () =
   let json =
     Yojson.Basic.from_file ("assets/creature_sprites/" ^ name ^ ".json")
   in
-  {
-    pixels =
-      json |> member "pixels" |> to_list |> List.map pixels_of_json
-      |> List.fold_left (fun x y -> x @ y) [];
-    width = (json |> member "width" |> to_int) * dpi;
-    height = (json |> member "height" |> to_int) * dpi;
-    palette1 =
-      json |> member "color_palette1" |> to_list
-      |> List.map string_to_color;
-    palette2 =
-      json |> member "color_palette2" |> to_list
-      |> List.map string_to_color;
-  }
+  load_json json
 
 let clear_sprite sprite x y () =
   usync false ();
-  draw_from_pixels sprite x y sprite.width sprite.height true ();
+  set_erase_mode true;
+  draw_from_pixels sprite x y 0 0 sprite.width sprite.height ();
+  set_erase_mode false;
   usync true ()
 
-let draw_sprite_crop sprite x y width height () =
+let draw_sprite_crop
+    sprite
+    x
+    y
+    (width_min, width_max)
+    (height_min, height_max)
+    () =
   usync false ();
-  draw_from_pixels sprite x y width height erase_mode.contents ();
+  draw_from_pixels sprite x y width_min height_min width_max height_max
+    ();
   usync true ()
 
 let draw_sprite sprite x y () =
   usync false ();
-  draw_from_pixels sprite x y sprite.width sprite.height
-    erase_mode.contents ();
+  draw_from_pixels sprite x y 0 0 sprite.width sprite.height ();
   usync true ()
 
 let draw_creature sprite player () =
-  if player then draw_sprite sprite 50 (sprite.height + 166) ()
-  else draw_sprite sprite (width - sprite.width - 50) (height - 50) ()
+  if player then draw_sprite sprite 50 166 ()
+  else
+    draw_sprite sprite
+      (width - sprite.width - 50)
+      (height - 50 - sprite.height)
+      ()
 
 let string_to_char_list s =
   let rec exp i l = if i < 0 then l else exp (i - 1) (s.[i] :: l) in
@@ -162,8 +164,8 @@ let rec wait () =
   else wait ()
 
 let clear_text () =
-  draw_sprite text_bg1.contents 3 text_bg1.contents.height ();
-  draw_sprite text_bg2.contents 400 text_bg2.contents.height ()
+  draw_sprite text_bg1.contents 3 0 ();
+  draw_sprite text_bg2.contents 400 0 ()
 
 let text_char_cap = ref 28
 let set_text_char_cap cap = text_char_cap.contents <- cap
@@ -256,36 +258,46 @@ let damage_render sprite player () =
   damage_render_rec 7 sprite player ();
   set_color text_color
 
-let rec faint base c sprite () =
-  if c = base - 2 then
-    sync_draw
-      (draw_pixel (sprite.width + 4)
-         (width - (sprite.width / 2) - 50)
-         (height - (sprite.height / 2) - 50))
-      ()
+let rec faint base c sprite player () =
+  let xx, yy =
+    if player then (50, 166)
+    else (width - 50 - sprite.width, height - 50 - sprite.height)
+  in
+
+  usync false ();
+  if c = base - 2 then begin
+    set_erase_mode true;
+    draw_creature sprite player ();
+    set_erase_mode false
+  end
   else begin
-    set_color black;
-
-    usync false ();
-    draw_pixel (sprite.width + 4)
-      (width - (sprite.width / 2) - 50)
-      (height - (sprite.height / 2) - 50)
+    (* set_color blue; *)
+    draw_sprite_crop sprite xx
+      (yy - (sprite.height - (sprite.height / c)))
+      (0, sprite.width)
+      (sprite.height - (sprite.height / c), sprite.height)
       ();
-    draw_sprite_crop sprite
-      (width - 50 - sprite.width)
-      (height - 50 - (sprite.height - (sprite.height / c)))
-      240 (240 / c) ();
 
+    clear_text ();
     usync true ();
-
     Unix.sleepf 0.05;
+    usync false ();
+    set_erase_mode true;
+    draw_sprite_crop sprite xx
+      (yy - (sprite.height - (sprite.height / c)))
+      (0, sprite.width)
+      (sprite.height - (sprite.height / c), sprite.height)
+      ();
+    set_erase_mode false;
+
     set_color blue;
 
-    faint base (c + 1) sprite ()
+    faint base (c + 1) sprite player ()
   end;
-  set_color text_color
+  set_color text_color;
+  usync true ()
 
-let animate_faint creature () = faint 20 2 creature ()
+let animate_faint creature player () = faint 20 1 creature player ()
 
 let hp_to_string hp =
   if hp < 10 then "  " ^ string_of_int hp
@@ -418,7 +430,7 @@ let draw_exp_bar max before after () =
 let draw_combat_hud sprite name level player (max, before, after) () =
   if player then begin
     set_font_size 30 ();
-    draw_sprite sprite (width - 368 + 30) (456 - 100) ();
+    draw_sprite sprite (width - 368 + 30) (456 - 100 - sprite.height) ();
     moveto (width - 320) 316;
     draw_string (String.uppercase_ascii name);
     moveto (width - 100) 316;
@@ -427,7 +439,7 @@ let draw_combat_hud sprite name level player (max, before, after) () =
   end
   else begin
     set_font_size 30 ();
-    draw_sprite sprite 42 (height - 45) ();
+    draw_sprite sprite 42 (height - 45 - sprite.height) ();
     moveto 60 (height - 85);
     draw_string (String.uppercase_ascii name);
     moveto 280 (height - 85);

@@ -247,10 +247,14 @@ let rec event_loop wx wy start game =
       damage_render clefairy_back true ()
   | Some 't' ->
       draw_creature rayquaza_sprite false ();
-      wait ();
-      animate_faint rayquaza_sprite ();
-      Unix.sleepf 1.0;
-      draw_creature rayquaza_sprite false ()
+      animate_faint rayquaza_sprite false ();
+      Unix.sleepf 0.5;
+      draw_creature rayquaza_sprite false ();
+
+      draw_creature clefairy_back true ();
+      animate_faint clefairy_back true ();
+      Unix.sleepf 0.5;
+      draw_creature clefairy_back true ()
   | Some 'c' -> start_up ()
   | Some 'f' ->
       let before = get_current_hp clefairy in
@@ -258,7 +262,7 @@ let rec event_loop wx wy start game =
       update_health clefairy before ();
       if get_current_hp clefairy <= 0 then begin
         Unix.sleepf 1.0;
-        animate_faint rayquaza_sprite ()
+        animate_faint rayquaza_sprite false ()
       end
   | Some 'n' ->
       set_text_char_cap 14;

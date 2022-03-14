@@ -62,10 +62,11 @@ val draw_creature : sprite -> bool -> unit -> unit
     draws the [sprite] on the upper right corner of the screen.*)
 
 val draw_sprite_crop :
-  sprite -> int -> int -> int -> int -> unit -> unit
-(** [draw_sprite sprite x y width height (_)] draws an image from the
-    given [sprite] representation at [x] and [y] with the given [width]
-    and [height]*)
+  sprite -> int -> int -> int * int -> int * int -> unit -> unit
+(** [draw_sprite sprite x y (width_min, width_max)
+    (height_min, height_max) (_)]
+    draws an image from the given [sprite] representation at [x] and [y]
+    with cropped based on the bounds defined*)
 
 val draw_text : string -> unit -> unit
 (** [draw_text text (_)] draws the given text on the bottom of the
@@ -73,7 +74,7 @@ val draw_text : string -> unit -> unit
 
 val draw_gradient : int -> int -> unit
 
-val animate_faint : sprite -> unit -> unit
+val animate_faint : sprite -> bool -> unit -> unit
 (** [animate_faint sprite (_)] performs the fainting animation of the
     creature [sprite] *)
 
