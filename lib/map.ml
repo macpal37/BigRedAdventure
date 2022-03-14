@@ -1,3 +1,7 @@
+exception Out_of_Bounds
+
+type coord = int * int
+
 type encounter = {
   name : string;
   rate : int;
@@ -17,22 +21,24 @@ type tile = {
 }
 
 type t = tile array array
-type coord = int * int
 
 let init_map j = raise (Failure "Unimplemented")
 let get_dim map = (Array.length map, Array.get map 0 |> Array.length)
 
-(** [get_tile t (x, y)] is the tile at the coordinate (x, y) in map [t] *)
+(** [get_tile t (x, y)] is the tile at the coordinate (x, y) in map [t].
+    Raises [Out_of_Bounds] if [c] is not a coordinate in [t] *)
 let get_tile (t : t) ((x, y) : coord) =
-  let x_arr = Array.get t x in
-  Array.get x_arr y
+  try
+    let x_arr = Array.get t x in
+    Array.get x_arr y
+  with Invalid_argument x -> raise Out_of_Bounds
 
 let get_type t c =
   match get_tile t c with
-  | { ttype } -> ttype
+  | { ttype; _ } -> ttype
 
 let get_graphic_id t c =
   match get_tile t c with
-  | { graphic } -> graphic
+  | { graphic; _ } -> graphic
 
 let encounter_creature encounter = raise (Failure "Unimplemented")
