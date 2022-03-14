@@ -1,4 +1,10 @@
-type encounters = Unimplemented
+type encounter = {
+  name : string;
+  rate : int;
+  levels : int list;
+}
+
+type encounters = encounter list
 
 type tile_type =
   | Path
@@ -13,7 +19,7 @@ type tile = {
 type t = tile array array
 type coord = int * int
 
-let init_map j = raise (Failure "Unimplemented: State.current_room_id")
+let init_map j = raise (Failure "Unimplemented")
 let get_dim map = (Array.length map, Array.get map 0 |> Array.length)
 
 (** [get_tile t (x, y)] is the tile at the coordinate (x, y) in map [t] *)
@@ -27,7 +33,6 @@ let get_type t c =
 
 let get_graphic_id t c =
   match get_tile t c with
-  | { ttype } -> ttype
+  | { graphic } -> graphic
 
-let encounter_creature encounter =
-  raise (Failure "Unimplemented: State.current_room_id")
+let encounter_creature encounter = raise (Failure "Unimplemented")
