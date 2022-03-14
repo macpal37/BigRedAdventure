@@ -87,6 +87,7 @@ let rec event_loop wx wy start game =
   event_loop wx' wy' false game
 
 let () =
+  Controller.main ();
   open_window;
   moveto 100 200;
   Input.keymap_init [ 'q'; 'e'; 'w'; 'a'; 's'; 'd' ];
