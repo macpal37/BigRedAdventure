@@ -9,7 +9,7 @@ end)
 module ItemMap = Stdlib.Map.Make (struct
   type t = Item.item
 
-  let compare = compare
+  let compare e1 e2 = Item.id e1 - Item.id e2
 end)
 
 type bag = int ItemMap.t ref
@@ -43,7 +43,8 @@ let consume b ?(count = 1) i =
         match k with
         | Some v ->
             let new_count = v - count in
-            if new_count >= 0 then Some new_count
+            if new_count > 0 then Some new_count
+            else if new_count = 0 then None
             else raise (Insufficient v)
         | None -> raise (Insufficient 0))
       !b
