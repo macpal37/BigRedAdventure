@@ -16,9 +16,7 @@
     "category": "Status",
     "type": "Normal",
     "description": "Growls cutely to reduce the foe's Attack.",
-    "effect_ids": [
-      1
-    ]
+    "effect_ids": 1
   },
   "Disarming Voice": {
     "power": 50,
@@ -27,9 +25,7 @@
     "category": "Special",
     "type": "Fairy",
     "description": "Letting out a charming cry, the user does emotional damage to opposing Pokémon. This attack never misses.",
-    "effect_ids": [
-      0
-    ]
+    "effect_ids": 0
   },
   "Flamethrower": {
     "power": 90,
@@ -48,8 +44,6 @@
     "category": "Special",
     "type": "Air",
     "description": "The user attacks with a blade of air that slices even the sky. It may also make the target flinch.",
-    "effect_ids": [
-      0
-    ]
+    "effect_ids": 0
   }
 }

@@ -68,7 +68,7 @@ type move = {
   etype : etype;
   category : move_catgeory;
   description : string;
-  effect_ids : int list;
+  effect_id : int;
 }
 
 type creature = {
@@ -202,8 +202,7 @@ let parse_move name json =
     category =
       category_of_string (json |> member "category" |> to_string);
     description = json |> member "description" |> to_string;
-    effect_ids =
-      json |> member "effect_ids" |> to_list |> List.map to_int;
+    effect_id = json |> member "effect_ids" |> to_int;
   }
 
 (**=============== Moves ============**)

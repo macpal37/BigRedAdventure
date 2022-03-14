@@ -92,9 +92,11 @@ let string_to_color color_json =
 let load_sprite filename () =
   let json = Yojson.Basic.from_file ("assets/" ^ filename ^ ".json") in
   {
+    (* pixels = List.fold_right (fun y x -> y @ x) (json |> member
+       "pixels" |> to_list |> List.map pixels_of_json) []; *)
     pixels =
       json |> member "pixels" |> to_list |> List.map pixels_of_json
-      |> List.fold_left (fun x y -> x @ y) [];
+      |> List.fold_left (fun y x -> y @ x) [];
     width = (json |> member "width" |> to_int) * dpi;
     height = (json |> member "height" |> to_int) * dpi;
     palette1 =

@@ -68,7 +68,7 @@ type move = {
   etype : etype;
   category : move_catgeory;
   description : string;
-  effect_ids : int list;
+  effect_id : int;
 }
 (** Loads and handles all the moves performed during combat*)
 

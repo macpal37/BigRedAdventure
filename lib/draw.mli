@@ -46,7 +46,10 @@ val load_creature : string -> unit -> sprite
     in conjuction with draw_sprite*)
 
 val load_sprite : string -> unit -> sprite
+
 val clear_sprite : sprite -> int -> int -> unit -> unit
+(** [draw_creature_pos sprite x y (_)] draws the [sprite] at the given
+    position [x] [y] *)
 
 val draw_sprite : sprite -> int -> int -> unit -> unit
 (** [draw_creature_pos sprite x y (_)] draws the [sprite] at the given

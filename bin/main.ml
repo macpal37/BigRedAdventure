@@ -217,11 +217,6 @@ let run_game game () =
               start_combat_hud ();
               combat_mode.contents <- Commands;
               clear_text ()
-            end;
-            if Input.e () then begin
-              start_combat_hud ();
-              combat_mode.contents <- Commands;
-              clear_text ()
             end
         | Battle -> ()
       in
@@ -274,10 +269,11 @@ let rec event_loop wx wy start game =
       draw_text "What will     Clefairy do?   " ();
       set_text_bg empty_sprite battle_right;
       set_sticky_text false
-  | Some c -> Input.key_press c
+  | Some c ->
+      Input.key_press c;
+      run_game game ()
   | None -> run_game game ());
 
-  run_game game ();
   Unix.sleepf 0.0017;
   event_loop wx' wy' false game
 
