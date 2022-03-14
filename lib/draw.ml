@@ -1,6 +1,5 @@
 open Yojson.Basic.Util
 open Graphics
-open Util
 
 type sprite = {
   pixels : int list;
@@ -28,7 +27,8 @@ let text_bg2 =
 let is_sticky = ref false
 let erase_mode = ref false
 let synced_mode = ref true
-let blue = rgb 200 200 240
+
+(* let blue = rgb 200 200 240 *)
 let width = 800
 let height = 720
 let sync flag () = auto_synchronize flag
@@ -44,6 +44,7 @@ let set_font_size size () =
     ("-*-fixed-bold-r-semicondensed--" ^ string_of_int size
    ^ "-*-*-*-*-*-iso8859-1")
 
+let get_dimension sprite = (sprite.width, sprite.height)
 let get_font_size = font_size.contents
 let set_sticky_text flag = is_sticky.contents <- flag
 let set_erase_mode flag = erase_mode.contents <- flag
@@ -170,7 +171,8 @@ let clear_text () =
 let text_char_cap = ref 28
 let set_text_char_cap cap = text_char_cap.contents <- cap
 
-let draw_text text () =
+let draw_text text font_size () =
+  set_font_size font_size ();
   let char_cap = text_char_cap.contents in
   clear_text ();
   set_color text_color;
@@ -237,66 +239,6 @@ let draw_gradient w h =
   let arr = Array.make_matrix h w white in
   gradient arr w h;
   draw_image (make_image arr) 0 0
-
-let damage_render sprite player () =
-  let rec damage_render_rec c creature_pixels player () =
-    if c = 0 then draw_creature creature_pixels player ()
-    else begin
-      if c mod 2 = 0 then draw_creature creature_pixels player ()
-      else begin
-        set_color blue;
-        usync false ();
-        set_erase_mode true;
-        draw_creature creature_pixels player ();
-        set_erase_mode false;
-        usync true ()
-      end;
-      Unix.sleepf 0.20;
-      damage_render_rec (c - 1) creature_pixels player ()
-    end
-  in
-  damage_render_rec 7 sprite player ();
-  set_color text_color
-
-let rec faint base c sprite player () =
-  let xx, yy =
-    if player then (50, 166)
-    else (width - 50 - sprite.width, height - 50 - sprite.height)
-  in
-
-  usync false ();
-  if c = base - 2 then begin
-    set_erase_mode true;
-    draw_creature sprite player ();
-    set_erase_mode false
-  end
-  else begin
-    draw_sprite_crop sprite xx
-      (yy - (sprite.height - (sprite.height / c)))
-      (0, sprite.width)
-      (sprite.height - (sprite.height / c), sprite.height)
-      ();
-
-    clear_text ();
-    usync true ();
-    Unix.sleepf 0.05;
-    usync false ();
-    set_erase_mode true;
-    draw_sprite_crop sprite xx
-      (yy - (sprite.height - (sprite.height / c)))
-      (0, sprite.width)
-      (sprite.height - (sprite.height / c), sprite.height)
-      ();
-    set_erase_mode false;
-
-    set_color blue;
-
-    faint base (c + 1) sprite player ()
-  end;
-  set_color text_color;
-  usync true ()
-
-let animate_faint creature player () = faint 20 1 creature player ()
 
 let draw_string_colored x y dif text custom_color () =
   moveto x y;

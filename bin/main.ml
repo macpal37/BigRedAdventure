@@ -82,6 +82,7 @@ let rec event_loop wx wy start game =
       run_game game ()
   | None -> run_game game ());
 
+  Ui.update_all ();
   Unix.sleepf 0.0017;
   event_loop wx' wy' false game
 
