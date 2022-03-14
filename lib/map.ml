@@ -1,18 +1,33 @@
-type t = Unimplemented
-type coord = int * int
-
 type encounters = Unimplemented
 
-type tile_type = 
-| Path
-| Grass of encounters
-| Obstacle
+type tile_type =
+  | Path
+  | Grass of encounters
+  | Obstacle
+
+type tile = {
+  graphic : string;
+  ttype : tile_type;
+}
+
+type t = tile array array
+type coord = int * int
+
 let init_map j = raise (Failure "Unimplemented: State.current_room_id")
+let get_dim map = (Array.length map, Array.get map 0 |> Array.length)
 
-let get_dim map = raise (Failure "Unimplemented: State.current_room_id")
+(** [get_tile t (x, y)] is the tile at the coordinate (x, y) in map [t] *)
+let get_tile (t : t) ((x, y) : coord) =
+  let x_arr = Array.get t x in
+  Array.get x_arr y
 
-let get_type tile = raise (Failure "Unimplemented: State.current_room_id")
+let get_type t c =
+  match get_tile t c with
+  | { ttype } -> ttype
 
-let get_graphic_id tile = raise (Failure "Unimplemented: State.current_room_id")
+let get_graphic_id t c =
+  match get_tile t c with
+  | { ttype } -> ttype
 
-let encounter_creature encounter = raise (Failure "Unimplemented: State.current_room_id")
+let encounter_creature encounter =
+  raise (Failure "Unimplemented: State.current_room_id")
