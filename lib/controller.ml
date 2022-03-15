@@ -30,7 +30,7 @@ let rec event_loop mode =
   let key_mapping =
     match key_input with
     | Some c -> Input.key_press c
-    | None -> ()
+    | None -> Input.key_press '#'
   in
   key_mapping;
   (match mode with
@@ -43,7 +43,7 @@ let rec event_loop mode =
   event_loop new_mode
 
 let main _ =
-  Input.keymap_init [ 'q'; 'e'; 'w'; 'a'; 's'; 'd' ];
+  Input.keymap_init [ 'q'; 'e'; 'w'; 'a'; 's'; 'd'; '#' ];
   open_window;
   Battle.init ();
   moveto 100 200;

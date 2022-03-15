@@ -9,29 +9,27 @@ let combat_button = ref 0
 type combat_m =
   | Commands
   | Moves
+  | Attack
 
 let combat_mode = ref Commands
+let battle_sim = ref Combat.empty_battle
 
 (*****************************************************************)
 (***************     Loading Some Assets     *********************)
 (*****************************************************************)
-let rayquaza_sprite = load_creature "rayquaza_front" ()
-let clefairy_back = load_creature "clefairy_back" ()
-
-(* let battle_bot_right = load_sprite "other_sprites/battle_bot_right"
-   () *)
-let battle_bot_left = load_sprite "other_sprites/battle_bot_left" ()
-let battle_right = load_sprite "other_sprites/battle_top" ()
-let moves_window = load_sprite "other_sprites/moves_window" ()
+let battle_bot_right = load_sprite "other_sprites/battle_bot_right" 3 ()
+let battle_bot_left = load_sprite "other_sprites/battle_bot_left" 3 ()
+let battle_right = load_sprite "other_sprites/battle_top" 3 ()
+let moves_window = load_sprite "other_sprites/moves_window" 3 ()
 
 (* let move_info1 = load_sprite "other_sprites/move_info1" () *)
-let combat_hud = load_sprite "other_sprites/opponent_hud" ()
-let player_hud = load_sprite "other_sprites/player_hud" ()
+let combat_hud = load_sprite "other_sprites/opponent_hud" 3 ()
+let player_hud = load_sprite "other_sprites/player_hud" 3 ()
 
 (** Test creatures Sprites **)
-let clefairy = create_creature "clefairy" 100
+let player_creature = create_creature "clefairy" 50
 
-let rayquaza = create_creature "rayquaza" 80
+let enemy_creature = create_creature "clefairy" 50
 
 (*****************************************************************)
 (***************     Combat Drawing Commands     *********************)
@@ -119,6 +117,7 @@ let draw_health_bar max before after player () =
   let max, before, after =
     (bound max 0 max, bound before 0 max, bound after 0 max)
   in
+
   let blank = rgb 84 97 89 in
   let bar_yellow = rgb 221 193 64 in
   let bar_red = rgb 246 85 55 in
@@ -147,49 +146,52 @@ let draw_health_bar max before after player () =
   fill_rect xh yh (d before_bar hwidth 100) hheight;
 
   let after_bar = d after 100 max in
-  let rec render_health start target =
-    if start = target || start <= 0 then ()
-    else if start > target then begin
-      (*=====LOSING HEALTH=====*)
-      if start == 1 then set_color blank
-      else if start <= 20 then set_color bar_red
-      else if start <= 50 then set_color bar_yellow
-      else set_color bar_green;
-      fill_rect xh yh (d start hwidth 100) hheight;
-      set_color blank;
-      fill_rect (xh + d start hwidth 100 - 4) yh 4 hheight;
-      (* HP NUMBER *)
-      draw_hp_val
-        (xh + (hwidth / 2))
-        (yh - hheight - 5 - 22)
-        (d max start 100) max player ();
+  if before <> after then begin
+    let rec render_health start target =
+      if start = target || start <= 0 then ()
+      else if start > target then begin
+        (*=====LOSING HEALTH=====*)
+        if start == 1 then set_color blank
+        else if start <= 20 then set_color bar_red
+        else if start <= 50 then set_color bar_yellow
+        else set_color bar_green;
+        fill_rect xh yh (d start hwidth 100) hheight;
+        set_color blank;
+        fill_rect (xh + d start hwidth 100 - 4) yh 4 hheight;
+        (* HP NUMBER *)
+        draw_hp_val
+          (xh + (hwidth / 2))
+          (yh - hheight - 5 - 22)
+          (d max start 100) max player ();
 
-      Unix.sleepf 0.05;
-      render_health (start - 1) target
-    end
-    else begin
-      (*=====Gaining HEALTH=====*)
-      if start == 1 then set_color blank
-      else if start <= 20 then set_color bar_red
-      else if start <= 50 then set_color bar_yellow
-      else set_color bar_green;
-      (* HP NUMBER *)
-      draw_hp_val
-        (xh + (hwidth / 2))
-        (yh - hheight - 5 - 22)
-        (d max start 100) max player ();
+        Unix.sleepf 0.05;
+        render_health (start - 1) target
+      end
+      else begin
+        (*=====Gaining HEALTH=====*)
+        if start == 1 then set_color blank
+        else if start <= 20 then set_color bar_red
+        else if start <= 50 then set_color bar_yellow
+        else set_color bar_green;
+        (* HP NUMBER *)
+        draw_hp_val
+          (xh + (hwidth / 2))
+          (yh - hheight - 5 - 22)
+          (d max start 100) max player ();
 
-      fill_rect xh yh (d hwidth start 100) hheight;
-      Unix.sleepf 0.05;
-      render_health (start + 1) target
-    end
-  in
-  render_health before_bar after_bar;
-  draw_hp_val
-    (xh + (hwidth / 2))
-    (yh - hheight - 5 - 22)
-    (if after >= 0 then after else 0)
-    max player ()
+        fill_rect xh yh (d hwidth start 100) hheight;
+        Unix.sleepf 0.05;
+        render_health (start + 1) target
+      end
+    in
+    render_health before_bar after_bar;
+
+    draw_hp_val
+      (xh + (hwidth / 2))
+      (yh - hheight - 5 - 22)
+      (if after >= 0 then after else 0)
+      max player ()
+  end
 
 let draw_exp_bar max before after () =
   let max, before, after =
@@ -213,18 +215,19 @@ let draw_exp_bar max before after () =
   fill_rect xh yh (d before_bar hwidth 100) hheight;
 
   let after_bar = d after 100 max in
-  let rec render_bar_progress start target =
-    if start = target || start <= 0 then ()
-    else if start <= target then begin
-      set_color bar_color;
-      fill_rect xh yh (d start hwidth 100 + 4) hheight;
-      (* set_color blank; fill_rect (xh + d start hwidth 100) yh 2
-         hheight; *)
-      Unix.sleepf 0.05;
-      render_bar_progress (start + 1) target
-    end
-  in
-  render_bar_progress before_bar after_bar;
+  (if before <> after then
+   let rec render_bar_progress start target =
+     if start = target || start <= 0 then ()
+     else if start <= target then begin
+       set_color bar_color;
+       fill_rect xh yh (d start hwidth 100 + 4) hheight;
+       (* set_color blank; fill_rect (xh + d start hwidth 100) yh 2
+          hheight; *)
+       Unix.sleepf 0.05;
+       render_bar_progress (start + 1) target
+     end
+   in
+   render_bar_progress before_bar after_bar);
   set_color text_color
 
 let draw_combat_hud sprite name level player (max, before, after) () =
@@ -327,34 +330,40 @@ let animate_faint creature player () = faint 20 1 creature player ()
 (***************     Test Demo Cmmands     *********************)
 (*****************************************************************)
 let start_up () =
-  Ui.add_first_gameplay
-    (draw_combat_hud combat_hud "Rayquaza" 80 false
-       ( (get_stats rayquaza).max_hp,
-         get_current_hp rayquaza,
-         get_current_hp rayquaza ));
+  let player, opponent =
+    ( List.nth battle_sim.contents.player_creatures 0,
+      List.nth battle_sim.contents.enemy_creatures 0 )
+  in
 
   Ui.add_first_gameplay
-    (draw_combat_hud player_hud (get_nickname clefairy)
-       (get_level clefairy) true
-       ( (get_stats clefairy).max_hp,
-         get_current_hp clefairy,
-         get_current_hp clefairy ))
+    (draw_combat_hud combat_hud (get_nickname opponent)
+       (get_level opponent) false
+       ( (get_stats opponent).max_hp,
+         get_current_hp opponent,
+         get_current_hp opponent ));
+
+  Ui.add_first_gameplay
+    (draw_combat_hud player_hud (get_nickname player) (get_level player)
+       true
+       ( (get_stats player).max_hp,
+         get_current_hp player,
+         get_current_hp player ))
 
 (* combat_mode.contents <- Commands; set_text_char_cap 28; set_text_bg
    battle_bot_left battle_bot_right; clear_text (); set_current_hp
-   clefairy (get_stats clefairy).max_hp; draw_combat_hud combat_hud
-   "Rayquaza" 80 false ( (get_stats rayquaza).max_hp, get_current_hp
-   rayquaza, get_current_hp rayquaza ) ();
+   player_creature (get_stats clefairy).max_hp; draw_combat_hud
+   combat_hud "Rayquaza" 80 false ( (get_stats enemy_creature ).max_hp,
+   get_current_hp enemy_creature , get_current_hp enemy_creature ) ();
 
    draw_combat_hud player_hud (get_nickname clefairy) (get_level
    clefairy) true ( (get_stats clefairy).max_hp, get_current_hp
-   clefairy, get_current_hp clefairy ) (); draw_exp_bar 100 10 10 ();
-   draw_creature rayquaza_sprite false (); draw_creature clefairy_back
-   true ();
+   clefairy, get_current_hp player_creature ) (); draw_exp_bar 100 10 10
+   (); draw_creature enemy_creature _sprite false (); draw_creature
+   clefairy_back true ();
 
-   draw_health_bar (get_stats rayquaza).max_hp (get_stats
-   rayquaza).max_hp 0 false (); Unix.sleepf 1.5; animate_faint
-   rayquaza_sprite false (); draw_exp_bar 100 10 100 ();
+   draw_health_bar (get_stats enemy_creature ).max_hp (get_stats
+   enemy_creature ).max_hp 0 false (); Unix.sleepf 1.5; animate_faint
+   enemy_creature _sprite false (); draw_exp_bar 100 10 100 ();
    start_combat_hud () *)
 
 let update_health creature before () =
@@ -373,18 +382,84 @@ let adhoc_test1 () =
   set_text_bg empty_sprite battle_right;
   set_sticky_text false
 
-(* let run_combat () = *)
+let handle_combat move =
+  battle_sim.contents <- Combat.turn_builder battle_sim.contents move;
+  let player, enemy =
+    ( List.nth battle_sim.contents.player_creatures 0,
+      List.nth battle_sim.contents.enemy_creatures 0 )
+  in
+  let pmove =
+    match battle_sim.contents.player_move with
+    | Move m -> m
+    | None _ -> empty_move
+  in
+  let emove =
+    match battle_sim.contents.enemy_move with
+    | Move m -> m
+    | None _ -> empty_move
+  in
+  let p_maxhp, e_maxhp =
+    ((get_stats player).max_hp, (get_stats enemy).max_hp)
+  in
+
+  let player_b, enemy_b =
+    (get_current_hp player, get_current_hp enemy)
+  in
+  (***=============First Half =============***)
+  battle_sim.contents <- Combat.battle_sim_fh battle_sim.contents;
+  let player_a1, enemy_a1 =
+    (get_current_hp player, get_current_hp enemy)
+  in
+  if Combat.is_player_first then begin
+    set_text_char_cap 28;
+    draw_text (get_nickname player ^ " used " ^ pmove.move_name) 40 ()
+  end
+  else begin
+    set_text_char_cap 28;
+    draw_text (get_nickname enemy ^ " used " ^ emove.move_name) 40 ()
+  end;
+  draw_health_bar p_maxhp player_b player_a1 true ();
+  draw_health_bar e_maxhp enemy_b enemy_a1 false ();
+  (***=============Second Half =============***)
+  battle_sim.contents <- Combat.battle_sim_sh battle_sim.contents;
+  let player_a2, enemy_a2 =
+    (get_current_hp player, get_current_hp enemy)
+  in
+  if Combat.is_player_first = false then begin
+    set_text_char_cap 28;
+    draw_text (get_nickname player ^ " used " ^ pmove.move_name) 40 ()
+  end
+  else begin
+    set_text_char_cap 28;
+    draw_text (get_nickname enemy ^ " used " ^ emove.move_name) 40 ()
+  end;
+  if player_a1 <> player_a2 then
+    draw_health_bar p_maxhp player_a1 player_a2 true ();
+  if enemy_a1 <> enemy_a2 then
+    draw_health_bar e_maxhp enemy_a1 enemy_a2 false ()
+
+let draw_creature_exp creature added_exp =
+  add_exp creature added_exp;
+  let curr_exp, min_exp, max_exp = get_exp creature in
+  Ui.add_first_foreground
+    (draw_exp_bar (max_exp - min_exp) (curr_exp - min_exp)
+       (curr_exp - min_exp))
 
 let init () =
+  set_nickname player_creature "BestMon";
   set_text_bg battle_bot_left battle_right;
-
-  Ui.add_first_gameplay (draw_creature rayquaza_sprite false);
-  Ui.add_first_gameplay (draw_creature clefairy_back true);
+  battle_sim.contents <-
+    Combat.wild_init [ player_creature ] [ enemy_creature ];
+  Ui.add_first_gameplay
+    (draw_creature (get_front_sprite player_creature) false);
+  Ui.add_first_gameplay
+    (draw_creature (get_back_sprite player_creature) true);
   start_up ();
-  Ui.add_first_foreground start_combat_hud
+  Ui.add_first_foreground start_combat_hud;
+  draw_creature_exp player_creature 0
 
 let run_tick c =
-  Ui.update_all ();
+  let player = List.nth battle_sim.contents.player_creatures 0 in
   let b = !combat_button in
   if Input.d () && (b = 0 || b = 2) then combat_button.contents <- b + 1;
   if Input.a () && (b = 1 || b = 3) then combat_button.contents <- b - 1;
@@ -401,25 +476,40 @@ let run_tick c =
           combat_mode.contents <- Moves;
           clear_text ();
           Ui.add_first_foreground
-            (draw_moves clefairy b combat_button.contents)
+            (draw_moves player b combat_button.contents)
         end
     | Moves ->
         if b != combat_button.contents then
           print_endline (string_of_int b);
         Ui.add_first_foreground
-          (draw_moves clefairy b combat_button.contents);
+          (draw_moves player b combat_button.contents);
 
+        if Input.e () then begin
+          Ui.clear_ui Ui.Foreground;
+          set_text_bg battle_bot_left battle_bot_right;
+          clear_text ();
+          let move =
+            List.nth (get_moves player) combat_button.contents
+          in
+          handle_combat move;
+          combat_mode.contents <- Attack
+        end;
         if Input.q () then begin
+          Ui.clear_ui Ui.Foreground;
           Ui.add_first_foreground start_combat_hud;
           combat_mode.contents <- Commands;
           clear_text ()
         end
-    (* | Attack -> () *)
+    | Attack ->
+        set_text_bg battle_bot_left battle_right;
+        clear_text ();
+        combat_mode.contents <- Commands;
+        combat_button.contents <- 0
   in
+
   action;
+  Ui.update_all ();
+
   match c with
   | Some c -> print_char c
   | None -> ()
-;;
-
-print_endline "LOL"

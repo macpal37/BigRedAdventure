@@ -1,10 +1,14 @@
 type render_view
-(* type draw_mode = | Background | Gameplay | Foreground *)
+
+type layer =
+  | Background
+  | Gameplay
+  | Foreground
 
 val add_first_foreground : (unit -> unit) -> unit
 val add_first_gameplay : (unit -> unit) -> unit
 val add_first_background : (unit -> unit) -> unit
-
+val clear_ui : layer -> unit
 (* val last_first_foreground : (unit -> unit) -> unit val
    last_first_gameplay : (unit -> unit) -> unit val
    last_first_background : (unit -> unit) -> unit *)

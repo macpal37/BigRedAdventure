@@ -31,7 +31,7 @@ val load_creature : string -> unit -> sprite
     sprites and generates a lsit that represents the sprites. To be sed
     in conjuction with draw_sprite*)
 
-val load_sprite : string -> unit -> sprite
+val load_sprite : string -> int -> unit -> sprite
 
 (*** =================DRAW Functions =================**)
 
