@@ -25,11 +25,13 @@ type learnset_moves = {
 
 type status =
   | Healthy
-  | Sleep
-  | Freeze
-  | Paralyze
-  | Poison
-  | Burn
+  | Sleep of int
+  | Freeze of int
+  | Poison of int
+  | Confusion of int
+  | Paralyze of int
+  | Burn of int
+  | Fainted
 
 type etype =
   | Normal
@@ -94,14 +96,18 @@ type creature = {
   mutable moves : move list;
 }
 
+let set_status crtr stat = crtr.current_status <- stat
+
 let string_of_status stat_var =
   match stat_var with
-  | Sleep -> "Sleep"
-  | Poison -> "Posion"
-  | Burn -> "Burn"
-  | Freeze -> "Freeze"
-  | Paralyze -> "Paralyze"
-  | Healthy -> "Healhthy"
+  | Sleep _ -> "Sleep"
+  | Poison _ -> "Posion"
+  | Burn _ -> "Burn"
+  | Freeze _ -> "Freeze"
+  | Paralyze _ -> "Paralyze"
+  | Healthy -> "Healthy"
+  | Confusion _ -> "Confusion"
+  | Fainted -> "Fainted"
 
 let get_moves creature = creature.moves
 
