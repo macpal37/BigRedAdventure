@@ -4,8 +4,8 @@ type coord = int * int
 
 type encounter = {
   name : string;
-  rate : int;
-  levels : int list;
+  rate : float;
+  levels : int * int;
 }
 
 type encounters = encounter list
@@ -41,4 +41,18 @@ let get_graphic_id t c =
   match get_tile t c with
   | { graphic; _ } -> graphic
 
-let encounter_creature encounter = raise (Failure "Unimplemented")
+
+let creature_level (min, max) =
+  min + Random.int (max - min + 1)
+
+type random_pokemon = {name:string; level:int}
+
+let rec creature_type (e:encounters) (v:float) = 
+  match e with
+  | [] -> None
+  | h::t -> if (h.rate >= v) then Some {name = h.name; level = creature_level h.levels} else creature_type t v
+
+let encounter_creature e = 
+  match creature_type e (Random.float 1.0) with
+  | None -> None
+  | Some {name; level} -> Creature.create_creature name level
