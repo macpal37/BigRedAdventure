@@ -27,7 +27,12 @@ let rec event_loop mode =
       else None)
       ()
   in
-
+  let key_mapping =
+    match key_input with
+    | Some c -> Input.key_press c
+    | None -> ()
+  in
+  key_mapping;
   (match mode with
   | ModeOverworld -> Overworld.run_tick key_input
   | ModeBattle -> Battle.run_tick key_input
@@ -38,7 +43,9 @@ let rec event_loop mode =
   event_loop new_mode
 
 let main _ =
+  Input.keymap_init [ 'q'; 'e'; 'w'; 'a'; 's'; 'd' ];
   open_window;
+  Battle.init ();
   moveto 100 200;
   set_font "-*-fixed-bold-r-semicondensed--40-*-*-*-*-*-iso8859-1";
   try event_loop ModeBattle
