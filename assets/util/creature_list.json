@@ -26,17 +26,20 @@
       {
         "move": "Pound",
         "move_id": 1,
-        "level": 1
+        "level": 1,
+        "max_pp": 20
       },
       {
         "move": "Growl",
         "move_id": 2,
-        "level": 3
+        "level": 3,
+        "max_pp": 20
       },
       {
         "move": "Disarming Voice",
         "move_id": 3,
-        "level": 6
+        "level": 6,
+        "max_pp": 20
       }
     ]
   },
@@ -78,6 +81,11 @@
         "move": "Disarming Voice",
         "move_id": 3,
         "level": 6
+      },
+      {
+        "move": "Flamethrower",
+        "move_id": 5,
+        "level": 35
       }
     ]
   },
@@ -108,22 +116,57 @@
       {
         "move": "Pound",
         "move_id": 1,
-        "level": 1
+        "level": 1,
+        "max_pp": 20
       },
       {
         "move": "Growl",
         "move_id": 2,
-        "level": 3
+        "level": 3,
+        "max_pp": 20
       },
       {
         "move": "Disarming Voice",
         "move_id": 3,
-        "level": 6
+        "level": 6,
+        "max_pp": 20
       },
       {
         "move": "Meteor Mash",
         "move_id": 4,
-        "level": 20
+        "level": 20,
+        "max_pp": 20
+      }
+    ]
+  },
+  "rayquaza": {
+    "name": "Rayquaza",
+    "poke_id": 151,
+    "catch_rate": 45,
+    "base_exp": 206,
+    "level_rate": "Slow",
+    "type1": "Cosmic",
+    "type2": "Air",
+    "base_stats": {
+      "hp": 105,
+      "attack": 150,
+      "defense": 90,
+      "sp_attack": 150,
+      "sp_defense": 90,
+      "speed": 95
+    },
+    "ev_stat": "sp_attack",
+    "ev_amount": 1,
+    "evolution": {
+      "name": "None",
+      "poke_id": -1,
+      "level_up": -1
+    },
+    "learnset": [
+      {
+        "move": "Air Slash",
+        "move_id": 4,
+        "level": 1
       }
     ]
   }

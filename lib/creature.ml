@@ -1,4 +1,5 @@
 open Yojson.Basic.Util
+open Util
 
 type stats = {
   mutable max_hp : int;
@@ -24,11 +25,13 @@ type learnset_moves = {
 
 type status =
   | Healthy
-  | Sleep
-  | Freeze
-  | Paralyze
-  | Poison
-  | Burn
+  | Sleep of int
+  | Freeze of int
+  | Poison of int
+  | Confusion of int
+  | Paralyze of int
+  | Burn of int
+  | Fainted
 
 type etype =
   | Normal
@@ -51,8 +54,28 @@ type nature = {
   id : int;
 }
 
+(**=========== Moves===========**)
+
+type move_catgeory =
+  | Physical
+  | Special
+  | Status
+
+type move = {
+  move_name : string;
+  power : int;
+  accuracy : float;
+  mutable curr_pp : int;
+  mutable max_pp : int;
+  etype : etype;
+  category : move_catgeory;
+  description : string;
+  effect_ids : int list;
+}
+
 type creature = {
-  name : string;
+  mutable nickname : string;
+  species : string;
   mutable level : int;
   mutable current_hp : int;
   mutable exp : int;
@@ -64,39 +87,86 @@ type creature = {
   etypes : etype * etype;
   nature : nature;
   leveling_rate : leveling_rate;
-  ev_gain : string * int;
+  ev_gain : stat * int;
   poke_id : int;
   catch_rate : int;
   base_exp : int;
   mutable friendship : int;
   learnset : learnset_moves list;
-  mutable moves : string list;
+  mutable moves : move list;
 }
 
-let status_to_string stat_var =
+let set_status crtr stat = crtr.current_status <- stat
+
+let string_of_status stat_var =
   match stat_var with
-  | Sleep -> "Sleep"
-  | Poison -> "Posion"
-  | Burn -> "Burn"
-  | Freeze -> "Freeze"
-  | Paralyze -> "Paralyze"
-  | Healthy -> "Healhthy"
+  | Sleep _ -> "Sleep"
+  | Poison _ -> "Posion"
+  | Burn _ -> "Burn"
+  | Freeze _ -> "Freeze"
+  | Paralyze _ -> "Paralyze"
+  | Healthy -> "Healthy"
+  | Confusion _ -> "Confusion"
+  | Fainted -> "Fainted"
 
 let get_moves creature = creature.moves
+
+let add_pp creature move_name amount =
+  let move =
+    List.nth
+      (List.filter (fun x -> x.move_name = move_name) creature.moves)
+      0
+  in
+  let total_pp = bound (move.curr_pp + amount) 0 move.max_pp in
+  move.curr_pp <- total_pp
+
 let get_status creature = creature.current_status
 
-let generate_moves learnset level =
-  let possible_moves =
-    List.rev (List.filter (fun a -> a.level_learned <= level) learnset)
-  in
-  let rec get_four_moves moves count =
-    match moves with
-    | [] -> []
-    | h :: t ->
-        if count < 4 then h.move :: get_four_moves t (count + 1) else []
-  in
-  get_four_moves possible_moves 0
+let string_of_stat stat_var =
+  match stat_var with
+  | HP -> "HP"
+  | Attack -> "Attack"
+  | Defense -> "Defense"
+  | Sp_Attack -> "Sp_Attack"
+  | Sp_Defense -> "Sp_Defense"
+  | Speed -> "Speed"
 
+let stat_of_string stat_var =
+  match stat_var with
+  | "HP" -> HP
+  | "Attack" -> Attack
+  | "Defense" -> Defense
+  | "Sp_Attack" -> Sp_Attack
+  | "Sp_Defense" -> Sp_Defense
+  | "Speed" -> Speed
+  | _ -> HP
+
+let string_of_etype etype_var =
+  match etype_var with
+  | Normal -> "Normal"
+  | Fire -> "Fire"
+  | Water -> "Water"
+  | Grass -> "Grass"
+  | Fairy -> "Fairy"
+  | _ -> "None"
+
+let etype_of_string etype_string =
+  match etype_string with
+  | "Normal" -> Normal
+  | "Fire" -> Fire
+  | "Water" -> Water
+  | "Grass" -> Grass
+  | "Fairy" -> Fairy
+  | _ -> None
+
+let category_of_string cat_string =
+  match cat_string with
+  | "Physical" -> Physical
+  | "Special" -> Special
+  | "Status" -> Status
+  | _ -> Status
+
+(**=============== JSON Parsing ============**)
 let parse_learn_set json =
   {
     move = json |> member "move" |> to_string;
@@ -113,42 +183,10 @@ let stats_of_json json =
     speed = json |> member "speed" |> to_int;
   }
 
-let stat_to_string stat_var =
-  match stat_var with
-  | HP -> "HP"
-  | Attack -> "Attack"
-  | Defense -> "Defense"
-  | Sp_Attack -> "Sp_Attack"
-  | Sp_Defense -> "Sp_Defense"
-  | Speed -> "Speed"
-
-(* let string_to_stat stat_string = match stat_string with | "HP" -> HP
-   | "Attack" -> Attack | "Defense" -> Defense | "Sp_Attack" ->
-   Sp_Attack | "Sp_Defense" -> Sp_Defense | "Speed" -> Speed | _ ->
-   HP *)
-
-let etype_to_string etype_var =
-  match etype_var with
-  | Normal -> "Normal"
-  | Fire -> "Fire"
-  | Water -> "Water"
-  | Grass -> "Grass"
-  | Fairy -> "Fairy"
-  | _ -> "None"
-
-let string_to_etype etype_string =
-  match etype_string with
-  | "Normal" -> Normal
-  | "Fire" -> Fire
-  | "Water" -> Water
-  | "Grass" -> Grass
-  | "Fairy" -> Fairy
-  | _ -> None
-
 let etype_from_json json num =
   json
   |> member ("type" ^ string_of_int num)
-  |> to_string |> string_to_etype
+  |> to_string |> etype_of_string
 
 let level_rate_from_json json =
   let rate_strint = json |> member "level_rate" |> to_string in
@@ -159,7 +197,38 @@ let level_rate_from_json json =
   | "Slow" -> Slow
   | _ -> Fast
 
-let rand max () = Random.int max
+let parse_move name json =
+  {
+    move_name = name;
+    power = json |> member "power" |> to_int;
+    accuracy = float_of_int (json |> member "accuracy" |> to_int);
+    curr_pp = json |> member "pp" |> to_int;
+    max_pp = json |> member "pp" |> to_int;
+    etype = etype_of_string (json |> member "type" |> to_string);
+    category =
+      category_of_string (json |> member "category" |> to_string);
+    description = json |> member "description" |> to_string;
+    effect_ids =
+      json |> member "effect_ids" |> to_list |> List.map to_int;
+  }
+
+(**=============== Moves ============**)
+let get_move name =
+  let move_json = Yojson.Basic.from_file "assets/util/move_list.json" in
+  parse_move name (move_json |> member name)
+
+let generate_moves learnset level =
+  let possible_moves =
+    List.rev (List.filter (fun a -> a.level_learned <= level) learnset)
+  in
+  let rec get_four_moves moves count =
+    match moves with
+    | [] -> []
+    | h :: t ->
+        if count < 4 then get_move h.move :: get_four_moves t (count + 1)
+        else []
+  in
+  List.rev (get_four_moves possible_moves 0)
 
 let mod_stat stats stat_name pow =
   let d a b c =
@@ -294,6 +363,7 @@ let exp_calc level rate =
   | Slow -> 5 * level * level * level / 4
 
 let creature_from_json json level =
+  Random.self_init ();
   let bstats = stats_of_json (json |> member "base_stats") in
   let ivs = generate_ivs rand in
   let random_nature = generate_nature (rand 25 ()) in
@@ -305,7 +375,8 @@ let creature_from_json json level =
     json |> member "learnset" |> to_list |> List.map parse_learn_set
   in
   {
-    name = json |> member "name" |> to_string;
+    nickname = json |> member "name" |> to_string;
+    species = json |> member "name" |> to_string;
     level;
     current_hp = curr_stats.max_hp;
     exp = exp_calc level lev_rate;
@@ -318,7 +389,7 @@ let creature_from_json json level =
     leveling_rate = lev_rate;
     nature = random_nature;
     ev_gain =
-      ( json |> member "ev_stat" |> to_string,
+      ( stat_of_string (json |> member "ev_stat" |> to_string),
         json |> member "ev_amount" |> to_int );
     poke_id = json |> member "poke_id" |> to_int;
     catch_rate = json |> member "catch_rate" |> to_int;
@@ -337,12 +408,15 @@ let get_nature creature =
 
 let get_types creature = creature.etypes
 let get_stats creature = creature.current_stats
+let get_ivs creature = creature.iv_stats
+let get_evs creature = creature.ev_stats
+let get_ev_gain creature = creature.ev_gain
 let get_current_hp creature = creature.current_hp
 let set_current_hp creature amount = creature.current_hp <- amount
-let get_catch_rate creature = creature.catch_rate
+let get_catch_rate creature = float_of_int creature.catch_rate
 
 let get_type_mod etype_var defender =
-  let etype = etype_to_string etype_var in
+  let etype = string_of_etype etype_var in
   let json = Yojson.Basic.from_file "assets/util/type_chart.json" in
   let effective =
     json |> member etype |> member "Supereffective" |> to_list
@@ -364,8 +438,100 @@ let get_type_mod etype_var defender =
   in
   match defender.etypes with
   | t1, t2 ->
-      type_mod (etype_to_string t1) *. type_mod (etype_to_string t2)
+      type_mod (string_of_etype t1) *. type_mod (string_of_etype t2)
 
 let get_stab_mod creature etype =
   let e1, e2 = creature.etypes in
   if e1 = etype then 1.5 else if e2 = etype then 1.5 else 1.0
+
+(** [get_level creature] returns a [creature]'s current level*)
+let get_level creature = creature.level
+
+(** [get_exp creature] returns a [creature]'s current exp*)
+let get_exp creature = creature.exp
+
+let print_level_up creature () =
+  let old_stats = creature.current_stats in
+  let new_stats =
+    calculate_stats (creature.level + 1) creature.base_stats
+      creature.iv_stats creature.ev_stats creature.nature
+  in
+  print_endline
+    "=======================================================";
+  print_endline
+    ("LEVELUP: Lvl: " ^ string_of_int (get_level creature + 1));
+  print_endline
+    ("HP:\t"
+    ^ string_of_int old_stats.max_hp
+    ^ "\t--> "
+    ^ string_of_int new_stats.max_hp
+    ^ "\t+"
+    ^ string_of_int (new_stats.max_hp - old_stats.max_hp));
+  print_endline
+    ("ATK:\t"
+    ^ string_of_int old_stats.attack
+    ^ "\t--> "
+    ^ string_of_int new_stats.attack
+    ^ "\t+"
+    ^ string_of_int (new_stats.attack - old_stats.attack));
+  print_endline
+    ("DEF:\t"
+    ^ string_of_int old_stats.defense
+    ^ "\t--> "
+    ^ string_of_int new_stats.defense
+    ^ "\t+"
+    ^ string_of_int (new_stats.defense - old_stats.defense));
+  print_endline
+    ("SPATK:\t"
+    ^ string_of_int old_stats.sp_attack
+    ^ "\t--> "
+    ^ string_of_int new_stats.sp_attack
+    ^ "\t+"
+    ^ string_of_int (new_stats.sp_attack - old_stats.sp_attack));
+  print_endline
+    ("SPDEF:\t"
+    ^ string_of_int old_stats.sp_defense
+    ^ "\t--> "
+    ^ string_of_int new_stats.sp_defense
+    ^ "\t+"
+    ^ string_of_int (new_stats.sp_defense - old_stats.sp_defense));
+  print_endline
+    ("SPD:\t"
+    ^ string_of_int old_stats.speed
+    ^ "\t--> "
+    ^ string_of_int new_stats.speed
+    ^ "\t+"
+    ^ string_of_int (new_stats.speed - old_stats.speed));
+  print_endline
+    "======================================================="
+
+(** [add_exp creature amount] add [amount] to the current exp of
+    [creature]*)
+let add_exp creature amount =
+  let cap_exp = exp_calc (creature.level + 1) creature.leveling_rate in
+  let exp_dif = cap_exp - creature.exp in
+
+  let rec levelup_check amount dif =
+    if amount > dif then begin
+      print_level_up creature ();
+      creature.level <- creature.level + 1;
+      creature.exp <- creature.exp + dif;
+      creature.current_stats <-
+        calculate_stats creature.level creature.base_stats
+          creature.iv_stats creature.ev_stats creature.nature;
+      let new_dif =
+        exp_calc (creature.level + 1) creature.leveling_rate
+        - creature.exp
+      in
+      levelup_check (amount - dif) new_dif
+    end
+    else creature.exp <- creature.exp + amount
+  in
+  levelup_check amount exp_dif
+
+(** [get_nickname creature] returns a [creature]'s nickname*)
+let get_nickname creature = creature.nickname
+(** [get_nickname creature] returns a [creature]'s nickname*)
+
+(** [get_nickname creature] returns a [creature]'s nickname*)
+let set_nickname creature nickname = creature.nickname <- nickname
