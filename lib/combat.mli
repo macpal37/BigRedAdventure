@@ -36,6 +36,9 @@ type battle_record = {
     battle at a given turn. This type will store the pokemon engaged in
     battle, as well as their evolving victory status.*)
 
+val empty_battle : battle_record
+val is_player_first : bool
+
 val wild_init : creature list -> creature list -> battle_record
 (**Initializes a battle record for a wild creature encounter.*)
 

@@ -73,6 +73,19 @@ type move = {
   effect_id : int;
 }
 
+let empty_move =
+  {
+    move_name = " ";
+    power = 0;
+    accuracy = 0.0;
+    curr_pp = 0;
+    max_pp = 0;
+    etype = None;
+    category = Status;
+    description = "";
+    effect_id = 0;
+  }
+
 type creature = {
   mutable nickname : string;
   species : string;
@@ -94,8 +107,14 @@ type creature = {
   mutable friendship : int;
   learnset : learnset_moves list;
   mutable moves : move list;
+  mutable front_sprite : Draw.sprite;
+  mutable back_sprite : Draw.sprite;
 }
 
+let get_front_sprite creature = creature.front_sprite
+let set_front_sprite creature sprite = creature.front_sprite <- sprite
+let get_back_sprite creature = creature.back_sprite
+let set_back_sprite creature sprite = creature.back_sprite <- sprite
 let set_status crtr stat = crtr.current_status <- stat
 
 let string_of_status stat_var =
@@ -363,6 +382,7 @@ let exp_calc level rate =
 
 let creature_from_json json level =
   Random.self_init ();
+  let name = json |> member "name" |> to_string in
   let bstats = stats_of_json (json |> member "base_stats") in
   let ivs = generate_ivs rand in
   let random_nature = generate_nature (rand 25 ()) in
@@ -374,8 +394,8 @@ let creature_from_json json level =
     json |> member "learnset" |> to_list |> List.map parse_learn_set
   in
   {
-    nickname = json |> member "name" |> to_string;
-    species = json |> member "name" |> to_string;
+    nickname = name;
+    species = name;
     level;
     current_hp = curr_stats.max_hp;
     exp = exp_calc level lev_rate;
@@ -396,6 +416,10 @@ let creature_from_json json level =
     friendship = 70;
     learnset;
     moves = generate_moves learnset level;
+    front_sprite =
+      Draw.load_creature (String.lowercase_ascii name ^ "_front") ();
+    back_sprite =
+      Draw.load_creature (String.lowercase_ascii name ^ "_back") ();
   }
 
 let create_creature name level =
@@ -447,7 +471,10 @@ let get_stab_mod creature etype =
 let get_level creature = creature.level
 
 (** [get_exp creature] returns a [creature]'s current exp*)
-let get_exp creature = creature.exp
+let get_exp creature =
+  ( creature.exp,
+    exp_calc creature.level creature.leveling_rate,
+    exp_calc (creature.level + 1) creature.leveling_rate )
 
 let print_level_up creature () =
   let old_stats = creature.current_stats in
