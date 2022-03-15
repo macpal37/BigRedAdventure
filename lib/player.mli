@@ -6,6 +6,13 @@
 type player
 (** The abstract type that represents a player*)
 
+type orientations =
+  | N
+  | E
+  | S
+  | W  (** Type representing the four orientations*)
+(* likely to be moved to diffent module in future*)
+
 val new_player : string -> player
 (** [new_player s] is a player with name [s], no money, no time played,
     no badges, an empty party, no creatures, an empty inventory*)
@@ -56,3 +63,22 @@ val add_time_played : int -> player -> unit
 
 val add_badge : string -> player -> unit
 (** [add_badge i p] adds badge [b] to player [p]. This call mutates [p]*)
+
+val x : player -> int
+(** [x p] is the x position of [p]*)
+
+val y : player -> int
+(** [y p] is the y position of [p]*)
+
+val orie : player -> orientations
+(** [orie p] is the orientation of [p]*)
+
+val set_x : int -> player -> unit
+(** [set_x x p] sets the x position of [p] to [x]. This call mutates [p]*)
+
+val set_y : int -> player -> unit
+(** [set_y y p] sets the y position of [p] to [y]. This call mutates [p]*)
+
+val set_orie : orientations -> player -> unit
+(** [set_orie o p] sets the orientation of [p] to [o]. This call mutates
+    [p]*)

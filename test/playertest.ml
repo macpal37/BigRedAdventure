@@ -62,6 +62,24 @@ let player_remove_creature_failure_test
   name >:: fun _ ->
   assert_raises ex (fun () -> Player.remove_creature c p)
 
+let player_x_test
+    (name : string)
+    (p : Player.player)
+    (expected_output : int) : test =
+  name >:: fun _ -> assert_equal expected_output (Player.x p)
+
+let player_y_test
+    (name : string)
+    (p : Player.player)
+    (expected_output : int) : test =
+  name >:: fun _ -> assert_equal expected_output (Player.y p)
+
+let player_orie_test
+    (name : string)
+    (p : Player.player)
+    (expected_output : Player.orientations) : test =
+  name >:: fun _ -> assert_equal expected_output (Player.orie p)
+
 let creature_clefairy = Creature.create_creature "clefairy" 60
 let creature_clefa = Creature.create_creature "clefa" 50
 let badge_boulder = "Boulder"
@@ -168,4 +186,24 @@ let tests =
        Player.remove_creature creature_clefairy p;
        p)
       [ creature_clefa ];
+    player_x_test "New player x pos 0" (Player.new_player "Red") 0;
+    player_y_test "New player y pos 0" (Player.new_player "Red") 0;
+    player_orie_test "New player orie N"
+      (Player.new_player "Red")
+      Player.N;
+    player_x_test "New player set x pos 100"
+      (let p = Player.new_player "Red" in
+       Player.set_x 100 p;
+       p)
+      100;
+    player_y_test "New player set y pos 100"
+      (let p = Player.new_player "Red" in
+       Player.set_y 100 p;
+       p)
+      100;
+    player_orie_test "New player set orie E"
+      (let p = Player.new_player "Red" in
+       Player.set_orie Player.E p;
+       p)
+      Player.E;
   ]
