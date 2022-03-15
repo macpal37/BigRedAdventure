@@ -1,7 +1,7 @@
 {
   "name": "Test",
   "map": [
-    "0,0,0,0,0,0,0,0",
+    "11,0,0,0,0,0,0,0",
     "0,0,0,0,0,0,0,0",
     "0,0,0,0,0,0,0,0",
     "0,0,0,0,0,0,0,0",
@@ -11,8 +11,29 @@
     "0,0,0,0,0,0,0,0"
   ],
   "tile_sprites": [
-    "A",
+    "Grass1",
     "B",
     "C"
+  ],
+  "encounters": [
+    [
+      {
+        "creatures": "Pikachu",
+        "level_range": "12-20",
+        "encounter_rate": 0.50
+      },
+      {
+        "creatures": "Vaporean",
+        "level_range": "12-20",
+        "encounter_rate": 0.50
+      }
+    ],
+    [
+      {
+        "creatures": "Magikarp",
+        "level_range": "20-25",
+        "encounter_rate": 0.50
+      }
+    ]
   ]
 }

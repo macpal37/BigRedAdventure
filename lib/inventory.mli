@@ -35,4 +35,4 @@ val add : bag -> ?count:int -> item -> unit
 val consume : bag -> ?count:int -> item -> unit
 (** [consume b ~count:c i] removes [c] copies of item [t] from bag [b].
     [c] is 1 by default. This call mutates [b]. Raises [Insufficient r]
-    if [r] the number of copies of item [t] is less than [c]*)
+    if the number of copies [r] of item [t] is less than [c]*)

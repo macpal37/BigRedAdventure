@@ -6,7 +6,12 @@
     "category": "Physical",
     "type": "Normal",
     "description": "Charges the target with a full-body tackle.",
+<<<<<<< HEAD
     "effect_ids": -1
+=======
+    "effect_ids": -1,
+    "effect_chance": -1
+>>>>>>> 0a0aa9ff46e889992ff330d3e466853c62bf6e7e
   },
   "Growl": {
     "power": 0,
@@ -15,9 +20,7 @@
     "category": "Status",
     "type": "Normal",
     "description": "Growls cutely to reduce the foe's Attack.",
-    "effect_ids": [
-      1
-    ]
+    "effect_ids": 1
   },
   "Disarming Voice": {
     "power": 50,
@@ -26,9 +29,7 @@
     "category": "Special",
     "type": "Fairy",
     "description": "Letting out a charming cry, the user does emotional damage to opposing Pokémon. This attack never misses.",
-    "effect_ids": [
-      0
-    ]
+    "effect_ids": 0
   },
   "Flamethrower": {
     "power": 90,
@@ -37,9 +38,8 @@
     "category": "Special",
     "type": "Fire",
     "description": "The foe is scorched with an intense blast of fire. The target may also be left with a burn.",
-    "effect_ids": [
-      0
-    ]
+    "effect_ids": 1,
+    "effect_chance": 10
   },
   "Air Slash": {
     "power": 75,
@@ -48,8 +48,6 @@
     "category": "Special",
     "type": "Air",
     "description": "The user attacks with a blade of air that slices even the sky. It may also make the target flinch.",
-    "effect_ids": [
-      0
-    ]
+    "effect_ids": 0
   }
 }
