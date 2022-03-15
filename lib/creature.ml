@@ -25,11 +25,13 @@ type learnset_moves = {
 
 type status =
   | Healthy
-  | Sleep
-  | Freeze
-  | Paralyze
-  | Poison
-  | Burn
+  | Sleep of int
+  | Freeze of int
+  | Poison of int
+  | Confusion of int
+  | Paralyze of int
+  | Burn of int
+  | Fainted
 
 type etype =
   | Normal
@@ -68,7 +70,7 @@ type move = {
   etype : etype;
   category : move_catgeory;
   description : string;
-  effect_ids : int list;
+  effect_id : int;
 }
 
 type creature = {
@@ -94,14 +96,18 @@ type creature = {
   mutable moves : move list;
 }
 
+let set_status crtr stat = crtr.current_status <- stat
+
 let string_of_status stat_var =
   match stat_var with
-  | Sleep -> "Sleep"
-  | Poison -> "Posion"
-  | Burn -> "Burn"
-  | Freeze -> "Freeze"
-  | Paralyze -> "Paralyze"
-  | Healthy -> "Healhthy"
+  | Sleep _ -> "Sleep"
+  | Poison _ -> "Posion"
+  | Burn _ -> "Burn"
+  | Freeze _ -> "Freeze"
+  | Paralyze _ -> "Paralyze"
+  | Healthy -> "Healthy"
+  | Confusion _ -> "Confusion"
+  | Fainted -> "Fainted"
 
 let get_moves creature = creature.moves
 
@@ -202,8 +208,7 @@ let parse_move name json =
     category =
       category_of_string (json |> member "category" |> to_string);
     description = json |> member "description" |> to_string;
-    effect_ids =
-      json |> member "effect_ids" |> to_list |> List.map to_int;
+    effect_id = json |> member "effect_ids" |> to_int;
   }
 
 (**=============== Moves ============**)

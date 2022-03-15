@@ -1,6 +1,5 @@
 open Yojson.Basic.Util
 open Graphics
-open Util
 
 type sprite = {
   pixels : int list;
@@ -28,7 +27,8 @@ let text_bg2 =
 let is_sticky = ref false
 let erase_mode = ref false
 let synced_mode = ref true
-let blue = rgb 200 200 240
+
+(* let blue = rgb 200 200 240 *)
 let width = 800
 let height = 720
 let sync flag () = auto_synchronize flag
@@ -44,6 +44,7 @@ let set_font_size size () =
     ("-*-fixed-bold-r-semicondensed--" ^ string_of_int size
    ^ "-*-*-*-*-*-iso8859-1")
 
+let get_dimension sprite = (sprite.width, sprite.height)
 let get_font_size = font_size.contents
 let set_sticky_text flag = is_sticky.contents <- flag
 let set_erase_mode flag = erase_mode.contents <- flag
@@ -57,25 +58,25 @@ let sync_draw draw () =
 let draw_pixel size x y () =
   fill_rect (x - (size / 2)) (y - (size / 2)) size size
 
-let draw_from_pixels sprite x y width height is_clear () =
-  let rec draw_from_pixels_rec pixels x y tx ty width height =
+let draw_from_pixels sprite x y min_w min_h max_w max_h () =
+  let rec draw_from_pixels_rec pixels x y tx ty =
     match pixels with
     | [] -> set_color text_color
     | h :: t ->
-        if h <> 0 then begin
-          if is_clear then set_color (point_color 0 0)
+        if h <> 0 && tx >= min_w && ty >= min_h then begin
+          if erase_mode.contents then set_color (point_color 0 0)
           else set_color (List.nth sprite.palette1 (h - 1));
 
-          draw_pixel dpi (x + tx) (y - ty) ()
+          draw_pixel dpi (x + tx) (y + ty) ()
         end;
-        if ty < height then
-          if tx < width - dpi then
-            draw_from_pixels_rec t x y (tx + dpi) ty width height
-          else draw_from_pixels_rec t x y 0 (ty + dpi) width height
+        if ty < max_h then
+          if tx < max_w - dpi then
+            draw_from_pixels_rec t x y (tx + dpi) ty
+          else draw_from_pixels_rec t x y 0 (ty + dpi)
         else set_color text_color
   in
 
-  draw_from_pixels_rec sprite.pixels x y 0 0 width height
+  draw_from_pixels_rec sprite.pixels x y 0 0
 
 let pixels_of_json json =
   let pixels_strings = String.split_on_char ',' (json |> to_string) in
@@ -89,12 +90,12 @@ let string_to_color color_json =
     (int_of_string (List.nth rgblist 1))
     (int_of_string (List.nth rgblist 2))
 
-let load_sprite filename () =
-  let json = Yojson.Basic.from_file ("assets/" ^ filename ^ ".json") in
+let load_json json =
   {
     pixels =
-      json |> member "pixels" |> to_list |> List.map pixels_of_json
-      |> List.fold_left (fun x y -> x @ y) [];
+      List.rev
+        (json |> member "pixels" |> to_list |> List.map pixels_of_json)
+      |> List.fold_left (fun y x -> y @ x) [];
     width = (json |> member "width" |> to_int) * dpi;
     height = (json |> member "height" |> to_int) * dpi;
     palette1 =
@@ -104,44 +105,48 @@ let load_sprite filename () =
       json |> member "color_palette2" |> to_list
       |> List.map string_to_color;
   }
+
+let load_sprite filename () =
+  let json = Yojson.Basic.from_file ("assets/" ^ filename ^ ".json") in
+  load_json json
 
 let load_creature name () =
   let json =
     Yojson.Basic.from_file ("assets/creature_sprites/" ^ name ^ ".json")
   in
-  {
-    pixels =
-      json |> member "pixels" |> to_list |> List.map pixels_of_json
-      |> List.fold_left (fun x y -> x @ y) [];
-    width = (json |> member "width" |> to_int) * dpi;
-    height = (json |> member "height" |> to_int) * dpi;
-    palette1 =
-      json |> member "color_palette1" |> to_list
-      |> List.map string_to_color;
-    palette2 =
-      json |> member "color_palette2" |> to_list
-      |> List.map string_to_color;
-  }
+  load_json json
 
 let clear_sprite sprite x y () =
   usync false ();
-  draw_from_pixels sprite x y sprite.width sprite.height true ();
+  set_erase_mode true;
+  draw_from_pixels sprite x y 0 0 sprite.width sprite.height ();
+  set_erase_mode false;
   usync true ()
 
-let draw_sprite_crop sprite x y width height () =
+let draw_sprite_crop
+    sprite
+    x
+    y
+    (width_min, width_max)
+    (height_min, height_max)
+    () =
   usync false ();
-  draw_from_pixels sprite x y width height erase_mode.contents ();
+  draw_from_pixels sprite x y width_min height_min width_max height_max
+    ();
   usync true ()
 
 let draw_sprite sprite x y () =
   usync false ();
-  draw_from_pixels sprite x y sprite.width sprite.height
-    erase_mode.contents ();
+  draw_from_pixels sprite x y 0 0 sprite.width sprite.height ();
   usync true ()
 
 let draw_creature sprite player () =
-  if player then draw_sprite sprite 50 (sprite.height + 166) ()
-  else draw_sprite sprite (width - sprite.width - 50) (height - 50) ()
+  if player then draw_sprite sprite 50 166 ()
+  else
+    draw_sprite sprite
+      (width - sprite.width - 50)
+      (height - 50 - sprite.height)
+      ()
 
 let string_to_char_list s =
   let rec exp i l = if i < 0 then l else exp (i - 1) (s.[i] :: l) in
@@ -160,15 +165,14 @@ let rec wait () =
   else wait ()
 
 let clear_text () =
-  usync true ();
-  draw_sprite text_bg1.contents 3 text_bg1.contents.height ();
-  draw_sprite text_bg2.contents 400 text_bg2.contents.height ();
-  usync false ()
+  draw_sprite text_bg1.contents 3 0 ();
+  draw_sprite text_bg2.contents 400 0 ()
 
 let text_char_cap = ref 28
 let set_text_char_cap cap = text_char_cap.contents <- cap
 
-let draw_text text () =
+let draw_text text font_size () =
+  set_font_size font_size ();
   let char_cap = text_char_cap.contents in
   clear_text ();
   set_color text_color;
@@ -235,230 +239,6 @@ let draw_gradient w h =
   let arr = Array.make_matrix h w white in
   gradient arr w h;
   draw_image (make_image arr) 0 0
-
-let damage_render sprite player () =
-  let rec damage_render_rec c creature_pixels player () =
-    if c = 0 then draw_creature creature_pixels player ()
-    else begin
-      if c mod 2 = 0 then draw_creature creature_pixels player ()
-      else begin
-        set_color blue;
-        usync false ();
-        set_erase_mode true;
-        draw_creature creature_pixels player ();
-        set_erase_mode false;
-        usync true ()
-      end;
-      Unix.sleepf 0.20;
-      damage_render_rec (c - 1) creature_pixels player ()
-    end
-  in
-  damage_render_rec 7 sprite player ();
-  set_color text_color
-
-let rec faint base c sprite () =
-  if c = base - 2 then
-    sync_draw
-      (draw_pixel (sprite.width + 4)
-         (width - (sprite.width / 2) - 50)
-         (height - (sprite.height / 2) - 50))
-      ()
-  else begin
-    set_color black;
-
-    usync false ();
-    draw_pixel (sprite.width + 4)
-      (width - (sprite.width / 2) - 50)
-      (height - (sprite.height / 2) - 50)
-      ();
-    draw_sprite_crop sprite
-      (width - 50 - sprite.width)
-      (height - 50 - (sprite.height - (sprite.height / c)))
-      240 (240 / c) ();
-
-    usync true ();
-
-    Unix.sleepf 0.05;
-    set_color blue;
-
-    faint base (c + 1) sprite ()
-  end;
-  set_color text_color
-
-let animate_faint creature () = faint 20 2 creature ()
-
-let hp_to_string hp =
-  if hp < 10 then "  " ^ string_of_int hp
-  else if hp < 100 then " " ^ string_of_int hp
-  else string_of_int hp
-
-let draw_hp_val x y curr max player () =
-  if player = false then ()
-  else
-    let combat_bg = rgb 248 248 216 in
-    set_font_size 30 ();
-    moveto x y;
-    set_color combat_bg;
-    fill_rect (current_x () - 2) (current_y () + 4) 100 24;
-    set_color text_color;
-    draw_string (hp_to_string curr ^ "/" ^ hp_to_string max)
-
-let draw_health_bar max before after player () =
-  let max, before, after =
-    (bound max 0 max, bound before 0 max, bound after 0 max)
-  in
-  let blank = rgb 84 97 89 in
-  let bar_yellow = rgb 221 193 64 in
-  let bar_red = rgb 246 85 55 in
-  let bar_green = rgb 103 221 144 in
-  let d a b c =
-    let x = a * b in
-    x / c
-  in
-  let hwidth = 210 in
-  let hheight = 6 in
-  let xh, yh =
-    if player then (width - hwidth - 31 - 10, 296) else (130, 615)
-  in
-  set_color text_color;
-  set_line_width 8;
-  draw_rect xh yh hwidth hheight;
-  if player then
-    draw_hp_val
-      (xh + (hwidth / 2))
-      (yh - hheight - 5 - 22)
-      before max player ();
-  set_color blank;
-  fill_rect xh yh hwidth hheight;
-  set_color bar_green;
-  let before_bar = d before 100 max in
-  fill_rect xh yh (d before_bar hwidth 100) hheight;
-
-  let after_bar = d after 100 max in
-  let rec render_health start target =
-    if start = target || start <= 0 then ()
-    else if start > target then begin
-      (*=====LOSING HEALTH=====*)
-      if start == 1 then set_color blank
-      else if start <= 20 then set_color bar_red
-      else if start <= 50 then set_color bar_yellow
-      else set_color bar_green;
-      fill_rect xh yh (d start hwidth 100) hheight;
-      set_color blank;
-      fill_rect (xh + d start hwidth 100 - 4) yh 4 hheight;
-      (* HP NUMBER *)
-      draw_hp_val
-        (xh + (hwidth / 2))
-        (yh - hheight - 5 - 22)
-        (d max start 100) max player ();
-
-      Unix.sleepf 0.05;
-      render_health (start - 1) target
-    end
-    else begin
-      (*=====Gaining HEALTH=====*)
-      if start == 1 then set_color blank
-      else if start <= 20 then set_color bar_red
-      else if start <= 50 then set_color bar_yellow
-      else set_color bar_green;
-      (* HP NUMBER *)
-      draw_hp_val
-        (xh + (hwidth / 2))
-        (yh - hheight - 5 - 22)
-        (d max start 100) max player ();
-
-      fill_rect xh yh (d hwidth start 100) hheight;
-      Unix.sleepf 0.05;
-      render_health (start + 1) target
-    end
-  in
-  render_health before_bar after_bar;
-  draw_hp_val
-    (xh + (hwidth / 2))
-    (yh - hheight - 5 - 22)
-    (if after >= 0 then after else 0)
-    max player ()
-
-let draw_exp_bar max before after () =
-  let max, before, after =
-    (bound max 0 max, bound before 0 after, bound after 0 max)
-  in
-  let blank = rgb 209 199 156 in
-  let bar_color = rgb 77 195 232 in
-  let d a b c =
-    let x = a * b in
-    x / c
-  in
-  let hwidth = 250 in
-  let hheight = 6 in
-  let xh, yh = (width - hwidth - 30, 240) in
-  set_color text_color;
-  (* set_line_width 8; draw_rect xh yh hwidth hheight; *)
-  set_color blank;
-  fill_rect xh yh hwidth hheight;
-  set_color bar_color;
-  let before_bar = d before 100 max in
-  fill_rect xh yh (d before_bar hwidth 100) hheight;
-
-  let after_bar = d after 100 max in
-  let rec render_bar_progress start target =
-    if start = target || start <= 0 then ()
-    else if start <= target then begin
-      set_color bar_color;
-      fill_rect xh yh (d start hwidth 100 + 4) hheight;
-      (* set_color blank; fill_rect (xh + d start hwidth 100) yh 2
-         hheight; *)
-      Unix.sleepf 0.05;
-      render_bar_progress (start + 1) target
-    end
-  in
-  render_bar_progress before_bar after_bar;
-  set_color text_color
-
-let draw_combat_hud sprite name level player (max, before, after) () =
-  if player then begin
-    set_font_size 30 ();
-    draw_sprite sprite (width - 368 + 30) (456 - 100) ();
-    moveto (width - 320) 316;
-    draw_string (String.uppercase_ascii name);
-    moveto (width - 100) 316;
-    draw_string ("Lv" ^ string_of_int level);
-    draw_health_bar max before after player ()
-  end
-  else begin
-    set_font_size 30 ();
-    draw_sprite sprite 42 (height - 45) ();
-    moveto 60 (height - 85);
-    draw_string (String.uppercase_ascii name);
-    moveto 280 (height - 85);
-    draw_string ("Lv" ^ string_of_int level);
-    draw_health_bar max before after player ()
-  end;
-  set_font_size 40 ()
-
-let draw_combat_commands c redraw () =
-  set_font_size 50 ();
-  let x, y = (475, 120) in
-  usync false ();
-  if redraw then begin
-    set_synced_mode false;
-    clear_text ()
-  end;
-  moveto x y;
-  draw_string "FIGHT";
-  moveto x (y - 75);
-  draw_string "PARTY";
-  moveto (x + 200) y;
-  draw_string "BAG";
-  moveto (x + 200) (y - 75);
-  draw_string "RUN";
-  moveto
-    (x - 40 + (200 * if c = 1 || c = 3 then 1 else 0))
-    (y - (75 * if c >= 2 then 1 else 0));
-  draw_char '>';
-  usync true ();
-  set_synced_mode true;
-  set_font_size 40 ()
 
 let draw_string_colored x y dif text custom_color () =
   moveto x y;

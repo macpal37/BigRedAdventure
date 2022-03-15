@@ -22,6 +22,7 @@ let reset_keys () =
 
 let key_press c =
   reset_keys ();
+
   key_map.contents <- add c true key_map.contents
 
 let get_key c = find c key_map.contents
