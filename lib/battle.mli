@@ -26,4 +26,4 @@ val draw_health_bar : int -> int -> int -> bool -> unit -> unit
     performs the health bar animation of either the enemy or the player
     depending on the [is_player] boolean *)
 
-val run_tick : char option -> unit
+val run_tick : unit -> unit

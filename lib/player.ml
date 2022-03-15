@@ -1,3 +1,9 @@
+type orientations =
+  | N
+  | E
+  | S
+  | W
+
 type player = {
   name : string;
   mutable money : int;
@@ -6,6 +12,9 @@ type player = {
   mutable badges : string list;
   mutable party : Creature.creature list;
   mutable creatures : Creature.creature list;
+  mutable x : int;
+  mutable y : int;
+  mutable orie : orientations;
 }
 
 let new_player s =
@@ -17,6 +26,9 @@ let new_player s =
     badges = [];
     party = [];
     creatures = [];
+    x = 0;
+    y = 0;
+    orie = N;
   }
 
 let name p = p.name
@@ -41,3 +53,9 @@ let has_badge b p = List.mem b p.badges
 let add_money i p = p.money <- p.money + i
 let add_time_played i p = p.time_played <- p.time_played + i
 let add_badge b p = p.badges <- b :: p.badges
+let x p = p.x
+let y p = p.y
+let orie p = p.orie
+let set_x x p = p.x <- x
+let set_y y p = p.y <- y
+let set_orie o p = p.orie <- o

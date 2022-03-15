@@ -410,7 +410,7 @@ let handle_combat move =
   let player_a1, enemy_a1 =
     (get_current_hp player, get_current_hp enemy)
   in
-  if Combat.is_player_first then begin
+  if Combat.is_player_first = false then begin
     set_text_char_cap 28;
     draw_text (get_nickname player ^ " used " ^ pmove.move_name) 40 ()
   end
@@ -425,7 +425,7 @@ let handle_combat move =
   let player_a2, enemy_a2 =
     (get_current_hp player, get_current_hp enemy)
   in
-  if Combat.is_player_first = false then begin
+  if Combat.is_player_first then begin
     set_text_char_cap 28;
     draw_text (get_nickname player ^ " used " ^ pmove.move_name) 40 ()
   end
@@ -458,20 +458,25 @@ let init () =
   Ui.add_first_foreground start_combat_hud;
   draw_creature_exp player_creature 0
 
-let run_tick c =
+let run_tick () =
   let player = List.nth battle_sim.contents.player_creatures 0 in
+  let key =
+    match Input.key_option () with
+    | Some c -> c
+    | None -> '#'
+  in
   let b = !combat_button in
-  if Input.d () && (b = 0 || b = 2) then combat_button.contents <- b + 1;
-  if Input.a () && (b = 1 || b = 3) then combat_button.contents <- b - 1;
-  if Input.w () && (b = 2 || b = 3) then combat_button.contents <- b - 2;
-  if Input.s () && (b = 0 || b = 1) then combat_button.contents <- b + 2;
+  if key = 'd' && (b = 0 || b = 2) then combat_button.contents <- b + 1;
+  if key = 'a' && (b = 1 || b = 3) then combat_button.contents <- b - 1;
+  if key = 'w' && (b = 2 || b = 3) then combat_button.contents <- b - 2;
+  if key = 's' && (b = 0 || b = 1) then combat_button.contents <- b + 2;
   let action =
     match combat_mode.contents with
     | Commands ->
         if b != combat_button.contents then
           draw_combat_commands combat_button.contents true ()
         else draw_combat_commands combat_button.contents false ();
-        if Input.e () && combat_button.contents = 0 then begin
+        if key = 'e' && combat_button.contents = 0 then begin
           set_text_bg moves_window empty_sprite;
           combat_mode.contents <- Moves;
           clear_text ();
@@ -484,7 +489,7 @@ let run_tick c =
         Ui.add_first_foreground
           (draw_moves player b combat_button.contents);
 
-        if Input.e () then begin
+        if key = 'e' then begin
           Ui.clear_ui Ui.Foreground;
           set_text_bg battle_bot_left battle_bot_right;
           clear_text ();
@@ -494,7 +499,7 @@ let run_tick c =
           handle_combat move;
           combat_mode.contents <- Attack
         end;
-        if Input.q () then begin
+        if key = 'q' then begin
           Ui.clear_ui Ui.Foreground;
           Ui.add_first_foreground start_combat_hud;
           combat_mode.contents <- Commands;
@@ -508,8 +513,4 @@ let run_tick c =
   in
 
   action;
-  Ui.update_all ();
-
-  match c with
-  | Some c -> print_char c
-  | None -> ()
+  Ui.update_all ()
