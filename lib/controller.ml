@@ -40,7 +40,9 @@ let rec event_loop mode =
 let setup _ = ()
 
 let main _ =
+  Input.keymap_init [ 'q'; 'e'; 'w'; 'a'; 's'; 'd' ];
   open_window;
+  Battle.init ();
   moveto 100 200;
   set_font "-*-fixed-bold-r-semicondensed--40-*-*-*-*-*-iso8859-1";
   setup ();

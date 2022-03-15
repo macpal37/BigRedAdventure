@@ -24,11 +24,13 @@ type stats = {
 
 type status =
   | Healthy
-  | Sleep
-  | Freeze
-  | Paralyze
-  | Poison
-  | Burn
+  | Sleep of int
+  | Freeze of int
+  | Poison of int
+  | Confusion of int
+  | Paralyze of int
+  | Burn of int
+  | Fainted
 
 (** Represents the status of a creature*)
 
@@ -68,7 +70,7 @@ type move = {
   etype : etype;
   category : move_catgeory;
   description : string;
-  effect_ids : int list;
+  effect_id : int;
 }
 (** Loads and handles all the moves performed during combat*)
 
@@ -143,6 +145,9 @@ val get_stab_mod : creature -> etype -> float
     [creature] uses a move with the same type. This function tests if
     [etype] is one of the creature's type and returns a float of the
     damage modification*)
+
+val set_status : creature -> status -> unit
+(** Mutably sets the status of a creature*)
 
 val get_moves : creature -> move list
 (** [get_moves creature] returns all of the moves of the [creature] by
