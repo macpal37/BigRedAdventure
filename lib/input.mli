@@ -1,12 +1,13 @@
-val keymap_init : char list -> unit
-val key_press : char -> unit
-val reset_keys : unit -> unit
-val get_key : char -> bool
-val e : unit -> bool
-val q : unit -> bool
-val w : unit -> bool
-val a : unit -> bool
-val s : unit -> bool
-val d : unit -> bool
-val f : unit -> bool
-val c : unit -> bool
+val nil : char
+(** Char representing no key being pressed*)
+
+val poll : unit -> unit
+(** Polls the Graphics for the latest key press.*)
+
+val key_char : unit -> char
+(** [key_char _] is the char of the last key press. Equals nil if no key
+    pressed*)
+
+val key_option : unit -> char option
+(** [key_option _] is the option of the char of the last key press, or
+    None if no key pressed*)
