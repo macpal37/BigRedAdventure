@@ -15,10 +15,11 @@ let combat_mode = ref Commands
 (*****************************************************************)
 (***************     Loading Some Assets     *********************)
 (*****************************************************************)
-(* let rayquaza_sprite = load_creature "rayquaza_front" () *)
+let rayquaza_sprite = load_creature "rayquaza_front" ()
+let clefairy_back = load_creature "clefairy_back" ()
 
-(* let clefairy_back = load_creature "clefairy_back" () *)
-let battle_bot_right = load_sprite "other_sprites/battle_bot_right" ()
+(* let battle_bot_right = load_sprite "other_sprites/battle_bot_right"
+   () *)
 let battle_bot_left = load_sprite "other_sprites/battle_bot_left" ()
 let battle_right = load_sprite "other_sprites/battle_top" ()
 let moves_window = load_sprite "other_sprites/moves_window" ()
@@ -31,17 +32,19 @@ let player_hud = load_sprite "other_sprites/player_hud" ()
 let clefairy = create_creature "clefairy" 100
 
 let rayquaza = create_creature "rayquaza" 80
-let init1 () = set_text_bg battle_bot_left battle_bot_right
 
 (*****************************************************************)
 (***************     Combat Drawing Commands     *********************)
 (*****************************************************************)
-let start_combat_hud () = print_endline "LOL"
-(* set_text_char_cap 14; set_font_size 40 (); set_text_bg
-   battle_bot_left battle_right; clear_text (); set_text_bg
-   battle_bot_left empty_sprite; set_sticky_text true; draw_text "What
-   will Clefairy do? " (); set_text_bg empty_sprite battle_right;
-   set_sticky_text false *)
+let start_combat_hud () =
+  set_text_char_cap 14;
+  set_text_bg battle_bot_left battle_right;
+  clear_text ();
+  set_text_bg battle_bot_left empty_sprite;
+  set_sticky_text true;
+  draw_text "What will     Clefairy do?   " 40 ();
+  set_text_bg empty_sprite battle_right;
+  set_sticky_text false
 
 let get_color_from_etype etype =
   match etype with
@@ -324,14 +327,13 @@ let animate_faint creature player () = faint 20 1 creature player ()
 (***************     Test Demo Cmmands     *********************)
 (*****************************************************************)
 let start_up () =
-  print_endline "HELLO";
-  Ui.add_first_foreground
+  Ui.add_first_gameplay
     (draw_combat_hud combat_hud "Rayquaza" 80 false
        ( (get_stats rayquaza).max_hp,
          get_current_hp rayquaza,
          get_current_hp rayquaza ));
 
-  Ui.add_first_foreground
+  Ui.add_first_gameplay
     (draw_combat_hud player_hud (get_nickname clefairy)
        (get_level clefairy) true
        ( (get_stats clefairy).max_hp,
@@ -371,7 +373,18 @@ let adhoc_test1 () =
   set_text_bg empty_sprite battle_right;
   set_sticky_text false
 
-let run_combat () =
+(* let run_combat () = *)
+
+let init () =
+  set_text_bg battle_bot_left battle_right;
+
+  Ui.add_first_gameplay (draw_creature rayquaza_sprite false);
+  Ui.add_first_gameplay (draw_creature clefairy_back true);
+  start_up ();
+  Ui.add_first_foreground start_combat_hud
+
+let run_tick c =
+  Ui.update_all ();
   let b = !combat_button in
   if Input.d () && (b = 0 || b = 2) then combat_button.contents <- b + 1;
   if Input.a () && (b = 1 || b = 3) then combat_button.contents <- b - 1;
@@ -387,17 +400,26 @@ let run_combat () =
           set_text_bg moves_window empty_sprite;
           combat_mode.contents <- Moves;
           clear_text ();
-          draw_moves clefairy b combat_button.contents ()
+          Ui.add_first_foreground
+            (draw_moves clefairy b combat_button.contents)
         end
     | Moves ->
         if b != combat_button.contents then
-          draw_moves clefairy b combat_button.contents ();
+          print_endline (string_of_int b);
+        Ui.add_first_foreground
+          (draw_moves clefairy b combat_button.contents);
 
         if Input.q () then begin
-          start_combat_hud ();
+          Ui.add_first_foreground start_combat_hud;
           combat_mode.contents <- Commands;
           clear_text ()
         end
     (* | Attack -> () *)
   in
-  action
+  action;
+  match c with
+  | Some c -> print_char c
+  | None -> ()
+;;
+
+print_endline "LOL"
