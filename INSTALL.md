@@ -27,9 +27,12 @@ opam install -y graphics
 
 ###### ** Most Importantly: Make sure to restart your Mac afterwards to complete the installation
 
-### Windows & Linux  Installation
+### Windows Installation
 
-#TODO:
+First, follow the instructions above in the Mac installation
+
+Then, follow the instructions here to install X server for Windows:
+https://aalonso.dev/blog/how-to-use-gui-apps-in-wsl2-forwarding-x-server-cdj
 
 
 
