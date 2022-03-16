@@ -1,6 +1,9 @@
 exception Out_of_Bounds
 (** Raised when accessing a coordinate on the map that is not in range *)
 
+exception Malformed_Json of string
+(** Raised when the inputted Yojson.Basic.t is not valid *)
+
 type t
 (** abstract data type representing a game map *)
 
@@ -17,7 +20,7 @@ type tile_type =
 (** type representing the type of a tile on the map *)
 
 val init_map : Yojson.Basic.t -> t
-(** [init_map j] is the map represented by j *)
+(** [init_map j] is the map represented by j. Raises [Malformed_Json] if the json file is invalid *)
 
 val get_dim : t -> int * int
 (** [get_dim m] is a tuple [(width, height)] representing the number of
@@ -33,4 +36,4 @@ val get_graphic_id : t -> coord -> string
 
 val encounter_creature : encounters -> Creature.creature option
 (** [encounter_creature e] is the random creature that is encountered
-    based on the specification in [e]. *)
+    based on the specification in [e]. Returns None if no creature is present *)
