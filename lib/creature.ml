@@ -434,6 +434,7 @@ let get_stats creature = creature.current_stats
 let get_ivs creature = creature.iv_stats
 let get_evs creature = creature.ev_stats
 let get_ev_gain creature = creature.ev_gain
+let get_exp_gain creature = creature.level * creature.base_exp
 let get_current_hp creature = creature.current_hp
 let set_current_hp creature amount = creature.current_hp <- amount
 let get_catch_rate creature = float_of_int creature.catch_rate

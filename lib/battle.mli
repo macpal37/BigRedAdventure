@@ -3,11 +3,7 @@ open Draw
 
     This module orchestrates the gameplay in battle*)
 
-val init : unit -> unit
-val adhoc_test1 : unit -> unit
-
-(* val run_combat : unit -> unit *)
-val start_up : unit -> unit
+val start_battle : unit -> unit
 val update_health : Creature.creature -> int -> unit -> unit
 val draw_combat_commands : int -> bool -> unit -> unit
 val draw_exp_bar : int -> int -> int -> unit -> unit

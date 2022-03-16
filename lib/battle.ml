@@ -29,7 +29,7 @@ let player_hud = load_sprite "other_sprites/player_hud" 3 ()
 (** Test creatures Sprites **)
 let player_creature = create_creature "clefairy" 50
 
-let enemy_creature = create_creature "clefairy" 50
+let enemy_creature = create_creature "clefairy" 40
 
 (*****************************************************************)
 (***************     Combat Drawing Commands     *********************)
@@ -194,6 +194,7 @@ let draw_health_bar max before after player () =
   end
 
 let draw_exp_bar max before after () =
+  (* Draw.sync true (); *)
   let max, before, after =
     (bound max 0 max, bound before 0 after, bound after 0 max)
   in
@@ -215,19 +216,22 @@ let draw_exp_bar max before after () =
   fill_rect xh yh (d before_bar hwidth 100) hheight;
 
   let after_bar = d after 100 max in
-  (if before <> after then
-   let rec render_bar_progress start target =
-     if start = target || start <= 0 then ()
-     else if start <= target then begin
-       set_color bar_color;
-       fill_rect xh yh (d start hwidth 100 + 4) hheight;
-       (* set_color blank; fill_rect (xh + d start hwidth 100) yh 2
-          hheight; *)
-       Unix.sleepf 0.05;
-       render_bar_progress (start + 1) target
-     end
-   in
-   render_bar_progress before_bar after_bar);
+  if before <> after then (
+    let rec render_bar_progress start target =
+      if start = target || start < 0 then ()
+      else if start <= target then begin
+        set_color bar_color;
+        fill_rect xh yh (d start hwidth 100 + 4) hheight;
+        (* set_color blank; fill_rect (xh + d start hwidth 100) yh 2
+           hheight; *)
+        Unix.sleepf 0.05;
+        render_bar_progress (start + 1) target
+      end
+    in
+    print_endline ("before: " ^ string_of_int before_bar);
+    print_endline ("after: " ^ string_of_int after_bar);
+    render_bar_progress before_bar after_bar);
+  (* Draw.sync false (); *)
   set_color text_color
 
 let draw_combat_hud sprite name level player (max, before, after) () =
@@ -329,7 +333,7 @@ let animate_faint creature player () = faint 20 1 creature player ()
 (*****************************************************************)
 (***************     Test Demo Cmmands     *********************)
 (*****************************************************************)
-let start_up () =
+let refresh_hud () =
   let player, opponent =
     ( List.nth battle_sim.contents.player_creatures 0,
       List.nth battle_sim.contents.enemy_creatures 0 )
@@ -349,41 +353,27 @@ let start_up () =
          get_current_hp player,
          get_current_hp player ))
 
-(* combat_mode.contents <- Commands; set_text_char_cap 28; set_text_bg
-   battle_bot_left battle_bot_right; clear_text (); set_current_hp
-   player_creature (get_stats clefairy).max_hp; draw_combat_hud
-   combat_hud "Rayquaza" 80 false ( (get_stats enemy_creature ).max_hp,
-   get_current_hp enemy_creature , get_current_hp enemy_creature ) ();
-
-   draw_combat_hud player_hud (get_nickname clefairy) (get_level
-   clefairy) true ( (get_stats clefairy).max_hp, get_current_hp
-   clefairy, get_current_hp player_creature ) (); draw_exp_bar 100 10 10
-   (); draw_creature enemy_creature _sprite false (); draw_creature
-   clefairy_back true ();
-
-   draw_health_bar (get_stats enemy_creature ).max_hp (get_stats
-   enemy_creature ).max_hp 0 false (); Unix.sleepf 1.5; animate_faint
-   enemy_creature _sprite false (); draw_exp_bar 100 10 100 ();
-   start_combat_hud () *)
-
 let update_health creature before () =
   let curr, max =
     (get_current_hp creature, (get_stats creature).max_hp)
   in
   draw_health_bar max before curr false ()
 
-let adhoc_test1 () =
-  set_text_char_cap 14;
-  set_text_bg battle_bot_left battle_right;
-  clear_text ();
-  set_text_bg battle_bot_left empty_sprite;
-  set_sticky_text true;
-  draw_text "What will     Clefairy do?   " 40 ();
-  set_text_bg empty_sprite battle_right;
-  set_sticky_text false
+let draw_creature_exp creature added_exp render () =
+  add_exp creature added_exp;
+  let curr_exp, min_exp, max_exp = get_exp creature in
+  if render then
+    Ui.add_first_foreground
+      (draw_exp_bar (max_exp - min_exp) (curr_exp - min_exp)
+         (curr_exp - min_exp))
+  else
+    (draw_exp_bar (max_exp - min_exp) (curr_exp - min_exp)
+       (curr_exp - min_exp))
+      ()
 
 let handle_combat move =
   battle_sim.contents <- Combat.turn_builder battle_sim.contents move;
+
   let player, enemy =
     ( List.nth battle_sim.contents.player_creatures 0,
       List.nth battle_sim.contents.enemy_creatures 0 )
@@ -410,7 +400,7 @@ let handle_combat move =
   let player_a1, enemy_a1 =
     (get_current_hp player, get_current_hp enemy)
   in
-  if Combat.is_player_first = false then begin
+  if Combat.is_player_first () then begin
     set_text_char_cap 28;
     draw_text (get_nickname player ^ " used " ^ pmove.move_name) 40 ()
   end
@@ -422,10 +412,14 @@ let handle_combat move =
   draw_health_bar e_maxhp enemy_b enemy_a1 false ();
   (***=============Second Half =============***)
   battle_sim.contents <- Combat.battle_sim_sh battle_sim.contents;
+  (* if battle_sim.contents.battle_status <> Combat.Victory *)
   let player_a2, enemy_a2 =
     (get_current_hp player, get_current_hp enemy)
   in
-  if Combat.is_player_first then begin
+  if battle_sim.contents.battle_status <> Combat.Victory then
+    print_endline
+      ("Player First: " ^ string_of_bool (Combat.is_player_first ()));
+  if Combat.is_player_first () = false then begin
     set_text_char_cap 28;
     draw_text (get_nickname player ^ " used " ^ pmove.move_name) 40 ()
   end
@@ -436,16 +430,26 @@ let handle_combat move =
   if player_a1 <> player_a2 then
     draw_health_bar p_maxhp player_a1 player_a2 true ();
   if enemy_a1 <> enemy_a2 then
-    draw_health_bar e_maxhp enemy_a1 enemy_a2 false ()
+    draw_health_bar e_maxhp enemy_a1 enemy_a2 false ();
+  (***============= Resolution =============***)
+  if enemy_a2 <= 0 then (
+    (* draw_creature_exp player (get_exp_gain enemy) false (); *)
+    let before_exp, _, _ = get_exp player in
+    add_exp player (get_exp_gain enemy);
+    let curr_exp, min_exp, max_exp = get_exp player in
+    print_endline ("MAX: " ^ string_of_int (max_exp - min_exp));
+    print_endline ("Before: " ^ string_of_int (before_exp - min_exp));
+    print_endline ("After: " ^ string_of_int (curr_exp - min_exp));
+    Ui.add_first_gameplay
+      (draw_exp_bar (max_exp - min_exp) (before_exp - min_exp)
+         (curr_exp - min_exp));
+    (* Ui.add_first_gameplay (draw_exp_bar 1000 10 500); *)
+    Ui.add_first_gameplay (animate_faint (get_front_sprite enemy) false);
+    if player_a2 <= 0 then
+      Ui.add_first_gameplay
+        (animate_faint (get_front_sprite player) true))
 
-let draw_creature_exp creature added_exp =
-  add_exp creature added_exp;
-  let curr_exp, min_exp, max_exp = get_exp creature in
-  Ui.add_first_foreground
-    (draw_exp_bar (max_exp - min_exp) (curr_exp - min_exp)
-       (curr_exp - min_exp))
-
-let init () =
+let start_battle () =
   set_nickname player_creature "BestMon";
   set_text_bg battle_bot_left battle_right;
   battle_sim.contents <-
@@ -454,9 +458,9 @@ let init () =
     (draw_creature (get_front_sprite player_creature) false);
   Ui.add_first_gameplay
     (draw_creature (get_back_sprite player_creature) true);
-  start_up ();
+  refresh_hud ();
   Ui.add_first_foreground start_combat_hud;
-  draw_creature_exp player_creature 0
+  draw_creature_exp player_creature 0 true ()
 
 let run_tick () =
   let player = List.nth battle_sim.contents.player_creatures 0 in
@@ -466,6 +470,7 @@ let run_tick () =
     | None -> '#'
   in
   let b = !combat_button in
+  if key = 'r' then draw_exp_bar 4350 10 2065 ();
   if key = 'd' && (b = 0 || b = 2) then combat_button.contents <- b + 1;
   if key = 'a' && (b = 1 || b = 3) then combat_button.contents <- b - 1;
   if key = 'w' && (b = 2 || b = 3) then combat_button.contents <- b - 2;
@@ -476,7 +481,11 @@ let run_tick () =
         if b != combat_button.contents then
           draw_combat_commands combat_button.contents true ()
         else draw_combat_commands combat_button.contents false ();
-        if key = 'e' && combat_button.contents = 0 then begin
+        if
+          key = 'e'
+          && combat_button.contents = 0
+          && battle_sim.contents.battle_status <> Combat.Victory
+        then begin
           set_text_bg moves_window empty_sprite;
           combat_mode.contents <- Moves;
           clear_text ();

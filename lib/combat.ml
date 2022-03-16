@@ -1,4 +1,5 @@
 open Creature
+open Draw
 
 exception Empty
 (*exception OutOfPokemon exception IncorrectTurnPos*)
@@ -26,6 +27,9 @@ type turn_status =
   | Finished
 (*BRECORD VARIANTS END*)
 
+(* type battle_creature = { creature : creature; current_move : move;
+   stat_changes : stats; } *)
+
 type battle_record = {
   player_creatures : creature list;
   enemy_creatures : creature list;
@@ -39,7 +43,7 @@ type battle_record = {
 }
 
 let player_first = ref false
-let is_player_first = player_first.contents
+let is_player_first () = player_first.contents
 
 let empty_battle =
   {
@@ -190,10 +194,29 @@ let player_faster brecord =
   let player_speed =
     (get_stats (List.nth brecord.player_creatures 0)).speed
   in
+  print_endline ("Player Speed:" ^ string_of_int player_speed);
+  print_endline ("Enemy Speed:" ^ string_of_int enemy_speed);
   if player_speed > enemy_speed then true
   else if player_speed < enemy_speed then false
   else if Random.int 2 = 1 then true
   else false
+
+(* let handle_effects move attacker defender = match move.effect_id with
+   | 1 -> draw_text (get_nickname defender ^ "'s ATK fell") 40 () | 7 ->
+   draw_text (get_nickname attacker ^ "'s ATK rose") 40 () | _ -> () *)
+
+(* let exec_turn move_status attacker defender brecord = (* let player,
+   enemy = ( List.nth brecord.player_creatures 0, List.nth
+   brecord.enemy_creatures 0 ) in *) let damage_pte = match move_status
+   with | None _ -> 0.0 | Move m -> draw_text (get_nickname attacker ^ "
+   used " ^ m.move_name) 40 ();
+
+   (* handle_effects m.effect_id player; *) if m.power > 0 then
+   damage_calc m attacker defender else 0.0 in set_current_hp enemy
+   (get_current_hp enemy - int_of_float damage_pte);
+
+   if get_current_hp enemy > 0 then brecord else updated_enemy_creatures
+   brecord *)
 
 let exec_turn_pte brecord =
   let player, enemy =
@@ -203,15 +226,15 @@ let exec_turn_pte brecord =
   let damage_pte =
     match brecord.player_move with
     | None _ -> 0.0
-    | Move m -> if m.power > 0 then damage_calc m player enemy else 0.0
+    | Move m ->
+        (* draw_text (get_nickname player ^ " used " ^ m.move_name) 40
+           (); *)
+        if m.power > 0 then damage_calc m player enemy else 0.0
   in
+
   set_current_hp enemy (get_current_hp enemy - int_of_float damage_pte);
 
-  if get_current_hp enemy > 0 then
-    (* let damage_etp = match brecord.enemy_move with | None _ -> 0.0 |
-       Move m -> damage_calc m enemy player in set_current_hp player
-       (get_current_hp player - int_of_float damage_etp); *)
-    brecord
+  if get_current_hp enemy > 0 then brecord
   else updated_enemy_creatures brecord
 
 let exec_turn_etp brecord =
@@ -240,8 +263,12 @@ let execute_turn brecord =
 (*BATTLE SIM HELPERS END so many damn*)
 
 let battle_sim_fh brecord =
-  player_first.contents <- player_faster brecord;
+  let res = player_faster brecord in
+  player_first.contents <- res;
+  print_endline ("Res: " ^ string_of_bool res);
+  print_endline ("Actual: " ^ string_of_bool player_first.contents);
   let turn_exec = execute_turn brecord in
+
   if player_faster brecord then
     {
       turn_exec with
@@ -258,15 +285,17 @@ let battle_sim_fh brecord =
     }
 
 let battle_sim_sh brecord =
-  let turn_exec2 = execute_turn brecord in
-  {
-    turn_exec2 with
-    player_move =
-      None (get_status (List.nth turn_exec2.player_creatures 0));
-    enemy_move =
-      None (get_status (List.nth turn_exec2.enemy_creatures 0));
-    turn_pos = Finished;
-  }
+  if brecord.battle_status <> Victory then
+    let turn_exec2 = execute_turn brecord in
+    {
+      turn_exec2 with
+      player_move =
+        None (get_status (List.nth turn_exec2.player_creatures 0));
+      enemy_move =
+        None (get_status (List.nth turn_exec2.enemy_creatures 0));
+      turn_pos = Finished;
+    }
+  else brecord
 
 (*IGNORE THESE FOR NOW, WILL POLISH IMPLEMENTATION LATER*)
 
