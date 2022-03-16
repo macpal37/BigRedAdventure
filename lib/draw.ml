@@ -7,22 +7,43 @@ type sprite = {
   height : int;
   mutable palette1 : color list;
   mutable palette2 : color list;
+  dpi : int;
 }
 
-let dpi = 3
 let font_size = ref 50
 let text_color = rgb 68 68 68
 
 let empty_sprite =
-  { pixels = []; width = 0; height = 0; palette1 = []; palette2 = [] }
+  {
+    pixels = [];
+    width = 0;
+    height = 0;
+    palette1 = [];
+    palette2 = [];
+    dpi = 1;
+  }
 
 let text_bg1 =
   ref
-    { pixels = []; width = 0; height = 0; palette1 = []; palette2 = [] }
+    {
+      pixels = [];
+      width = 0;
+      height = 0;
+      palette1 = [];
+      palette2 = [];
+      dpi = 1;
+    }
 
 let text_bg2 =
   ref
-    { pixels = []; width = 0; height = 0; palette1 = []; palette2 = [] }
+    {
+      pixels = [];
+      width = 0;
+      height = 0;
+      palette1 = [];
+      palette2 = [];
+      dpi = 1;
+    }
 
 let is_sticky = ref false
 let erase_mode = ref false
@@ -67,12 +88,12 @@ let draw_from_pixels sprite x y min_w min_h max_w max_h () =
           if erase_mode.contents then set_color (point_color 0 0)
           else set_color (List.nth sprite.palette1 (h - 1));
 
-          draw_pixel dpi (x + tx) (y + ty) ()
+          draw_pixel sprite.dpi (x + tx) (y + ty) ()
         end;
         if ty < max_h then
-          if tx < max_w - dpi then
-            draw_from_pixels_rec t x y (tx + dpi) ty
-          else draw_from_pixels_rec t x y 0 (ty + dpi)
+          if tx < max_w - sprite.dpi then
+            draw_from_pixels_rec t x y (tx + sprite.dpi) ty
+          else draw_from_pixels_rec t x y 0 (ty + sprite.dpi)
         else set_color text_color
   in
 
@@ -90,7 +111,7 @@ let string_to_color color_json =
     (int_of_string (List.nth rgblist 1))
     (int_of_string (List.nth rgblist 2))
 
-let load_json json =
+let load_json json dpi =
   {
     pixels =
       List.rev
@@ -104,17 +125,18 @@ let load_json json =
     palette2 =
       json |> member "color_palette2" |> to_list
       |> List.map string_to_color;
+    dpi;
   }
 
-let load_sprite filename () =
+let load_sprite filename dpi () =
   let json = Yojson.Basic.from_file ("assets/" ^ filename ^ ".json") in
-  load_json json
+  load_json json dpi
 
 let load_creature name () =
   let json =
     Yojson.Basic.from_file ("assets/creature_sprites/" ^ name ^ ".json")
   in
-  load_json json
+  load_json json 3
 
 let clear_sprite sprite x y () =
   usync false ();
@@ -223,7 +245,7 @@ let draw_text text font_size () =
     end
   in
   scroll_text text 0 levels;
-  wait ()
+  if levels <= 0 then wait ()
 
 (* create a gradient of colors from black at 0,0 to white at w-1,h-1 *)
 let gradient arr w h =

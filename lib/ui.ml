@@ -2,7 +2,10 @@ open Draw
 
 let tail () = print_endline "End"
 
-(* type draw_mode = | Background | Gameplay | Foreground *)
+type layer =
+  | Background
+  | Gameplay
+  | Foreground
 
 type render_view = {
   mutable foreground : (unit -> unit) list;
@@ -17,6 +20,12 @@ let renderer =
       gameplay = [ tail ];
       background = [ tail ];
     }
+
+let clear_ui layer =
+  match layer with
+  | Background -> renderer.contents.background <- []
+  | Gameplay -> renderer.contents.gameplay <- []
+  | Foreground -> renderer.contents.foreground <- []
 
 let add_first_foreground draw_func =
   renderer.contents.foreground <-

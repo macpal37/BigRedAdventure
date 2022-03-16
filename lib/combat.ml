@@ -36,6 +36,22 @@ type battle_record = {
   turn_pos : turn_status;
 }
 
+let player_first = ref false
+let is_player_first = player_first.contents
+
+let empty_battle =
+  {
+    player_creatures = [];
+    enemy_creatures = [];
+    battle_type = Wild;
+    battle_status = Ongoing;
+    escape_attempts = 0;
+    player_move = None Healthy;
+    enemy_move = None Healthy;
+    turn_counter = 0;
+    turn_pos = Choosing;
+  }
+
 (*might create active creatures and inactive creature for each?*)
 let wild_init plist crtr =
   {
@@ -170,67 +186,50 @@ let player_faster brecord =
     (get_stats (List.nth brecord.enemy_creatures 0)).speed
   in
   let player_speed =
-    (get_stats (List.nth brecord.enemy_creatures 0)).speed
+    (get_stats (List.nth brecord.player_creatures 0)).speed
   in
-  if player_speed >= enemy_speed then true else false
+  if player_speed > enemy_speed then true
+  else if player_speed < enemy_speed then false
+  else if Random.int 2 = 1 then true
+  else false
 
 let exec_turn_pte brecord =
+  let player, enemy =
+    ( List.nth brecord.player_creatures 0,
+      List.nth brecord.enemy_creatures 0 )
+  in
   let damage_pte =
     match brecord.player_move with
     | None _ -> 0.0
-    | Move m ->
-        damage_calc m
-          (List.nth brecord.player_creatures 0)
-          (List.nth brecord.enemy_creatures 0)
+    | Move m -> if m.power > 0 then damage_calc m player enemy else 0.0
   in
-  set_current_hp
-    (List.nth brecord.enemy_creatures 0)
-    (int_of_float damage_pte);
-  if get_current_hp (List.nth brecord.enemy_creatures 0) > 0 then (
-    let damage_etp =
-      match brecord.enemy_move with
-      | None _ -> 0.0
-      | Move m ->
-          damage_calc m
-            (List.nth brecord.enemy_creatures 0)
-            (List.nth brecord.player_creatures 0)
-    in
-    set_current_hp
-      (List.nth brecord.player_creatures 0)
-      (int_of_float damage_etp);
-    brecord)
+  set_current_hp enemy (get_current_hp enemy - int_of_float damage_pte);
+
+  if get_current_hp enemy > 0 then
+    (* let damage_etp = match brecord.enemy_move with | None _ -> 0.0 |
+       Move m -> damage_calc m enemy player in set_current_hp player
+       (get_current_hp player - int_of_float damage_etp); *)
+    brecord
   else updated_enemy_creatures brecord
 
 let exec_turn_etp brecord =
+  let player, enemy =
+    ( List.nth brecord.player_creatures 0,
+      List.nth brecord.enemy_creatures 0 )
+  in
   let damage_etp =
     match brecord.enemy_move with
     | None _ -> 0.0
-    | Move m ->
-        damage_calc m
-          (List.nth brecord.enemy_creatures 0)
-          (List.nth brecord.player_creatures 0)
+    | Move m -> if m.power > 0 then damage_calc m enemy player else 0.0
   in
-  set_current_hp
-    (List.nth brecord.player_creatures 0)
-    (int_of_float damage_etp);
-  if get_current_hp (List.nth brecord.player_creatures 0) > 0 then (
-    let damage_pte =
-      match brecord.player_move with
-      | None _ -> 0.0
-      | Move m ->
-          damage_calc m
-            (List.nth brecord.player_creatures 0)
-            (List.nth brecord.enemy_creatures 0)
-    in
-    set_current_hp
-      (List.nth brecord.enemy_creatures 0)
-      (int_of_float damage_pte);
-    brecord)
+  set_current_hp player (get_current_hp player - int_of_float damage_etp);
+  if get_current_hp (List.nth brecord.player_creatures 0) > 0 then
+    brecord
   else updated_player_creatures brecord
 
 let execute_turn brecord =
   if brecord.turn_pos = Pending then
-    if player_faster brecord then exec_turn_pte brecord
+    if player_first.contents then exec_turn_pte brecord
     else exec_turn_etp brecord
   else
     match brecord.player_move with
@@ -239,6 +238,7 @@ let execute_turn brecord =
 (*BATTLE SIM HELPERS END so many damn*)
 
 let battle_sim_fh brecord =
+  player_first.contents <- player_faster brecord;
   let turn_exec = execute_turn brecord in
   if player_faster brecord then
     {

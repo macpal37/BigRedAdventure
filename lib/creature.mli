@@ -74,6 +74,8 @@ type move = {
 }
 (** Loads and handles all the moves performed during combat*)
 
+val empty_move : move
+
 val get_move : string -> move
 (** [get_move move_name] returns the the move*)
 
@@ -160,7 +162,7 @@ val get_catch_rate : creature -> float
 val get_level : creature -> int
 (** [get_level creature] returns a [creature]'s current level*)
 
-val get_exp : creature -> int
+val get_exp : creature -> int * int * int
 (** [get_exp creature] returns a [creature]'s current exp*)
 
 val add_exp : creature -> int -> unit
@@ -174,3 +176,8 @@ val get_nickname : creature -> string
 
 val set_nickname : creature -> string -> unit
 (** [get_nickname creature] returns a [creature]'s nickname*)
+
+val get_front_sprite : creature -> Draw.sprite
+val set_front_sprite : creature -> Draw.sprite -> unit
+val get_back_sprite : creature -> Draw.sprite
+val set_back_sprite : creature -> Draw.sprite -> unit
