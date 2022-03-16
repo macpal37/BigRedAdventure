@@ -2,12 +2,18 @@ open Graphics
 
 let width = 800
 let height = 720
-let tick_rate = 1. /. 60.
+let tick_rate = 0.016
 
 type modes =
   | ModeOverworld
   | ModeBattle
   | ModeMenu
+
+type state = { player : Player.player }
+
+let current_state = ref { player = Player.new_player "Red" }
+let get_state _ = !current_state
+let get_player s = s.player
 
 let open_window =
   open_graph (" " ^ string_of_int width ^ "x" ^ string_of_int height);
@@ -20,33 +26,24 @@ let rec event_loop mode =
   and wy' = size_y () in
   if wx' <> width || wy' <> height then resize_window width height;
 
-  (*if start then start_up ();*)
-  let key_input =
-    (fun _ ->
-      if Graphics.key_pressed () then Some (Graphics.read_key ())
-      else None)
-      ()
-  in
-  let key_mapping =
-    match key_input with
-    | Some c -> Input.key_press c
-    | None -> ()
-  in
-  key_mapping;
+  Input.poll ();
+
   (match mode with
-  | ModeOverworld -> Overworld.run_tick key_input
-  | ModeBattle -> Battle.run_tick key_input
-  | ModeMenu -> Menu.run_tick key_input);
+  | ModeOverworld -> Overworld.run_tick ()
+  | ModeBattle -> Battle.run_tick ()
+  | ModeMenu -> Menu.run_tick ());
   let new_mode = mode in
   (* placeholder*)
   Unix.sleepf tick_rate;
   event_loop new_mode
 
+let setup _ = ()
+
 let main _ =
-  Input.keymap_init [ 'q'; 'e'; 'w'; 'a'; 's'; 'd' ];
   open_window;
   Battle.init ();
   moveto 100 200;
   set_font "-*-fixed-bold-r-semicondensed--40-*-*-*-*-*-iso8859-1";
+  setup ();
   try event_loop ModeBattle
   with Graphic_failure _ -> print_endline "Exiting..."

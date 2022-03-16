@@ -1,7 +1,11 @@
-let run_tick c =
-  let _ =
-    match c with
-    | Some k -> if k = 'A' then () else ()
-    | None -> ()
-  in
-  raise (Failure "dummy")
+let draw _ = ()
+
+let run_tick _ =
+  (match Input.key_option () with
+  | Some 'w' -> ()
+  | Some 'a' -> ()
+  | Some 's' -> ()
+  | Some 'd' -> ()
+  | Some k -> ignore k
+  | None -> ());
+  draw ()

@@ -6,16 +6,11 @@
     "category": "Physical",
     "type": "Normal",
     "description": "Charges the target with a full-body tackle.",
-<<<<<<< HEAD
     "effect_ids": -1
-=======
-    "effect_ids": -1,
-    "effect_chance": -1
->>>>>>> 0a0aa9ff46e889992ff330d3e466853c62bf6e7e
   },
   "Growl": {
     "power": 0,
-    "accuracy": -1,
+    "accuracy": 100,
     "pp": 40,
     "category": "Status",
     "type": "Normal",
