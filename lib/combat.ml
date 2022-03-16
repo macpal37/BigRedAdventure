@@ -1,7 +1,6 @@
 open Creature
 
 exception Empty
-(*exception OutOfPokemon exception IncorrectTurnPos*)
 
 (*BRECORD VARIANTS*)
 type bstatus =
@@ -23,7 +22,6 @@ type turn_status =
   | Choosing
   | Pending
   | Halfway
-  | Finished
 (*BRECORD VARIANTS END*)
 
 type battle_record = {
@@ -39,10 +37,10 @@ type battle_record = {
 }
 
 (*might create active creatures and inactive creature for each?*)
-let wild_init plist elist =
+let wild_init plist crtr =
   {
     player_creatures = plist;
-    enemy_creatures = elist;
+    enemy_creatures = [ crtr ];
     battle_type = Wild;
     battle_status = Ongoing;
     escape_attempts = 0;
@@ -265,7 +263,7 @@ let battle_sim_sh brecord =
       None (get_status (List.nth turn_exec2.player_creatures 0));
     enemy_move =
       None (get_status (List.nth turn_exec2.enemy_creatures 0));
-    turn_pos = Finished;
+    turn_pos = Choosing;
   }
 
 (*IGNORE THESE FOR NOW, WILL POLISH IMPLEMENTATION LATER*)
