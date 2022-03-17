@@ -1,6 +1,6 @@
 open Draw
 
-let tail () = print_endline "End"
+let tail () = ()
 
 type layer =
   | Background
