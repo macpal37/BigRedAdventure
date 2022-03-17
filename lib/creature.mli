@@ -75,6 +75,7 @@ type move = {
 (** Loads and handles all the moves performed during combat*)
 
 val empty_move : move
+val empty_stats : stats
 
 val get_move : string -> move
 (** [get_move move_name] returns the the move*)
@@ -136,6 +137,7 @@ val get_stats : creature -> stats
 val get_ivs : creature -> stats
 val get_evs : creature -> stats
 val get_ev_gain : creature -> stat * int
+val get_exp_gain : creature -> int
 
 val get_type_mod : etype -> creature -> float
 (** [get_type_mod attack_type defender] returns the damage modification

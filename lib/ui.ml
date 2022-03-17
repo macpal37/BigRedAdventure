@@ -1,6 +1,6 @@
 open Draw
 
-let tail () = print_endline "End"
+let tail () = ()
 
 type layer =
   | Background
@@ -81,7 +81,7 @@ let update_foreground () =
   sync false ()
 
 let update_all () =
-  sync true ();
+  sync false ();
   draw_all_background renderer.contents.background;
   renderer.contents.background <- [];
 
@@ -90,4 +90,4 @@ let update_all () =
 
   draw_all_foreground renderer.contents.foreground;
   renderer.contents.foreground <- [];
-  sync false ()
+  sync true ()

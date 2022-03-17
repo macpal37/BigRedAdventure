@@ -41,7 +41,7 @@ let setup _ = ()
 
 let main _ =
   open_window;
-  Battle.init ();
+  Battle.start_battle ();
   moveto 100 200;
   set_font "-*-fixed-bold-r-semicondensed--40-*-*-*-*-*-iso8859-1";
   setup ();

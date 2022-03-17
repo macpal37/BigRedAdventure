@@ -14,3 +14,7 @@ let poll _ =
       if Graphics.key_pressed () then Some (Graphics.read_key ())
       else None)
       ()
+
+let sleep time () =
+  Unix.sleepf time;
+  poll ()

@@ -11,3 +11,5 @@ val key_char : unit -> char
 val key_option : unit -> char option
 (** [key_option _] is the option of the char of the last key press, or
     None if no key pressed*)
+
+val sleep : float -> unit -> unit

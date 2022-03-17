@@ -67,8 +67,8 @@ let set_font_size size () =
 
 let get_dimension sprite = (sprite.width, sprite.height)
 let get_font_size = font_size.contents
-let set_sticky_text flag = is_sticky.contents <- flag
-let set_erase_mode flag = erase_mode.contents <- flag
+let set_sticky_text flag () = is_sticky.contents <- flag
+let set_erase_mode flag () = erase_mode.contents <- flag
 let set_synced_mode flag = synced_mode.contents <- flag
 
 let sync_draw draw () =
@@ -140,9 +140,9 @@ let load_creature name () =
 
 let clear_sprite sprite x y () =
   usync false ();
-  set_erase_mode true;
+  set_erase_mode true ();
   draw_from_pixels sprite x y 0 0 sprite.width sprite.height ();
-  set_erase_mode false;
+  set_erase_mode false ();
   usync true ()
 
 let draw_sprite_crop
@@ -179,22 +179,24 @@ let remove_space text =
     String.sub text 1 (String.length text - 1)
   else text
 
-let rec wait () =
-  if is_sticky.contents = true then ()
+let rec wait timer () =
+  if is_sticky.contents = true || timer = 0 then ()
   else if Graphics.key_pressed () then begin
-    if Graphics.read_key () = 'x' then ()
+    if Graphics.read_key () = 'e' then ()
   end
-  else wait ()
+  else wait (timer - 1) ()
 
 let clear_text () =
   draw_sprite text_bg1.contents 3 0 ();
   draw_sprite text_bg2.contents 400 0 ()
 
 let text_char_cap = ref 28
+let auto_text_time = 175000
 let set_text_char_cap cap = text_char_cap.contents <- cap
 
-let draw_text text font_size () =
+let draw_text text font_size auto () =
   set_font_size font_size ();
+  let wait_time = if auto then auto_text_time else -1 in
   let char_cap = text_char_cap.contents in
   clear_text ();
   set_color text_color;
@@ -206,7 +208,7 @@ let draw_text text font_size () =
   let rec scroll_text text start max =
     if start mod 2 = 0 then
       if start <> 0 && is_sticky.contents = false then begin
-        wait ();
+        wait wait_time ();
         clear_text ();
         set_color text_color
       end;
@@ -234,7 +236,7 @@ let draw_text text font_size () =
             draw_char h;
             rmoveto 2 (-4);
             set_color text_color;
-            Unix.sleepf 0.025;
+            Input.sleep 0.025 ();
             draw_chars t
       in
 
@@ -245,7 +247,7 @@ let draw_text text font_size () =
     end
   in
   scroll_text text 0 levels;
-  if levels <= 0 then wait ()
+  if levels <= 0 then wait wait_time ()
 
 (* create a gradient of colors from black at 0,0 to white at w-1,h-1 *)
 let gradient arr w h =
@@ -269,4 +271,23 @@ let draw_string_colored x y dif text custom_color () =
   moveto (x + dif - 1) (y + dif);
   set_color custom_color;
   draw_string text;
+  set_color text_color
+
+let damage_render sprite player () =
+  let rec damage_render_rec c creature_pixels player () =
+    if c = 0 then draw_creature creature_pixels player ()
+    else begin
+      if c mod 2 = 0 then draw_creature creature_pixels player ()
+      else begin
+        set_color blue;
+
+        set_erase_mode true ();
+        draw_creature creature_pixels player ();
+        set_erase_mode false ()
+      end;
+      Input.sleep 0.1 ();
+      damage_render_rec (c - 1) creature_pixels player ()
+    end
+  in
+  damage_render_rec 7 sprite player ();
   set_color text_color
