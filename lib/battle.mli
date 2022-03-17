@@ -12,11 +12,6 @@ val animate_faint : sprite -> bool -> unit -> unit
 (** [animate_faint sprite (_)] performs the fainting animation of the
     creature [sprite] *)
 
-val damage_render : sprite -> bool -> unit -> unit
-(** [damage_render sprite is_player (_)] performs the damage animation
-    of either the enemy or the player depedning on the [is_player]
-    boolean *)
-
 val draw_health_bar : int -> int -> int -> bool -> unit -> unit
 (** [draw_health_bar max_hp before_current_hp after_current_hp is_player(_)]
     performs the health bar animation of either the enemy or the player

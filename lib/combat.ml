@@ -155,10 +155,6 @@ let damage_calc move attacker defender =
     let x = a * b in
     x / c
   in
-  print_endline
-    ("ATK TEST: "
-    ^ string_of_int
-        (stat_modified a.attack attacker.stat_changes.attack));
   let x =
     match move.category with
     | Physical ->
@@ -230,15 +226,18 @@ let player_faster brecord =
   else if Random.int 2 = 1 then true
   else false
 
+(* ==============================================================*)
+(* ================ Stat Changes Handler BEGIN===================*)
+(* ==============================================================*)
 let stat_bound stat_val name stat_name =
   if stat_val > 6 then begin
     draw_text
       (name ^ "'s " ^ string_of_stat stat_name ^ " can't go any higher.")
-      40 ();
+      40 true ();
     false
   end
   else if stat_val < -6 then begin
-    draw_text (name ^ "'s ATK can't go any higher.") 40 ();
+    draw_text (name ^ "'s ATK can't go any lower.") 40 true ();
     false
   end
   else true
@@ -270,13 +269,20 @@ let handle_stat_changes battler stat stages =
 let handle_effects move attacker defender () =
   match move.effect_id with
   | 1 ->
-      draw_text (get_nickname defender.creature ^ "'s ATK fell") 40 ();
+      draw_text
+        (get_nickname defender.creature ^ "'s ATK fell")
+        40 true ();
       handle_stat_changes defender Attack (-1)
   | 7 ->
-      draw_text (get_nickname attacker.creature ^ "'s ATK rose") 40 ();
+      draw_text
+        (get_nickname attacker.creature ^ "'s ATK rose")
+        40 true ();
       handle_stat_changes defender Attack 1
   | _ -> ()
 
+(* ==============================================================*)
+(* ================ Stat Changes Handler END===================*)
+(* ==============================================================*)
 let exec_turn attacker defender brecord =
   let damage_pte =
     match attacker.current_move with
@@ -284,11 +290,17 @@ let exec_turn attacker defender brecord =
     | Move m ->
         draw_text
           (get_nickname attacker.creature ^ " used " ^ m.move_name)
-          40 ();
+          40 true ();
         handle_effects m attacker defender ();
         if m.power > 0 then begin
-          print_endline ("EFFECT: " ^ string_of_int m.effect_id);
-
+          if attacker.creature = brecord.player_battler.creature then
+            Draw.damage_render
+              (get_front_sprite defender.creature)
+              false ()
+          else
+            Draw.damage_render
+              (get_back_sprite defender.creature)
+              true ();
           damage_calc m attacker defender
         end
         else 0.0

@@ -17,12 +17,17 @@ val set_text_char_cap : int -> unit
 val get_dimension : sprite -> int * int
 
 (*** ================= Set Functions Functions =================**)
-val set_sticky_text : bool -> unit
-val set_erase_mode : bool -> unit
+val set_sticky_text : bool -> unit -> unit
+val set_erase_mode : bool -> unit -> unit
 val set_synced_mode : bool -> unit
 val set_font_size : int -> unit -> unit
 val get_font_size : int
-val wait : unit -> unit
+
+val wait : int -> unit -> unit
+(** [wait delay_time] waits for [delay_time] or util user input to
+    continue. If [delay_time = -1] then it waits indefinetely until user
+    input *)
+
 val sync_draw : (unit -> unit) -> unit -> unit
 val sync : bool -> unit -> unit
 
@@ -68,8 +73,15 @@ val draw_sprite_crop :
     draws an image from the given [sprite] representation at [x] and [y]
     with cropped based on the bounds defined*)
 
-val draw_text : string -> int -> unit -> unit
-(** [draw_text text (_)] draws the given text on the bottom of the
-    screen and simulates text scrolling. *)
+val draw_text : string -> int -> bool -> unit -> unit
+(** [draw_text text font_size auto_scroll (_)] draws the given [text]
+    with the given [font_size]on the bottom of the screen and simulates
+    text scrolling. If [auto_scroll] is on, then it will scroll
+    automatically after a delay*)
+
+val damage_render : sprite -> bool -> unit -> unit
+(** [damage_render sprite is_player (_)] performs the damage animation
+    of either the enemy or the player depedning on the [is_player]
+    boolean *)
 
 val draw_gradient : int -> int -> unit

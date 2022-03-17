@@ -27,7 +27,7 @@ let combat_hud = load_sprite "other_sprites/opponent_hud" 3 ()
 let player_hud = load_sprite "other_sprites/player_hud" 3 ()
 
 (** Test creatures Sprites **)
-let player_creature = create_creature "clefairy" 50
+let player_creature = create_creature "clefairy" 60
 
 let enemy_creature = create_creature "clefairy" 40
 
@@ -39,10 +39,10 @@ let start_combat_hud () =
   set_text_bg battle_bot_left battle_right;
   clear_text ();
   set_text_bg battle_bot_left empty_sprite;
-  set_sticky_text true;
-  draw_text "What will     Clefairy do?   " 40 ();
+  set_sticky_text true ();
+  draw_text "What will     Clefairy do?   " 40 false ();
   set_text_bg empty_sprite battle_right;
-  set_sticky_text false
+  set_sticky_text false ()
 
 let get_color_from_etype etype =
   match etype with
@@ -141,7 +141,11 @@ let draw_health_bar max before after player () =
       before max player ();
   set_color blank;
   fill_rect xh yh hwidth hheight;
-  set_color bar_green;
+  let ratio = d before 100 max in
+  if ratio <= 1 then set_color blank
+  else if ratio <= 20 then set_color bar_red
+  else if ratio <= 50 then set_color bar_yellow
+  else set_color bar_green;
   let before_bar = d before 100 max in
   fill_rect xh yh (d before_bar hwidth 100) hheight;
 
@@ -151,13 +155,17 @@ let draw_health_bar max before after player () =
       if start = target || start <= 0 then ()
       else if start > target then begin
         (*=====LOSING HEALTH=====*)
-        if start == 1 then set_color blank
+        if start <= 1 then set_color blank
         else if start <= 20 then set_color bar_red
         else if start <= 50 then set_color bar_yellow
         else set_color bar_green;
         fill_rect xh yh (d start hwidth 100) hheight;
         set_color blank;
-        fill_rect (xh + d start hwidth 100 - 4) yh 4 hheight;
+        fill_rect
+          (xh + d start hwidth 100)
+          yh
+          (hwidth - d start hwidth 100)
+          hheight;
         (* HP NUMBER *)
         draw_hp_val
           (xh + (hwidth / 2))
@@ -179,7 +187,7 @@ let draw_health_bar max before after player () =
           (d max start 100) max player ();
 
         fill_rect xh yh (d hwidth start 100) hheight;
-        Input.sleep 0.05 ();
+        Input.sleep 0.005 ();
         render_health (start + 1) target
       end
     in
@@ -215,21 +223,19 @@ let draw_exp_bar max before after () =
   fill_rect xh yh (d before_bar hwidth 100) hheight;
 
   let after_bar = d after 100 max in
-  if before <> after then (
-    let rec render_bar_progress start target =
-      if start = target || start < 0 then ()
-      else if start <= target then begin
-        set_color bar_color;
-        fill_rect xh yh (d start hwidth 100 + 4) hheight;
-        (* set_color blank; fill_rect (xh + d start hwidth 100) yh 2
-           hheight; *)
-        Input.sleep 0.05 ();
-        render_bar_progress (start + 1) target
-      end
-    in
-    print_endline ("before: " ^ string_of_int before_bar);
-    print_endline ("after: " ^ string_of_int after_bar);
-    render_bar_progress before_bar after_bar);
+  (if before <> after then
+   let rec render_bar_progress start target =
+     if start = target || start < 0 then ()
+     else if start <= target then begin
+       set_color bar_color;
+       fill_rect xh yh (d start hwidth 100 + 4) hheight;
+       (* set_color blank; fill_rect (xh + d start hwidth 100) yh 2
+          hheight; *)
+       Input.sleep 0.05 ();
+       render_bar_progress (start + 1) target
+     end
+   in
+   render_bar_progress before_bar after_bar);
   (* Draw.sync false (); *)
   set_color text_color
 
@@ -274,25 +280,6 @@ let draw_combat_commands c redraw () =
 
   set_font_size 40 ()
 
-let damage_render sprite player () =
-  let rec damage_render_rec c creature_pixels player () =
-    if c = 0 then draw_creature creature_pixels player ()
-    else begin
-      if c mod 2 = 0 then draw_creature creature_pixels player ()
-      else begin
-        set_color blue;
-
-        set_erase_mode true;
-        draw_creature creature_pixels player ();
-        set_erase_mode false
-      end;
-      Input.sleep 0.20 ();
-      damage_render_rec (c - 1) creature_pixels player ()
-    end
-  in
-  damage_render_rec 7 sprite player ();
-  set_color text_color
-
 let rec faint base c sprite player () =
   let sprite_width, sprite_height = get_dimension sprite in
   let xx, yy =
@@ -300,9 +287,9 @@ let rec faint base c sprite player () =
     else (width - 50 - sprite_width, height - 50 - sprite_height)
   in
   if c = base - 2 then begin
-    set_erase_mode true;
+    set_erase_mode true ();
     draw_creature sprite player ();
-    set_erase_mode false
+    set_erase_mode false ()
   end
   else begin
     draw_sprite_crop sprite xx
@@ -312,14 +299,14 @@ let rec faint base c sprite player () =
       ();
 
     clear_text ();
-    Input.sleep 0.05 ();
-    set_erase_mode true;
+    Input.sleep 0.075 ();
+    set_erase_mode true ();
     draw_sprite_crop sprite xx
       (yy - (sprite_height - (sprite_height / c)))
       (0, sprite_width)
       (sprite_height - (sprite_height / c), sprite_height)
       ();
-    set_erase_mode false;
+    set_erase_mode false ();
 
     set_color blue;
 
@@ -393,6 +380,7 @@ let handle_combat move =
   let player_a1, enemy_a1 =
     (get_current_hp player, get_current_hp enemy)
   in
+
   draw_health_bar p_maxhp player_b player_a1 true ();
   draw_health_bar e_maxhp enemy_b enemy_a1 false ();
   (***=============Second Half =============***)
@@ -402,26 +390,31 @@ let handle_combat move =
     (get_current_hp player, get_current_hp enemy)
   in
   if battle_sim.contents.battle_status <> Combat.Victory then
-    print_endline
-      ("Player First: " ^ string_of_bool (Combat.is_player_first ()));
-  if player_a1 <> player_a2 then
+    (* if Combat.is_player_first () then damage_render player true ()
+       else damage_render enemy false (); *)
     draw_health_bar p_maxhp player_a1 player_a2 true ();
-  if enemy_a1 <> enemy_a2 then
-    draw_health_bar e_maxhp enemy_a1 enemy_a2 false ();
+  draw_health_bar e_maxhp enemy_a1 enemy_a2 false ();
   (***============= Resolution =============***)
   if enemy_a2 <= 0 then (
     (* draw_creature_exp player (get_exp_gain enemy) false (); *)
     let before_exp, _, _ = get_exp player in
     add_exp player (get_exp_gain enemy);
     let curr_exp, min_exp, max_exp = get_exp player in
-    print_endline ("MAX: " ^ string_of_int (max_exp - min_exp));
-    print_endline ("Before: " ^ string_of_int (before_exp - min_exp));
-    print_endline ("After: " ^ string_of_int (curr_exp - min_exp));
+
     Ui.add_first_gameplay
       (draw_exp_bar (max_exp - min_exp) (before_exp - min_exp)
          (curr_exp - min_exp));
-    (* Ui.add_first_gameplay (draw_exp_bar 1000 10 500); *)
+    Ui.add_first_gameplay (set_sticky_text false);
+
+    Ui.add_first_gameplay
+      (draw_text
+         (get_nickname player ^ " gained "
+         ^ string_of_int (get_exp_gain enemy)
+         ^ " EXP. Points!")
+         40 true);
+    Ui.add_first_gameplay (set_sticky_text true);
     Ui.add_first_gameplay (animate_faint (get_front_sprite enemy) false);
+    Ui.add_first_gameplay (Input.sleep 0.5);
     if player_a2 <= 0 then
       Ui.add_first_gameplay
         (animate_faint (get_front_sprite player) true))
@@ -471,9 +464,8 @@ let run_tick () =
         end
     | Moves ->
         if b != combat_button.contents then
-          print_endline (string_of_int b);
-        Ui.add_first_foreground
-          (draw_moves player b combat_button.contents);
+          Ui.add_first_foreground
+            (draw_moves player b combat_button.contents);
 
         if key = 'e' then begin
           Ui.clear_ui Ui.Foreground;
