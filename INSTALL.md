@@ -45,6 +45,8 @@ Then, follow the instructions here to install X server for Windows:
 
 ## Running the Game
 
-To run the game, simply type `make play` to begin the game.
+Unzip ms1.zip.
+Then open the folder ms1 in VSCode.
+Finally, to run the game, open the terminal and simply type `make play` to begin the game.
 
 # ENJOY :)
