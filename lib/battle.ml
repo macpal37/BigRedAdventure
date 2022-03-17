@@ -421,6 +421,11 @@ let handle_combat move =
 
 let start_battle () =
   set_nickname player_creature "BestMon";
+
+  set_text_bg battle_bot_left battle_bot_right;
+  draw_text "Press E to continue/select." 40 false ();
+  draw_text "USE WASD keys to move around" 40 false ();
+  draw_text "USE Q to go back." 40 false ();
   set_text_bg battle_bot_left battle_right;
   battle_sim.contents <-
     Combat.wild_init [ player_creature ] [ enemy_creature ];
