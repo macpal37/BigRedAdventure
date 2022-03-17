@@ -163,8 +163,7 @@ let draw_health_bar max before after player () =
           (xh + (hwidth / 2))
           (yh - hheight - 5 - 22)
           (d max start 100) max player ();
-
-        Unix.sleepf 0.05;
+        Input.sleep 0.05 ();
         render_health (start - 1) target
       end
       else begin
@@ -180,7 +179,7 @@ let draw_health_bar max before after player () =
           (d max start 100) max player ();
 
         fill_rect xh yh (d hwidth start 100) hheight;
-        Unix.sleepf 0.05;
+        Input.sleep 0.05 ();
         render_health (start + 1) target
       end
     in
@@ -224,7 +223,7 @@ let draw_exp_bar max before after () =
         fill_rect xh yh (d start hwidth 100 + 4) hheight;
         (* set_color blank; fill_rect (xh + d start hwidth 100) yh 2
            hheight; *)
-        Unix.sleepf 0.05;
+        Input.sleep 0.05 ();
         render_bar_progress (start + 1) target
       end
     in
@@ -287,7 +286,7 @@ let damage_render sprite player () =
         draw_creature creature_pixels player ();
         set_erase_mode false
       end;
-      Unix.sleepf 0.20;
+      Input.sleep 0.20 ();
       damage_render_rec (c - 1) creature_pixels player ()
     end
   in
@@ -313,7 +312,7 @@ let rec faint base c sprite player () =
       ();
 
     clear_text ();
-    Unix.sleepf 0.05;
+    Input.sleep 0.05 ();
     set_erase_mode true;
     draw_sprite_crop sprite xx
       (yy - (sprite_height - (sprite_height / c)))
@@ -372,22 +371,16 @@ let draw_creature_exp creature added_exp render () =
       ()
 
 let handle_combat move =
-  battle_sim.contents <- Combat.turn_builder battle_sim.contents move;
-
+  Combat.turn_builder battle_sim.contents move;
+  set_text_char_cap 28;
   let player, enemy =
     ( List.nth battle_sim.contents.player_creatures 0,
       List.nth battle_sim.contents.enemy_creatures 0 )
   in
-  let pmove =
-    match battle_sim.contents.player_move with
-    | Move m -> m
-    | None _ -> empty_move
-  in
-  let emove =
-    match battle_sim.contents.enemy_move with
-    | Move m -> m
-    | None _ -> empty_move
-  in
+  (* let pmove = match battle_sim.contents.player_battler.current_move
+     with | Move m -> m | None _ -> empty_move in let emove = match
+     battle_sim.contents.enemy_battler.current_move with | Move m -> m |
+     None _ -> empty_move in *)
   let p_maxhp, e_maxhp =
     ((get_stats player).max_hp, (get_stats enemy).max_hp)
   in
@@ -396,22 +389,14 @@ let handle_combat move =
     (get_current_hp player, get_current_hp enemy)
   in
   (***=============First Half =============***)
-  battle_sim.contents <- Combat.battle_sim_fh battle_sim.contents;
+  Combat.battle_sim_fh battle_sim.contents;
   let player_a1, enemy_a1 =
     (get_current_hp player, get_current_hp enemy)
   in
-  if Combat.is_player_first () then begin
-    set_text_char_cap 28;
-    draw_text (get_nickname player ^ " used " ^ pmove.move_name) 40 ()
-  end
-  else begin
-    set_text_char_cap 28;
-    draw_text (get_nickname enemy ^ " used " ^ emove.move_name) 40 ()
-  end;
   draw_health_bar p_maxhp player_b player_a1 true ();
   draw_health_bar e_maxhp enemy_b enemy_a1 false ();
   (***=============Second Half =============***)
-  battle_sim.contents <- Combat.battle_sim_sh battle_sim.contents;
+  Combat.battle_sim_sh battle_sim.contents;
   (* if battle_sim.contents.battle_status <> Combat.Victory *)
   let player_a2, enemy_a2 =
     (get_current_hp player, get_current_hp enemy)
@@ -419,14 +404,6 @@ let handle_combat move =
   if battle_sim.contents.battle_status <> Combat.Victory then
     print_endline
       ("Player First: " ^ string_of_bool (Combat.is_player_first ()));
-  if Combat.is_player_first () = false then begin
-    set_text_char_cap 28;
-    draw_text (get_nickname player ^ " used " ^ pmove.move_name) 40 ()
-  end
-  else begin
-    set_text_char_cap 28;
-    draw_text (get_nickname enemy ^ " used " ^ emove.move_name) 40 ()
-  end;
   if player_a1 <> player_a2 then
     draw_health_bar p_maxhp player_a1 player_a2 true ();
   if enemy_a1 <> enemy_a2 then
@@ -522,4 +499,5 @@ let run_tick () =
   in
 
   action;
+
   Ui.update_all ()

@@ -322,7 +322,7 @@ let generate_ivs rand_func =
     speed = rand_func 32 ();
   }
 
-let blank_evs =
+let empty_stats =
   {
     max_hp = 0;
     attack = 0;
@@ -387,7 +387,7 @@ let creature_from_json json level =
   let ivs = generate_ivs rand in
   let random_nature = generate_nature (rand 25 ()) in
   let curr_stats =
-    calculate_stats level bstats ivs blank_evs random_nature
+    calculate_stats level bstats ivs empty_stats random_nature
   in
   let lev_rate = level_rate_from_json json in
   let learnset =
@@ -402,7 +402,7 @@ let creature_from_json json level =
     base_stats = bstats;
     current_stats = curr_stats;
     iv_stats = ivs;
-    ev_stats = blank_evs;
+    ev_stats = empty_stats;
     current_status = Healthy;
     etypes = (etype_from_json json 1, etype_from_json json 2);
     leveling_rate = lev_rate;
@@ -417,9 +417,12 @@ let creature_from_json json level =
     learnset;
     moves = generate_moves learnset level;
     front_sprite =
-      Draw.load_creature (String.lowercase_ascii name ^ "_front") ();
+      (if name = "#" then Draw.empty_sprite
+      else
+        Draw.load_creature (String.lowercase_ascii name ^ "_front") ());
     back_sprite =
-      Draw.load_creature (String.lowercase_ascii name ^ "_back") ();
+      (if name = "#" then Draw.empty_sprite
+      else Draw.load_creature (String.lowercase_ascii name ^ "_back") ());
   }
 
 let create_creature name level =

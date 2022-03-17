@@ -75,6 +75,7 @@ type move = {
 (** Loads and handles all the moves performed during combat*)
 
 val empty_move : move
+val empty_stats : stats
 
 val get_move : string -> move
 (** [get_move move_name] returns the the move*)

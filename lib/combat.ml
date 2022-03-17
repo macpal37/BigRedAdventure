@@ -27,19 +27,22 @@ type turn_status =
   | Finished
 (*BRECORD VARIANTS END*)
 
-(* type battle_creature = { creature : creature; current_move : move;
-   stat_changes : stats; } *)
+type battle_creature = {
+  mutable creature : creature;
+  mutable current_move : move_status;
+  mutable stat_changes : stats;
+}
 
 type battle_record = {
-  player_creatures : creature list;
-  enemy_creatures : creature list;
+  mutable player_creatures : creature list;
+  mutable enemy_creatures : creature list;
   battle_type : btype;
-  battle_status : bstatus;
+  mutable battle_status : bstatus;
   escape_attempts : int;
-  player_move : move_status;
-  enemy_move : move_status;
-  turn_counter : int;
-  turn_pos : turn_status;
+  mutable player_battler : battle_creature;
+  mutable enemy_battler : battle_creature;
+  mutable turn_counter : int;
+  mutable turn_pos : turn_status;
 }
 
 let player_first = ref false
@@ -52,35 +55,68 @@ let empty_battle =
     battle_type = Wild;
     battle_status = Ongoing;
     escape_attempts = 0;
-    player_move = None Healthy;
-    enemy_move = None Healthy;
+    player_battler =
+      {
+        creature = create_creature "missingno" 1;
+        current_move = None Fainted;
+        stat_changes = empty_stats;
+      };
+    enemy_battler =
+      {
+        creature = create_creature "missingno" 1;
+        current_move = None Fainted;
+        stat_changes = empty_stats;
+      };
     turn_counter = 0;
     turn_pos = Choosing;
   }
 
 (*might create active creatures and inactive creature for each?*)
 let wild_init plist elist =
+  let player, enemy = (List.nth plist 0, List.nth elist 0) in
+
   {
     player_creatures = plist;
     enemy_creatures = elist;
     battle_type = Wild;
     battle_status = Ongoing;
     escape_attempts = 0;
-    player_move = None (get_status (List.nth plist 0));
-    enemy_move = None Healthy;
+    player_battler =
+      {
+        creature = player;
+        current_move = None (get_status player);
+        stat_changes = empty_stats;
+      };
+    enemy_battler =
+      {
+        creature = enemy;
+        current_move = None (get_status enemy);
+        stat_changes = empty_stats;
+      };
     turn_counter = 0;
     turn_pos = Choosing;
   }
 
 let trainer_init plist elist =
+  let player, enemy = (List.nth plist 0, List.nth elist 0) in
   {
     player_creatures = plist;
     enemy_creatures = elist;
     battle_type = Trainer;
     battle_status = Ongoing;
     escape_attempts = 0;
-    player_move = None (get_status (List.nth plist 0));
-    enemy_move = None Healthy;
+    player_battler =
+      {
+        creature = player;
+        current_move = None (get_status player);
+        stat_changes = empty_stats;
+      };
+    enemy_battler =
+      {
+        creature = enemy;
+        current_move = None (get_status enemy);
+        stat_changes = empty_stats;
+      };
     turn_counter = 0;
     turn_pos = Choosing;
   }
@@ -91,58 +127,59 @@ let rand_move brecord =
   let random_pos = Random.int (List.length possible_moves - 1) in
   List.nth possible_moves random_pos
 
-let player_input_move brecord move_id =
-  if get_status (List.nth brecord.player_creatures 0) = Healthy then
-    { brecord with player_move = Move move_id }
-  else
-    {
-      brecord with
-      player_move =
-        None (get_status (List.nth brecord.player_creatures 0));
-    }
+let handle_battler_status battler move =
+  match get_status battler.creature with
+  | Healthy -> battler.current_move <- Move move
+  | _ -> battler.current_move <- None Healthy
 
-let enemy_choose_move brecord =
-  let pokestatus = get_status (List.nth brecord.enemy_creatures 0) in
-  if pokestatus = Healthy then
-    { brecord with enemy_move = Move (rand_move brecord) }
-  else { brecord with enemy_move = None pokestatus }
 (*HELPERS FOR TURN_BUILDER END*)
 
 let turn_builder brecord player_move =
-  let pmove = player_input_move brecord player_move in
-  let emove = enemy_choose_move brecord in
-  {
-    brecord with
-    player_move = pmove.player_move;
-    enemy_move = emove.enemy_move;
-    turn_pos = Pending;
-  }
+  handle_battler_status brecord.player_battler player_move;
+  handle_battler_status brecord.enemy_battler (rand_move brecord)
 
 (*HELPERS FOR BATTLE SIM FNS*)
 let get_crit () =
   let x = Util.rand 16 () in
   if x = 0 then 2. else 1.
 
+let stat_modified stat stages =
+  if stages > 0 then stat * (stages + 2) * 100 / 200
+  else if stages < 0 then stat * 200 / (((-1 * stages) + 2) * 100)
+  else stat
+
 let damage_calc move attacker defender =
-  let a = get_stats attacker in
-  let b = get_stats defender in
+  let a = get_stats attacker.creature in
+  let b = get_stats defender.creature in
   let d a b c =
     let x = a * b in
     x / c
   in
+  print_endline
+    ("ATK TEST: "
+    ^ string_of_int
+        (stat_modified a.attack attacker.stat_changes.attack));
   let x =
     match move.category with
-    | Physical -> d a.attack move.power b.defense
-    | Special -> d a.sp_attack move.power b.sp_defense
+    | Physical ->
+        d
+          (stat_modified a.attack attacker.stat_changes.attack)
+          move.power
+          (stat_modified b.defense defender.stat_changes.defense)
+    | Special ->
+        d
+          (stat_modified a.sp_attack attacker.stat_changes.sp_attack)
+          move.power
+          (stat_modified b.sp_defense defender.stat_changes.sp_defense)
     | _ -> 0
   in
   let base_damage =
-    float_of_int (d (d 2 (get_level attacker) 5 + 2) x 50 + 2)
+    float_of_int (d (d 2 (get_level attacker.creature) 5 + 2) x 50 + 2)
   in
   let total_damage =
     base_damage
-    *. get_stab_mod attacker move.etype
-    *. get_type_mod move.etype defender
+    *. get_stab_mod attacker.creature move.etype
+    *. get_type_mod move.etype defender.creature
     *. get_crit ()
     *. (float_of_int (Util.rand 16 ()) +. 85.0)
     /. 100.0
@@ -161,30 +198,24 @@ let inactive_crtr_filter crtrlist =
 
 let updated_player_creatures brecord =
   match brecord.player_creatures with
-  | [ _ ] -> { brecord with battle_status = Loss }
+  | [ _ ] -> brecord.battle_status <- Loss
   | _ :: _ ->
       if active_crtr_filter brecord.player_creatures <> [] then
-        {
-          brecord with
-          player_creatures =
-            active_crtr_filter brecord.player_creatures
-            @ inactive_crtr_filter brecord.player_creatures;
-        }
-      else { brecord with battle_status = Loss }
+        brecord.player_creatures <-
+          active_crtr_filter brecord.player_creatures
+          @ inactive_crtr_filter brecord.player_creatures
+      else brecord.battle_status <- Loss
   | [] -> raise Empty
 
 let updated_enemy_creatures brecord =
   match brecord.enemy_creatures with
-  | [ _ ] -> { brecord with battle_status = Victory }
+  | [ _ ] -> brecord.battle_status <- Victory
   | _ :: _ ->
       if active_crtr_filter brecord.enemy_creatures <> [] then
-        {
-          brecord with
-          enemy_creatures =
-            active_crtr_filter brecord.enemy_creatures
-            @ inactive_crtr_filter brecord.enemy_creatures;
-        }
-      else { brecord with battle_status = Victory }
+        brecord.enemy_creatures <-
+          active_crtr_filter brecord.enemy_creatures
+          @ inactive_crtr_filter brecord.enemy_creatures
+      else brecord.battle_status <- Victory
   | [] -> raise Empty
 
 let player_faster brecord =
@@ -194,108 +225,121 @@ let player_faster brecord =
   let player_speed =
     (get_stats (List.nth brecord.player_creatures 0)).speed
   in
-  print_endline ("Player Speed:" ^ string_of_int player_speed);
-  print_endline ("Enemy Speed:" ^ string_of_int enemy_speed);
   if player_speed > enemy_speed then true
   else if player_speed < enemy_speed then false
   else if Random.int 2 = 1 then true
   else false
 
-(* let handle_effects move attacker defender = match move.effect_id with
-   | 1 -> draw_text (get_nickname defender ^ "'s ATK fell") 40 () | 7 ->
-   draw_text (get_nickname attacker ^ "'s ATK rose") 40 () | _ -> () *)
+let stat_bound stat_val name stat_name =
+  if stat_val > 6 then begin
+    draw_text
+      (name ^ "'s " ^ string_of_stat stat_name ^ " can't go any higher.")
+      40 ();
+    false
+  end
+  else if stat_val < -6 then begin
+    draw_text (name ^ "'s ATK can't go any higher.") 40 ();
+    false
+  end
+  else true
 
-(* let exec_turn move_status attacker defender brecord = (* let player,
-   enemy = ( List.nth brecord.player_creatures 0, List.nth
-   brecord.enemy_creatures 0 ) in *) let damage_pte = match move_status
-   with | None _ -> 0.0 | Move m -> draw_text (get_nickname attacker ^ "
-   used " ^ m.move_name) 40 ();
+let handle_stat_changes battler stat stages =
+  match stat with
+  | HP -> ()
+  | Attack ->
+      let stat_change = battler.stat_changes.attack + stages in
+      if stat_bound stat_change (get_nickname battler.creature) stat
+      then battler.stat_changes.attack <- stat_change
+  | Defense ->
+      let stat_change = battler.stat_changes.attack + stages in
+      if stat_bound stat_change (get_nickname battler.creature) stat
+      then battler.stat_changes.defense <- stat_change
+  | Sp_Attack ->
+      let stat_change = battler.stat_changes.attack + stages in
+      if stat_bound stat_change (get_nickname battler.creature) stat
+      then battler.stat_changes.sp_attack <- stat_change
+  | Sp_Defense ->
+      let stat_change = battler.stat_changes.attack + stages in
+      if stat_bound stat_change (get_nickname battler.creature) stat
+      then battler.stat_changes.sp_defense <- stat_change
+  | Speed ->
+      let stat_change = battler.stat_changes.attack + stages in
+      if stat_bound stat_change (get_nickname battler.creature) stat
+      then battler.stat_changes.speed <- stat_change
 
-   (* handle_effects m.effect_id player; *) if m.power > 0 then
-   damage_calc m attacker defender else 0.0 in set_current_hp enemy
-   (get_current_hp enemy - int_of_float damage_pte);
+let handle_effects move attacker defender () =
+  match move.effect_id with
+  | 1 ->
+      draw_text (get_nickname defender.creature ^ "'s ATK fell") 40 ();
+      handle_stat_changes defender Attack (-1)
+  | 7 ->
+      draw_text (get_nickname attacker.creature ^ "'s ATK rose") 40 ();
+      handle_stat_changes defender Attack 1
+  | _ -> ()
 
-   if get_current_hp enemy > 0 then brecord else updated_enemy_creatures
-   brecord *)
-
-let exec_turn_pte brecord =
-  let player, enemy =
-    ( List.nth brecord.player_creatures 0,
-      List.nth brecord.enemy_creatures 0 )
-  in
+let exec_turn attacker defender brecord =
   let damage_pte =
-    match brecord.player_move with
+    match attacker.current_move with
     | None _ -> 0.0
     | Move m ->
-        (* draw_text (get_nickname player ^ " used " ^ m.move_name) 40
-           (); *)
-        if m.power > 0 then damage_calc m player enemy else 0.0
+        draw_text
+          (get_nickname attacker.creature ^ " used " ^ m.move_name)
+          40 ();
+        handle_effects m attacker defender ();
+        if m.power > 0 then begin
+          print_endline ("EFFECT: " ^ string_of_int m.effect_id);
+
+          damage_calc m attacker defender
+        end
+        else 0.0
   in
 
-  set_current_hp enemy (get_current_hp enemy - int_of_float damage_pte);
+  set_current_hp defender.creature
+    (get_current_hp defender.creature - int_of_float damage_pte);
 
-  if get_current_hp enemy > 0 then brecord
+  if get_current_hp defender.creature > 0 then ()
+  else if defender.creature = brecord.player_battler.creature then
+    updated_player_creatures brecord
   else updated_enemy_creatures brecord
-
-let exec_turn_etp brecord =
-  let player, enemy =
-    ( List.nth brecord.player_creatures 0,
-      List.nth brecord.enemy_creatures 0 )
-  in
-  let damage_etp =
-    match brecord.enemy_move with
-    | None _ -> 0.0
-    | Move m -> if m.power > 0 then damage_calc m enemy player else 0.0
-  in
-  set_current_hp player (get_current_hp player - int_of_float damage_etp);
-  if get_current_hp (List.nth brecord.player_creatures 0) > 0 then
-    brecord
-  else updated_player_creatures brecord
 
 let execute_turn brecord =
   if brecord.turn_pos = Pending then
-    if player_first.contents then exec_turn_pte brecord
-    else exec_turn_etp brecord
+    if player_first.contents then
+      exec_turn brecord.player_battler brecord.enemy_battler brecord
+    else exec_turn brecord.enemy_battler brecord.player_battler brecord
   else
-    match brecord.player_move with
-    | None _ -> exec_turn_etp brecord
-    | Move _ -> exec_turn_pte brecord
+    match brecord.player_battler.current_move with
+    | None _ ->
+        exec_turn brecord.enemy_battler brecord.player_battler brecord
+    | Move _ ->
+        exec_turn brecord.player_battler brecord.enemy_battler brecord
 (*BATTLE SIM HELPERS END so many damn*)
 
 let battle_sim_fh brecord =
   let res = player_faster brecord in
   player_first.contents <- res;
-  print_endline ("Res: " ^ string_of_bool res);
-  print_endline ("Actual: " ^ string_of_bool player_first.contents);
-  let turn_exec = execute_turn brecord in
+  execute_turn brecord;
 
-  if player_faster brecord then
-    {
-      turn_exec with
-      player_move =
-        None (get_status (List.nth turn_exec.player_creatures 0));
-      turn_pos = Halfway;
-    }
-  else
-    {
-      turn_exec with
-      enemy_move =
-        None (get_status (List.nth turn_exec.enemy_creatures 0));
-      turn_pos = Halfway;
-    }
+  if player_faster brecord then begin
+    brecord.player_battler.current_move <-
+      None (get_status brecord.player_battler.creature);
+    brecord.turn_pos <- Halfway
+  end
+  else begin
+    brecord.enemy_battler.current_move <-
+      None (get_status brecord.enemy_battler.creature);
+    brecord.turn_pos <- Halfway
+  end
 
 let battle_sim_sh brecord =
-  if brecord.battle_status <> Victory then
-    let turn_exec2 = execute_turn brecord in
-    {
-      turn_exec2 with
-      player_move =
-        None (get_status (List.nth turn_exec2.player_creatures 0));
-      enemy_move =
-        None (get_status (List.nth turn_exec2.enemy_creatures 0));
-      turn_pos = Finished;
-    }
-  else brecord
+  if brecord.battle_status <> Victory then begin
+    execute_turn brecord;
+    brecord.player_battler.current_move <-
+      None (get_status brecord.player_battler.creature);
+    brecord.enemy_battler.current_move <-
+      None (get_status brecord.enemy_battler.creature);
+    brecord.turn_pos <- Finished
+  end
 
 (*IGNORE THESE FOR NOW, WILL POLISH IMPLEMENTATION LATER*)
 

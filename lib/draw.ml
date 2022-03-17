@@ -234,7 +234,7 @@ let draw_text text font_size () =
             draw_char h;
             rmoveto 2 (-4);
             set_color text_color;
-            Unix.sleepf 0.025;
+            Input.sleep 0.025 ();
             draw_chars t
       in
 
