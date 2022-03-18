@@ -267,6 +267,7 @@ let handle_stat_changes battler stat stages =
       then battler.stat_changes.speed <- stat_change
 
 let handle_effects move attacker defender () =
+  add_pp attacker.creature move.move_name (-1);
   match move.effect_id with
   | 1 ->
       draw_text

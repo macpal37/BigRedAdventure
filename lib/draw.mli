@@ -8,6 +8,12 @@ type sprite
     position and the r,g,b values of the pixel. It is used to render
     images ont the screen.*)
 
+type folder =
+  | Creature_Folder
+  | GUI_Folder
+  | Tile_Folder
+  | Item_Folder
+
 val width : int
 val height : int
 val empty_sprite : sprite
@@ -36,7 +42,8 @@ val load_creature : string -> unit -> sprite
     sprites and generates a lsit that represents the sprites. To be sed
     in conjuction with draw_sprite*)
 
-val load_sprite : string -> int -> unit -> sprite
+val load_sprite : string -> folder -> int -> unit -> sprite
+val load_sprite_from_file : string -> int -> unit -> sprite
 
 (*** =================DRAW Functions =================**)
 

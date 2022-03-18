@@ -1,14 +1,19 @@
-open Yojson.Basic.Util
 open Graphics
 
 type sprite = {
   pixels : int list;
   width : int;
   height : int;
-  mutable palette1 : color list;
-  mutable palette2 : color list;
+  mutable color_palette : color list;
+  base_palette : color list;
   dpi : int;
 }
+
+type folder =
+  | Creature_Folder
+  | GUI_Folder
+  | Tile_Folder
+  | Item_Folder
 
 let font_size = ref 50
 let text_color = rgb 68 68 68
@@ -18,8 +23,8 @@ let empty_sprite =
     pixels = [];
     width = 0;
     height = 0;
-    palette1 = [];
-    palette2 = [];
+    color_palette = [];
+    base_palette = [];
     dpi = 1;
   }
 
@@ -29,8 +34,8 @@ let text_bg1 =
       pixels = [];
       width = 0;
       height = 0;
-      palette1 = [];
-      palette2 = [];
+      color_palette = [];
+      base_palette = [];
       dpi = 1;
     }
 
@@ -40,8 +45,8 @@ let text_bg2 =
       pixels = [];
       width = 0;
       height = 0;
-      palette1 = [];
-      palette2 = [];
+      color_palette = [];
+      base_palette = [];
       dpi = 1;
     }
 
@@ -86,7 +91,7 @@ let draw_from_pixels sprite x y min_w min_h max_w max_h () =
     | h :: t ->
         if h <> 0 && tx >= min_w && ty >= min_h then begin
           if erase_mode.contents then set_color (point_color 0 0)
-          else set_color (List.nth sprite.palette1 (h - 1));
+          else set_color (List.nth sprite.color_palette (h - 1));
 
           draw_pixel sprite.dpi (x + tx) (y + ty) ()
         end;
@@ -99,44 +104,74 @@ let draw_from_pixels sprite x y min_w min_h max_w max_h () =
 
   draw_from_pixels_rec sprite.pixels x y 0 0
 
-let pixels_of_json json =
-  let pixels_strings = String.split_on_char ',' (json |> to_string) in
-  List.map (fun x -> int_of_string x) pixels_strings
+(* let color_to_rgb color = let r = (color land 0xFF0000) asr 0x10 and g
+   = (color land 0x00FF00) asr 0x8 and b = color land 0x0000FF in (r, g,
+   b) *)
 
-let string_to_color color_json =
-  let color_str = color_json |> to_string in
-  let rgblist = String.split_on_char ',' color_str in
-  rgb
-    (int_of_string (List.nth rgblist 0))
-    (int_of_string (List.nth rgblist 1))
-    (int_of_string (List.nth rgblist 2))
+let rec find x lst =
+  match lst with
+  | [] -> -1
+  | h :: t -> if x = h then 0 else 1 + find x t
 
-let load_json json dpi =
+let image_to_sprite (image : Image.image) =
+  let rec pixel_map i j sprite =
+    if i < image.height then
+      let new_i, new_j =
+        if j = 0 then (i + 1, image.width - 1) else (i, j - 1)
+      in
+
+      let pixels, palette = sprite in
+
+      let color, alpha =
+        Image.read_rgba image j i (fun r g b a () -> (rgb r g b, a)) ()
+      in
+
+      let new_pallette =
+        if List.mem color palette = false then palette @ [ color ]
+        else palette
+      in
+
+      if alpha > 0 then
+        let index = find color new_pallette in
+        pixel_map new_i new_j ((index + 1) :: pixels, new_pallette)
+      else pixel_map new_i new_j (0 :: pixels, new_pallette)
+    else sprite
+  in
+  pixel_map 0 (image.width - 1) ([], [])
+
+(* no function for converting color back to rgb in Graphics *)
+
+let load_image (image : Image.image) dpi =
+  let pixels, palette = image_to_sprite image in
+  let new_pallette = palette in
+
   {
-    pixels =
-      List.rev
-        (json |> member "pixels" |> to_list |> List.map pixels_of_json)
-      |> List.fold_left (fun y x -> y @ x) [];
-    width = (json |> member "width" |> to_int) * dpi;
-    height = (json |> member "height" |> to_int) * dpi;
-    palette1 =
-      json |> member "color_palette1" |> to_list
-      |> List.map string_to_color;
-    palette2 =
-      json |> member "color_palette2" |> to_list
-      |> List.map string_to_color;
+    pixels;
+    width = image.width * dpi;
+    height = image.height * dpi;
+    color_palette = new_pallette;
+    base_palette = new_pallette;
     dpi;
   }
 
-let load_sprite filename dpi () =
-  let json = Yojson.Basic.from_file ("assets/" ^ filename ^ ".json") in
-  load_json json dpi
+let load_sprite name folder dpi () =
+  let filename =
+    match folder with
+    | Creature_Folder -> "assets/creature_sprites/" ^ name ^ ".png"
+    | GUI_Folder -> "assets/gui_sprites/" ^ name ^ ".png"
+    | Item_Folder -> "assets/item_sprites/" ^ name ^ ".png"
+    | Tile_Folder -> "assets/tile_sprites/" ^ name ^ ".png"
+  in
+  let image = ImageLib_unix.openfile filename in
+  load_image image dpi
+
+let load_sprite_from_file filename dpi () =
+  let image = ImageLib_unix.openfile filename in
+  load_image image dpi
 
 let load_creature name () =
-  let json =
-    Yojson.Basic.from_file ("assets/creature_sprites/" ^ name ^ ".json")
-  in
-  load_json json 3
+  let filename = "assets/creature_sprites/" ^ name ^ ".png" in
+  load_sprite_from_file filename 3 ()
 
 let clear_sprite sprite x y () =
   usync false ();

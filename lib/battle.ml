@@ -17,14 +17,13 @@ let battle_sim = ref Combat.empty_battle
 (*****************************************************************)
 (***************     Loading Some Assets     *********************)
 (*****************************************************************)
-let battle_bot_right = load_sprite "other_sprites/battle_bot_right" 3 ()
-let battle_bot_left = load_sprite "other_sprites/battle_bot_left" 3 ()
-let battle_right = load_sprite "other_sprites/battle_top" 3 ()
-let moves_window = load_sprite "other_sprites/moves_window" 3 ()
 
-(* let move_info1 = load_sprite "other_sprites/move_info1" () *)
-let combat_hud = load_sprite "other_sprites/opponent_hud" 3 ()
-let player_hud = load_sprite "other_sprites/player_hud" 3 ()
+let battle_bot_right = load_sprite "battle_bot_right" GUI_Folder 3 ()
+let battle_bot_left = load_sprite "battle_bot_left" GUI_Folder 3 ()
+let battle_right = load_sprite "battle_top" GUI_Folder 3 ()
+let moves_window = load_sprite "moves_window" GUI_Folder 3 ()
+let combat_hud = load_sprite "opponent_hud" GUI_Folder 3 ()
+let player_hud = load_sprite "player_hud" GUI_Folder 3 ()
 
 (** Test creatures Sprites **)
 let player_creature = create_creature "clefairy" 60
@@ -422,10 +421,9 @@ let handle_combat move =
 let start_battle () =
   set_nickname player_creature "BestMon";
 
-  set_text_bg battle_bot_left battle_bot_right;
-  draw_text "Press E to continue/select." 40 false ();
-  draw_text "USE WASD keys to move around" 40 false ();
-  draw_text "USE Q to go back." 40 false ();
+  (* set_text_bg battle_bot_left battle_bot_right; draw_text "Press E to
+     continue/select." 40 false (); draw_text "USE WASD keys to move
+     around" 40 false (); draw_text "USE Q to go back." 40 false (); *)
   set_text_bg battle_bot_left battle_right;
   battle_sim.contents <-
     Combat.wild_init [ player_creature ] [ enemy_creature ];
