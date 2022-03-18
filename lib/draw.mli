@@ -92,3 +92,10 @@ val damage_render : sprite -> bool -> unit -> unit
     boolean *)
 
 val draw_gradient : int -> int -> unit
+val reset_rgb : sprite -> unit -> unit
+
+val draw_creature_effect :
+  sprite -> bool -> int -> int -> int -> int -> unit -> unit
+
+val lower_stat_effect : sprite -> bool -> unit -> unit
+val raise_stat_effect : sprite -> bool -> unit -> unit
