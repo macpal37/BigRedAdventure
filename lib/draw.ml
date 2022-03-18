@@ -1,5 +1,6 @@
 open Yojson.Basic.Util
 open Graphics
+(* open ImageLib_unix *)
 
 type sprite = {
   pixels : int list;
