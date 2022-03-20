@@ -54,7 +54,9 @@ type etype =
 
 (** Represents the elemental type of a creature*)
 
-(**===========MOVES ==========**)
+(** {1 Moves}*)
+
+(** Moves used when in combat*)
 
 type move_catgeory =
   | Physical
@@ -75,7 +77,10 @@ type move = {
 (** Loads and handles all the moves performed during combat*)
 
 val empty_move : move
+(** Represents an empty move.*)
+
 val empty_stats : stats
+(** Represents an emtpy set of stats*)
 
 val get_move : string -> move
 (** [get_move move_name] returns the the move*)

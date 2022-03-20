@@ -66,7 +66,7 @@ let draw_moves creature c_b c_a () =
     else
       let move = List.nth moves (i + (j * 2)) in
       let x, y = (text_x + (text_xdif * i), text_y - (text_ydif * j)) in
-      draw_string_colored x y 2 move.move_name
+      draw_string_colored x y 2 40 move.move_name
         (get_color_from_etype move.etype)
         ();
       moveto x (y - 40);
@@ -421,9 +421,10 @@ let handle_combat move =
 let start_battle () =
   set_nickname player_creature "BestMon";
 
-  (* set_text_bg battle_bot_left battle_bot_right; draw_text "Press E to
-     continue/select." 40 false (); draw_text "USE WASD keys to move
-     around" 40 false (); draw_text "USE Q to go back." 40 false (); *)
+  (* set_text_bg battle_bot_left battle_bot_right; draw_text "Press E
+     to\n continue/select." 40 false (); draw_text "USE WASD keys to
+     move\n around" 40 false (); draw_text "USE Q to go back." 40 false
+     (); *)
   set_text_bg battle_bot_left battle_right;
   battle_sim.contents <-
     Combat.wild_init [ player_creature ] [ enemy_creature ];

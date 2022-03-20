@@ -71,7 +71,7 @@ let set_font_size size () =
    ^ "-*-*-*-*-*-iso8859-1")
 
 let get_dimension sprite = (sprite.width, sprite.height)
-let get_font_size = font_size.contents
+let get_font_size () = !font_size
 let set_sticky_text flag () = is_sticky.contents <- flag
 let set_erase_mode flag () = erase_mode.contents <- flag
 let set_synced_mode flag = synced_mode.contents <- flag
@@ -167,13 +167,13 @@ let load_sprite name folder dpi () =
   let image = ImageLib_unix.openfile filename in
   load_image image dpi
 
-let load_sprite_from_file filename dpi () =
-  let image = ImageLib_unix.openfile filename in
+let load_sprite_from_filepath filepath dpi () =
+  let image = ImageLib_unix.openfile filepath in
   load_image image dpi
 
 let load_creature name () =
   let filename = "assets/creature_sprites/" ^ name ^ ".png" in
-  load_sprite_from_file filename 3 ()
+  load_sprite_from_filepath filename 3 ()
 
 let clear_sprite sprite x y () =
   usync false ();
@@ -301,14 +301,18 @@ let draw_gradient w h =
   gradient arr w h;
   draw_image (make_image arr) 0 0
 
-let draw_string_colored x y dif text custom_color () =
+let draw_string_colored x y shadow_offset font_size text custom_color ()
+    =
+  let cache_font_size = get_font_size () in
+  set_font_size font_size ();
   moveto x y;
-  set_color text_color;
+  set_color (rgb 0 0 0);
   draw_string text;
-  moveto (x + dif - 1) (y + dif);
+  moveto (x + shadow_offset - 1) (y + shadow_offset);
   set_color custom_color;
   draw_string text;
-  set_color text_color
+  set_color text_color;
+  set_font_size cache_font_size ()
 
 let damage_render sprite player () =
   let rec damage_render_rec c creature_pixels player () =
@@ -340,6 +344,7 @@ let add_rgb sprite red green blue () =
           (Util.bound (b + blue) 0 255)
         :: add_rgb_rec t
   in
+
   sprite.color_palette <- add_rgb_rec sprite.color_palette
 
 let reset_rgb sprite () = sprite.color_palette <- sprite.base_palette
