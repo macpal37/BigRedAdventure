@@ -31,6 +31,7 @@ type battle_creature = {
   mutable creature : creature;
   mutable current_move : move_status;
   mutable stat_changes : stats;
+  is_player : bool;
 }
 
 type battle_record = {
@@ -60,15 +61,25 @@ let empty_battle =
         creature = create_creature "missingno" 1;
         current_move = None Fainted;
         stat_changes = empty_stats;
+        is_player = true;
       };
     enemy_battler =
       {
         creature = create_creature "missingno" 1;
         current_move = None Fainted;
         stat_changes = empty_stats;
+        is_player = false;
       };
     turn_counter = 0;
     turn_pos = Choosing;
+  }
+
+let generate_battler creature player =
+  {
+    creature;
+    current_move = None (get_status creature);
+    stat_changes = empty_stats;
+    is_player = player;
   }
 
 (*might create active creatures and inactive creature for each?*)
@@ -81,18 +92,8 @@ let wild_init plist elist =
     battle_type = Wild;
     battle_status = Ongoing;
     escape_attempts = 0;
-    player_battler =
-      {
-        creature = player;
-        current_move = None (get_status player);
-        stat_changes = empty_stats;
-      };
-    enemy_battler =
-      {
-        creature = enemy;
-        current_move = None (get_status enemy);
-        stat_changes = empty_stats;
-      };
+    player_battler = generate_battler player true;
+    enemy_battler = generate_battler enemy false;
     turn_counter = 0;
     turn_pos = Choosing;
   }
@@ -105,18 +106,8 @@ let trainer_init plist elist =
     battle_type = Trainer;
     battle_status = Ongoing;
     escape_attempts = 0;
-    player_battler =
-      {
-        creature = player;
-        current_move = None (get_status player);
-        stat_changes = empty_stats;
-      };
-    enemy_battler =
-      {
-        creature = enemy;
-        current_move = None (get_status enemy);
-        stat_changes = empty_stats;
-      };
+    player_battler = generate_battler player true;
+    enemy_battler = generate_battler enemy false;
     turn_counter = 0;
     turn_pos = Choosing;
   }
@@ -155,6 +146,7 @@ let damage_calc move attacker defender =
     let x = a * b in
     x / c
   in
+  let crit_damage = get_crit () in
   let x =
     match move.category with
     | Physical ->
@@ -172,15 +164,16 @@ let damage_calc move attacker defender =
   let base_damage =
     float_of_int (d (d 2 (get_level attacker.creature) 5 + 2) x 50 + 2)
   in
+
   let total_damage =
     base_damage
     *. get_stab_mod attacker.creature move.etype
     *. get_type_mod move.etype defender.creature
-    *. get_crit ()
+    *. crit_damage
     *. (float_of_int (Util.rand 16 ()) +. 85.0)
     /. 100.0
   in
-  total_damage
+  (total_damage, crit_damage = 2.)
 
 let active_crtr_filter crtrlist =
   List.filter
@@ -243,42 +236,66 @@ let stat_bound stat_val name stat_name =
   else true
 
 let handle_stat_changes battler stat stages =
+  if battler.is_player then
+    if stages < 0 then
+      Draw.lower_stat_effect (get_back_sprite battler.creature) true ()
+    else
+      Draw.raise_stat_effect (get_back_sprite battler.creature) true ()
+  else if stages < 0 then
+    Draw.lower_stat_effect (get_front_sprite battler.creature) false ()
+  else
+    Draw.raise_stat_effect (get_front_sprite battler.creature) false ();
+
+  print_endline ("Name: " ^ get_nickname battler.creature);
+  print_endline ("ATK: " ^ string_of_int battler.stat_changes.attack);
   match stat with
   | HP -> ()
   | Attack ->
       let stat_change = battler.stat_changes.attack + stages in
       if stat_bound stat_change (get_nickname battler.creature) stat
-      then battler.stat_changes.attack <- stat_change
+      then
+        battler.stat_changes <-
+          { battler.stat_changes with attack = stat_change }
   | Defense ->
       let stat_change = battler.stat_changes.attack + stages in
       if stat_bound stat_change (get_nickname battler.creature) stat
-      then battler.stat_changes.defense <- stat_change
+      then
+        battler.stat_changes <-
+          { battler.stat_changes with defense = stat_change }
   | Sp_Attack ->
       let stat_change = battler.stat_changes.attack + stages in
       if stat_bound stat_change (get_nickname battler.creature) stat
-      then battler.stat_changes.sp_attack <- stat_change
+      then
+        battler.stat_changes <-
+          { battler.stat_changes with sp_attack = stat_change }
   | Sp_Defense ->
       let stat_change = battler.stat_changes.attack + stages in
       if stat_bound stat_change (get_nickname battler.creature) stat
-      then battler.stat_changes.sp_defense <- stat_change
+      then
+        battler.stat_changes <-
+          { battler.stat_changes with sp_defense = stat_change }
   | Speed ->
       let stat_change = battler.stat_changes.attack + stages in
       if stat_bound stat_change (get_nickname battler.creature) stat
-      then battler.stat_changes.speed <- stat_change
+      then
+        battler.stat_changes <-
+          { battler.stat_changes with speed = stat_change }
 
 let handle_effects move attacker defender () =
   add_pp attacker.creature move.move_name (-1);
   match move.effect_id with
   | 1 ->
+      Draw.set_sticky_text true ();
       draw_text
         (get_nickname defender.creature ^ "'s ATK fell")
         40 true ();
-      handle_stat_changes defender Attack (-1)
+      handle_stat_changes defender Attack (-1);
+      Draw.set_sticky_text false ()
   | 7 ->
+      handle_stat_changes attacker Attack 1;
       draw_text
         (get_nickname attacker.creature ^ "'s ATK rose")
-        40 true ();
-      handle_stat_changes defender Attack 1
+        40 true ()
   | _ -> ()
 
 (* ==============================================================*)
@@ -302,7 +319,9 @@ let exec_turn attacker defender brecord =
             Draw.damage_render
               (get_back_sprite defender.creature)
               true ();
-          damage_calc m attacker defender
+          let damage, is_crit = damage_calc m attacker defender in
+          if is_crit then Draw.draw_text "Critical Hit!" 40 true ();
+          damage
         end
         else 0.0
   in

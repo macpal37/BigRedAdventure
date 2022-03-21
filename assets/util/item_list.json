@@ -1,0 +1,26 @@
+{
+  "potion": {
+    "id": 1,
+    "type": "Medicine",
+    "description": "Heals a creature by 20 HP.",
+    "cost": 300
+  },
+  "super potion": {
+    "id": 2,
+    "type": "Medicine",
+    "description": "Heals a creature by 50 HP.",
+    "cost": 700
+  },
+  "hyper potion": {
+    "id": 3,
+    "type": "Medicine",
+    "description": "Heals a creature by 150 HP.",
+    "cost": 1500
+  },
+  "pokeball": {
+    "id": 50,
+    "type": "Ball",
+    "description": "An item for catching Creatures.",
+    "cost": 200
+  }
+}

@@ -25,6 +25,7 @@ type battle_creature = {
   mutable creature : creature;
   mutable current_move : move_status;
   mutable stat_changes : stats;
+  is_player : bool;
 }
 
 type battle_record = {
