@@ -286,6 +286,58 @@ let draw_text text font_size auto () =
   scroll_text text 0 levels;
   if levels <= 0 then wait wait_time ()
 
+let draw_text_string text () =
+  let cap = !text_char_cap in
+  set_text_char_cap 28;
+  set_font_size 40 ();
+  let char_cap = text_char_cap.contents in
+  clear_text ();
+  set_color text_color;
+  let start_x = 35 in
+  let start_y = 142 in
+  moveto start_x start_y;
+  let len = String.length text in
+  let levels = len / char_cap in
+  let rec scroll_text text start max =
+    if start mod 3 = 0 then
+      if start <> 0 && is_sticky.contents = false then
+        set_color text_color;
+    if start <> max + 1 then begin
+      let text = remove_space text in
+      let short_text =
+        if String.length text > char_cap then String.sub text 0 char_cap
+        else text
+      in
+      let rest_text =
+        if String.length text > char_cap then
+          String.sub text char_cap
+            (String.length text - String.length short_text)
+        else ""
+      in
+      let char_list = string_to_char_list short_text in
+      let rec draw_chars chars =
+        match chars with
+        | [] -> ()
+        | h :: t ->
+            set_color text_color;
+            draw_char h;
+            rmoveto (-15) 4;
+            set_color white;
+            draw_char h;
+            rmoveto 2 (-4);
+            set_color text_color;
+            draw_chars t
+      in
+
+      moveto start_x (start_y - (50 * (start mod 3)));
+      draw_chars char_list;
+
+      scroll_text rest_text (start + 1) max
+    end
+  in
+  scroll_text text 0 levels;
+  set_text_char_cap cap
+
 (* create a gradient of colors from black at 0,0 to white at w-1,h-1 *)
 let gradient arr w h =
   for y = 0 to h - 1 do
@@ -348,14 +400,6 @@ let add_rgb sprite red green blue () =
   sprite.color_palette <- add_rgb_rec sprite.color_palette
 
 let reset_rgb sprite () = sprite.color_palette <- sprite.base_palette
-
-(* let draw_creature_effect sprite player red green blue value () = let
-   rec effect r g b = let rr = if r = 0 then 0 else if r > 1 then value
-   else -value in let gg = if g = 0 then 0 else if g > 1 then value else
-   -value in let bb = if b = 0 then 0 else if b > 1 then value else
-   -value in add_rgb sprite rr gg bb (); draw_creature sprite player ();
-   Input.sleep 0.05 (); if r > 0 || g > 0 || b > 0 then effect (r -
-   value) (g - value) (b - value) else () in effect red green blue *)
 
 let draw_creature_effect sprite player red green blue value () =
   let rec effect count =

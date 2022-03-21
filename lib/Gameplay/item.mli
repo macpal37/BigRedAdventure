@@ -9,13 +9,10 @@ type item_type =
   | Medicine
   | Misc
 
-type item = {
-  name : string;
-  item_type : item_type;
-  description : string;
-  cost : int;
-  id : int;
-}
+val num_item_types : int
+(** Number of item types there are.*)
+
+type item
 (** The abstract type that represents an item*)
 
 (** Variants representing the different classes of items*)
@@ -29,11 +26,17 @@ val create_item : string -> item
 val new_item : string -> item_type -> int -> string -> int -> item
 (** [new_item s t i] is an item with name [s], class [t], id [i]*)
 
-val name : item -> string
-(** [name i] is the name of item [i]*)
+val get_name : item -> string
+(** [get_name i] is the name of item [i]*)
 
-val classification : item -> item_type
-(** [classification i] is the item class of [i]*)
+val get_type : item -> item_type
+(** [get_type i] is the item class of [i]*)
 
-val id : item -> int
-(** [id i] is the item id of [i]*)
+val get_id : item -> int
+(** [get_id i] is the item id of [i]*)
+
+val get_description : item -> string
+(** [get_description i] is the description of the item [i]*)
+
+val get_cost : item -> int
+(** [get_cost i] is the monetary cost of item [i]*)
