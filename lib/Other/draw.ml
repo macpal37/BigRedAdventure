@@ -399,6 +399,15 @@ let add_rgb sprite red green blue () =
 
   sprite.color_palette <- add_rgb_rec sprite.color_palette
 
+let make_grayscale sprite () =
+  sprite.color_palette <-
+    List.map
+      (fun c ->
+        let r, g, b = color_to_rgb c in
+        let g = (r + g + b) / 3 in
+        rgb g g g)
+      sprite.color_palette
+
 let reset_rgb sprite () = sprite.color_palette <- sprite.base_palette
 
 let draw_creature_effect sprite player red green blue value () =
@@ -414,6 +423,7 @@ let draw_creature_effect sprite player red green blue value () =
   effect value
 
 let lower_stat_effect sprite player () =
+  make_grayscale sprite ();
   for _ = 0 to 2 do
     draw_creature_effect sprite player (-100) (-100) 0 5 ();
     draw_creature_effect sprite player 80 80 0 5 ()
@@ -422,6 +432,7 @@ let lower_stat_effect sprite player () =
   draw_creature sprite player ()
 
 let raise_stat_effect sprite player () =
+  make_grayscale sprite ();
   for _ = 0 to 2 do
     draw_creature_effect sprite player 0 0 (-200) 5 ();
     draw_creature_effect sprite player 0 0 200 5 ()

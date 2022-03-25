@@ -132,6 +132,8 @@ val draw_gradient : int -> int -> unit
 (** (draw_gradient w h ) draws a cool radiant with width [w] adnd height
     [h].*)
 
+val make_grayscale : sprite -> unit -> unit
+
 val reset_rgb : sprite -> unit -> unit
 (** (reset_rgb sprite () ) resets the rgb values of the sprite.*)
 

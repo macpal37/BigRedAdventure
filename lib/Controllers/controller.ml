@@ -60,11 +60,13 @@ let setup _ = ()
 
 let main _ =
   open_window;
-  (* Battle.start_battle (); *)
-  let red = Player.new_player "Red" in
-  Inventory_menu.open_inventory red ();
+  Battle.start_battle ();
+
+  (* let red = Player.new_player "Red" in Inventory_menu.open_inventory
+     red (); *)
+  let mode = ModeBattle in
   moveto 100 200;
   set_font "-*-fixed-bold-r-semicondensed--40-*-*-*-*-*-iso8859-1";
   setup ();
-  try event_loop ModeMenu
+  try event_loop mode
   with Graphic_failure _ -> print_endline "Exiting..."
