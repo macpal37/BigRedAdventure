@@ -13,7 +13,7 @@ type state = { player : Player.player }
 
 let current_state = ref { player = Player.new_player "Red" }
 let get_state _ = !current_state
-let get_player s = s.player
+let get_player _ = !current_state.player
 
 let debug_draw () =
   let x, y = mouse_pos () in
@@ -42,7 +42,7 @@ let rec event_loop mode =
   (match mode with
   | ModeOverworld -> Overworld.run_tick ()
   | ModeBattle -> Battle.run_tick ()
-  | ModeMenu -> Inventory_menu.run_tick ());
+  | ModeMenu -> ());
 
   let key =
     match Input.key_option () with
@@ -60,11 +60,8 @@ let setup _ = ()
 
 let main _ =
   open_window;
-  Battle.start_battle ();
 
-  (* let red = Player.new_player "Red" in Inventory_menu.open_inventory
-     red (); *)
-  let mode = ModeBattle in
+  let mode = ModeMenu in
   moveto 100 200;
   set_font "-*-fixed-bold-r-semicondensed--40-*-*-*-*-*-iso8859-1";
   setup ();

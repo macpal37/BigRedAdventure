@@ -5,7 +5,6 @@ open Item
 open Graphics
 
 let display_queue = ref []
-let player_ref = ref None
 let max_list_size = 10
 let max_items = ref 0
 let item_list_bg = load_sprite "item_bag_list" GUI_Folder 3 ()
@@ -66,37 +65,32 @@ let draw_bag item_type x y () =
       draw_rect x (y - (40 * inventory_position.y)) 370 40)
 
 let redraw_bag () =
-  match player_ref.contents with
-  | Some player ->
-      let bag_type =
-        match inventory_position.x with
-        | 0 -> Misc
-        | 1 -> Medicine
-        | 2 -> Ball
-        | 3 -> Key
-        | _ -> Misc
-      in
+  let bag_type =
+    match inventory_position.x with
+    | 0 -> Misc
+    | 1 -> Medicine
+    | 2 -> Ball
+    | 3 -> Key
+    | _ -> Misc
+  in
 
-      let bag = get_bag (Player.inventory player) bag_type in
-      max_items.contents <- List.length (list_items bag);
-      get_items_from_bag bag;
-      if List.length display_queue.contents > 0 then
-        let item, _ =
-          List.nth display_queue.contents inventory_position.y
-        in
-        Ui.add_first_foreground
-          (draw_text_string (get_description item))
-      else Ui.add_first_foreground clear_text;
+  let bag = get_bag (Player.inventory Controller.get_player) bag_type in
+  max_items.contents <- List.length (list_items bag);
+  get_items_from_bag bag;
+  if List.length display_queue.contents > 0 then
+    let item, _ =
+      List.nth display_queue.contents inventory_position.y
+    in
+    Ui.add_first_foreground (draw_text_string (get_description item))
+  else Ui.add_first_foreground clear_text;
 
-      draw_bag bag_type 415 575 ()
-  | None -> ()
+  draw_bag bag_type 415 575 ()
 
 let inventory_text_bg = load_sprite "inventory_text_bg" GUI_Folder 3 ()
 
-let open_inventory player () =
-  player_ref.contents <- Some player;
+let open_inventory () =
   set_text_bg inventory_text_bg empty_sprite;
-  let inventory = Player.inventory player in
+  let inventory = Player.inventory Controller.get_player in
 
   add_item inventory (create_item "repel");
   add_item inventory (create_item "super repel");

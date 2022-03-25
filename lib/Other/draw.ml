@@ -240,51 +240,53 @@ let draw_text text font_size auto () =
   let start_x = 35 in
   let start_y = 132 in
   moveto start_x start_y;
-  let len = String.length text in
-  let levels = len / char_cap in
-  let rec scroll_text text start max =
-    if start mod 2 = 0 then
-      if start <> 0 && is_sticky.contents = false then begin
-        wait wait_time ();
-        clear_text ();
-        set_color text_color
-      end;
-    if start <> max + 1 then begin
-      let text = remove_space text in
-      let short_text =
-        if String.length text > char_cap then String.sub text 0 char_cap
-        else text
-      in
-      let rest_text =
-        if String.length text > char_cap then
-          String.sub text char_cap
-            (String.length text - String.length short_text)
-        else ""
-      in
-      let char_list = string_to_char_list short_text in
-      let rec draw_chars chars =
-        match chars with
-        | [] -> ()
-        | h :: t ->
-            set_color text_color;
-            draw_char h;
-            rmoveto (-15) 4;
-            set_color white;
-            draw_char h;
-            rmoveto 2 (-4);
-            set_color text_color;
-            Input.sleep 0.025 ();
-            draw_chars t
-      in
-
-      moveto start_x (start_y - (60 * (start mod 2)));
-      draw_chars char_list;
-
-      scroll_text rest_text (start + 1) max
-    end
+  let words = String.split_on_char ' ' text in
+  let rec calc_levels w lst = function
+    | [] -> lst @ [ w ]
+    | h :: t ->
+        let new_w = w ^ " " ^ h in
+        if String.length new_w < char_cap then calc_levels new_w lst t
+        else calc_levels h (lst @ [ w ]) t
   in
-  scroll_text text 0 levels;
-  if levels <= 0 then wait wait_time ()
+  let levels =
+    match words with
+    | [] -> []
+    | h :: t -> calc_levels h [] t
+  in
+
+  let rec scroll_text start max = function
+    | [] ->
+        if start = 1 then wait wait_time ();
+        set_color text_color
+    | h :: t ->
+        let char_list = string_to_char_list h in
+        let rec draw_chars chars =
+          match chars with
+          | [] -> ()
+          | h :: t ->
+              set_color text_color;
+              draw_char h;
+              rmoveto (-15) 4;
+              set_color white;
+              draw_char h;
+              rmoveto 2 (-4);
+              set_color text_color;
+              Input.sleep 0.025 ();
+              draw_chars t
+        in
+        moveto start_x (start_y - (60 * start));
+        draw_chars char_list;
+        if start == max then begin
+          wait wait_time ();
+          clear_text ();
+          set_color text_color;
+          scroll_text 0 max t
+        end
+        else scroll_text (start + 1) max t
+  in
+  clear_text ();
+  set_color text_color;
+  scroll_text 0 1 levels
 
 let draw_text_string text () =
   let cap = !text_char_cap in
