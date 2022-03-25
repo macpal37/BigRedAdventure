@@ -466,6 +466,8 @@ let run_tick () =
           Ui.add_first_foreground
             (draw_moves player b combat_button.contents)
         end
+        else if key = 'e' && combat_button.contents = 1 then
+          clear_screen ()
     | Moves ->
         if b != combat_button.contents then
           Ui.add_first_foreground

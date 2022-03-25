@@ -81,6 +81,10 @@ let sync_draw draw () =
   draw ();
   usync true ()
 
+let clear_screen () =
+  set_color (rgb 0 0 0);
+  sync_draw (fun () -> fill_rect 0 0 width height) ()
+
 let draw_pixel size x y () =
   fill_rect (x - (size / 2)) (y - (size / 2)) size size
 

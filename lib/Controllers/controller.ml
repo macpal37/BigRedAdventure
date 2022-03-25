@@ -13,7 +13,7 @@ type state = { player : Player.player }
 
 let current_state = ref { player = Player.new_player "Red" }
 let get_state _ = !current_state
-let get_player _ = !current_state.player
+let player _ = !current_state.player
 
 let debug_draw () =
   let x, y = mouse_pos () in

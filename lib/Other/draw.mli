@@ -51,6 +51,9 @@ val set_synced_mode : bool -> unit
 val set_font_size : int -> unit -> unit
 val get_font_size : unit -> int
 
+val clear_screen : unit -> unit
+(** [clear_screen ()] Clears the screen with the background color.*)
+
 val wait : int -> unit -> unit
 (** [wait delay_time] waits for [delay_time] or util user input to
     continue. If [delay_time = -1] then it waits indefinetely until user
