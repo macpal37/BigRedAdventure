@@ -16,7 +16,7 @@ type modes =
 type state
 (** Abstract type representing the current game state*)
 
-val current_state : state
+val current_state : state ref
 (** [current_state] is the current state of the game*)
 
 val player : unit -> Player.player
