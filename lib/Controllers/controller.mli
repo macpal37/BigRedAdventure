@@ -16,11 +16,11 @@ type modes =
 type state
 (** Abstract type representing the current game state*)
 
-val get_state : unit -> state
-(** [get_state _] is the current state of the game*)
+val current_state : state
+(** [current_state] is the current state of the game*)
 
-val get_player : state -> Player.player
-(** [player s] is the player of game state [s]*)
+val player : unit -> Player.player
+(** [player _] is the player of game*)
 
 val main : unit -> unit
 (** Program Main*)
