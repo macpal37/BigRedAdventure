@@ -188,3 +188,5 @@ val get_front_sprite : creature -> Draw.sprite
 val set_front_sprite : creature -> Draw.sprite -> unit
 val get_back_sprite : creature -> Draw.sprite
 val set_back_sprite : creature -> Draw.sprite -> unit
+val get_hp_status : creature -> int * int * int
+val get_specias : creature -> string

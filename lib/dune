@@ -4,11 +4,14 @@
  (name CreatureGame)
  (libraries yojson ANSITerminal graphics imagelib.unix)
  (modules
+  ; =====Controllers=====
   battle
   controller
   inventory_menu
+  party_menu
   menu
   overworld
+  ; =====GAMEPLAY=====
   camera
   combat
   creature
@@ -16,6 +19,8 @@
   inventory
   map
   player
+  ; =====Other=====
+  animation
   draw
   author
   ui
