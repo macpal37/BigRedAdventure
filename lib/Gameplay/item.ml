@@ -1,5 +1,7 @@
 open Yojson.Basic.Util
 
+let num_item_types = 4
+
 type item_type =
   | Key
   | Ball
@@ -45,6 +47,8 @@ let create_item name =
     cost = json |> member "cost" |> to_int;
   }
 
-let name i = i.name
-let classification i = i.item_type
-let id i = i.id
+let get_name i = i.name
+let get_type i = i.item_type
+let get_id i = i.id
+let get_description i = i.description
+let get_cost i = i.cost

@@ -36,7 +36,7 @@ let rec event_loop mode =
   (match mode with
   | ModeOverworld -> Overworld.run_tick ()
   | ModeBattle -> Battle.run_tick ()
-  | ModeMenu -> Inventory_menu.run_tick ());
+  | ModeMenu -> Party_menu.run_tick ());
 
   let key =
     match Input.key_option () with
@@ -54,11 +54,11 @@ let setup _ = ()
 
 let main _ =
   open_window;
-  (* Battle.start_battle (); *)
-  let red = Player.new_player "Red" in
-  Inventory_menu.open_inventory red ();
+  let mode = ModeBattle in
+  Battle.start_battle ();
+  (* Party_menu.open_party (); *)
   moveto 100 200;
   set_font "-*-fixed-bold-r-semicondensed--40-*-*-*-*-*-iso8859-1";
   setup ();
-  try event_loop ModeMenu
+  try event_loop mode
   with Graphic_failure _ -> print_endline "Exiting..."

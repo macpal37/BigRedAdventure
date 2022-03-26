@@ -380,6 +380,8 @@ let exp_calc level rate =
       + (100 * level) - 140
   | Slow -> 5 * level * level * level / 4
 
+let curr_hp_cache = ref 0
+
 let creature_from_json json level =
   Random.self_init ();
   let name = json |> member "name" |> to_string in
@@ -393,6 +395,7 @@ let creature_from_json json level =
   let learnset =
     json |> member "learnset" |> to_list |> List.map parse_learn_set
   in
+  curr_hp_cache.contents <- bstats.max_hp;
   {
     nickname = name;
     species = name;
@@ -439,7 +442,17 @@ let get_evs creature = creature.ev_stats
 let get_ev_gain creature = creature.ev_gain
 let get_exp_gain creature = creature.level * creature.base_exp
 let get_current_hp creature = creature.current_hp
-let set_current_hp creature amount = creature.current_hp <- amount
+let get_specias creature = creature.species
+
+let set_current_hp creature amount =
+  curr_hp_cache.contents <- creature.current_hp;
+  creature.current_hp <- amount
+
+let get_hp_status creature =
+  ( creature.current_stats.max_hp,
+    curr_hp_cache.contents,
+    creature.current_hp )
+
 let get_catch_rate creature = float_of_int creature.catch_rate
 
 let get_type_mod etype_var defender =
@@ -561,7 +574,5 @@ let add_exp creature amount =
 
 (** [get_nickname creature] returns a [creature]'s nickname*)
 let get_nickname creature = creature.nickname
-(** [get_nickname creature] returns a [creature]'s nickname*)
 
-(** [get_nickname creature] returns a [creature]'s nickname*)
 let set_nickname creature nickname = creature.nickname <- nickname

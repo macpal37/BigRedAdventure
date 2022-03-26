@@ -17,10 +17,58 @@
     "description": "Heals a creature by 150 HP.",
     "cost": 1500
   },
+  "max potion": {
+    "id": 4,
+    "type": "Medicine",
+    "description": "Heals a creature to full HP.",
+    "cost": 3200
+  },
+  "ether": {
+    "id": 5,
+    "type": "Medicine",
+    "description": "Restores 10 PP of a single move.",
+    "cost": 1500
+  },
+  "max ether": {
+    "id": 6,
+    "type": "Medicine",
+    "description": "Restore the PP of a single move to full.",
+    "cost": 1500
+  },
+  "revive": {
+    "id": 7,
+    "type": "Medicine",
+    "description": "Revives a fainted creature by 1/2 health.",
+    "cost": 1500
+  },
+  "max revive": {
+    "id": 8,
+    "type": "Medicine",
+    "description": "Revives a fainted creature to full hp.",
+    "cost": 1500
+  },
   "pokeball": {
     "id": 50,
     "type": "Ball",
     "description": "An item for catching Creatures.",
     "cost": 200
+  },
+  "repel": {
+    "id": 100,
+    "type": "Misc",
+    "description": "Prevents weak wild creatures from appearing for 100 steps after its use.",
+    "cost": 300
+  },
+  "super repel": {
+    "id": 101,
+    "type": "Misc",
+    "description": "Prevents weak wild creatures from appearing for 200 steps after its use.",
+    "cost": 700
+  },
+  "max repel": {
+    "id": 102,
+    "type": "Misc",
+    "description": "Prevents weak wild creatures from appearing for 250 steps after its use.",
+    "cost": 1250
   }
 }
