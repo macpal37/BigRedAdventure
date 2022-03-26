@@ -6,7 +6,7 @@
     "category": "Physical",
     "type": "Normal",
     "description": "Charges the target with a full-body tackle.",
-    "effect_ids": -1
+    "effect_ids": 0
   },
   "Growl": {
     "power": 0,
@@ -33,7 +33,7 @@
     "category": "Special",
     "type": "Fire",
     "description": "The foe is scorched with an intense blast of fire. The target may also be left with a burn.",
-    "effect_ids": 1,
+    "effect_ids": 0,
     "effect_chance": 10
   },
   "Air Slash": {

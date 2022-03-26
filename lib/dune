@@ -1,4 +1,23 @@
+(include_subdirs unqualified)
+
 (library
  (name CreatureGame)
- (public_name CreatureGame)
- (libraries yojson ANSITerminal graphics))
+ (libraries yojson ANSITerminal graphics imagelib.unix)
+ (modules
+  battle
+  controller
+  inventory_menu
+  menu
+  overworld
+  camera
+  combat
+  creature
+  item
+  inventory
+  map
+  player
+  draw
+  author
+  ui
+  util
+  input))
