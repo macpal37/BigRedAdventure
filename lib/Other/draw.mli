@@ -51,6 +51,9 @@ val set_synced_mode : bool -> unit
 val set_font_size : int -> unit -> unit
 val get_font_size : unit -> int
 
+val clear_screen : unit -> unit
+(** [clear_screen ()] Clears the screen with the background color.*)
+
 val wait : int -> unit -> unit
 (** [wait delay_time] waits for [delay_time] or util user input to
     continue. If [delay_time = -1] then it waits indefinetely until user
@@ -118,6 +121,11 @@ val draw_text : string -> int -> bool -> unit -> unit
     text scrolling. If [auto_scroll] is on, then it will scroll
     automatically after a delay*)
 
+val draw_text_string : string -> unit -> unit
+(** [draw_text_string text font_size (_)] draws the given [text] with
+    the given [font_size]on the bottom of the screen. There is no text
+    scroll.*)
+
 val damage_render : sprite -> bool -> unit -> unit
 (** [damage_render sprite is_player (_)] performs the damage animation
     of either the enemy or the player depedning on the [is_player]
@@ -126,6 +134,8 @@ val damage_render : sprite -> bool -> unit -> unit
 val draw_gradient : int -> int -> unit
 (** (draw_gradient w h ) draws a cool radiant with width [w] adnd height
     [h].*)
+
+val make_grayscale : sprite -> unit -> unit
 
 val reset_rgb : sprite -> unit -> unit
 (** (reset_rgb sprite () ) resets the rgb values of the sprite.*)

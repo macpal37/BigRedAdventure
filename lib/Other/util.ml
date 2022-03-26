@@ -8,3 +8,10 @@ let rand max () =
 let captilize_all_string str =
   let lst = String.split_on_char ' ' str in
   List.fold_left (fun x y -> x ^ " " ^ String.capitalize_ascii y) "" lst
+
+type point = {
+  mutable x : int;
+  mutable y : int;
+}
+
+let new_point () = { x = 0; y = 0 }

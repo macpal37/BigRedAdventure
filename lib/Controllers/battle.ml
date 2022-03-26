@@ -1,7 +1,7 @@
 open Draw
 open Graphics
 open Creature
-open Util
+open Animation
 
 let text_box_height = 212
 let combat_button = ref 0
@@ -96,147 +96,20 @@ let draw_moves creature c_b c_a () =
     box_w box_h;
   set_color text_color
 
-let hp_to_string hp =
-  if hp < 10 then "  " ^ string_of_int hp
-  else if hp < 100 then " " ^ string_of_int hp
-  else string_of_int hp
+let draw_exp_bar_combat max before after () =
+  let hwidth = 250 in
+  let hheight = 6 in
 
-let draw_hp_val x y curr max player () =
-  if player = false then ()
-  else
-    let combat_bg = rgb 248 248 216 in
-    set_font_size 30 ();
-    moveto x y;
-    set_color combat_bg;
-    fill_rect (current_x () - 2) (current_y () + 4) 100 24;
-    set_color text_color;
-    draw_string (hp_to_string curr ^ "/" ^ hp_to_string max)
+  let xh, yh = (width - hwidth - 30, 240) in
+  draw_exp_bar max before after xh yh hwidth hheight ()
 
-let draw_health_bar max before after player () =
-  let max, before, after =
-    (bound max 0 max, bound before 0 max, bound after 0 max)
-  in
-
-  let blank = rgb 84 97 89 in
-  let bar_yellow = rgb 221 193 64 in
-  let bar_red = rgb 246 85 55 in
-  let bar_green = rgb 103 221 144 in
-  let d a b c =
-    let x = a * b in
-    x / c
-  in
+let draw_health_bar_combat max before after player () =
   let hwidth = 210 in
   let hheight = 6 in
   let xh, yh =
     if player then (width - hwidth - 31 - 10, 296) else (130, 615)
   in
-  set_color text_color;
-  set_line_width 8;
-  draw_rect xh yh hwidth hheight;
-  if player then
-    draw_hp_val
-      (xh + (hwidth / 2))
-      (yh - hheight - 5 - 22)
-      before max player ();
-  set_color blank;
-  fill_rect xh yh hwidth hheight;
-  let ratio = d before 100 max in
-  if ratio <= 1 then set_color blank
-  else if ratio <= 20 then set_color bar_red
-  else if ratio <= 50 then set_color bar_yellow
-  else set_color bar_green;
-  let before_bar = d before 100 max in
-  fill_rect xh yh (d before_bar hwidth 100) hheight;
-
-  let after_bar = d after 100 max in
-  if before <> after then begin
-    let rec render_health start target =
-      if start = target || start <= 0 then ()
-      else if start > target then begin
-        (*=====LOSING HEALTH=====*)
-        if start <= 1 then set_color blank
-        else if start <= 20 then set_color bar_red
-        else if start <= 50 then set_color bar_yellow
-        else set_color bar_green;
-        fill_rect xh yh (d start hwidth 100) hheight;
-        set_color blank;
-        fill_rect
-          (xh + d start hwidth 100)
-          yh
-          (hwidth - d start hwidth 100)
-          hheight;
-        (* HP NUMBER *)
-        draw_hp_val
-          (xh + (hwidth / 2))
-          (yh - hheight - 5 - 22)
-          (d max start 100) max player ();
-        Input.sleep 0.05 ();
-        render_health (start - 1) target
-      end
-      else begin
-        (*=====Gaining HEALTH=====*)
-        if start == 1 then set_color blank
-        else if start <= 20 then set_color bar_red
-        else if start <= 50 then set_color bar_yellow
-        else set_color bar_green;
-        (* HP NUMBER *)
-        draw_hp_val
-          (xh + (hwidth / 2))
-          (yh - hheight - 5 - 22)
-          (d max start 100) max player ();
-
-        fill_rect xh yh (d hwidth start 100) hheight;
-        Input.sleep 0.005 ();
-        render_health (start + 1) target
-      end
-    in
-    render_health before_bar after_bar;
-
-    draw_hp_val
-      (xh + (hwidth / 2))
-      (yh - hheight - 5 - 22)
-      (if after >= 0 then after else 0)
-      max player ()
-  end
-
-let draw_exp_bar max before after () =
-  (* Draw.sync true (); *)
-  let max, before, after =
-    (bound max 0 max, bound before 0 after, bound after 0 max)
-  in
-  let blank = rgb 209 199 156 in
-  let bar_color = rgb 77 195 232 in
-  let d a b c =
-    let x = a * b in
-    x / c
-  in
-  let hwidth = 250 in
-  let hheight = 6 in
-  let xh, yh = (width - hwidth - 30, 240) in
-  set_color text_color;
-  (* set_line_width 8; draw_rect xh yh hwidth hheight; *)
-  set_color blank;
-  fill_rect xh yh hwidth hheight;
-  set_color bar_color;
-  let before_bar = d before 100 max in
-  fill_rect xh yh (d before_bar hwidth 100) hheight;
-
-  let after_bar = d after 100 max in
-  (if before <> after then
-   let rec render_bar_progress start target =
-     if start = target || start < 0 then ()
-     else if start <= target then begin
-       set_color bar_color;
-       fill_rect xh yh (d start hwidth 100 + 4) hheight;
-       (* set_color blank; fill_rect (xh + d start hwidth 100) yh 2
-          hheight; *)
-       Input.sleep 0.05 ();
-       render_bar_progress (start + 1) target
-     end
-   in
-   render_bar_progress before_bar after_bar);
-  (* Draw.sync false (); *)
-  set_color text_color
+  draw_health_bar max before after xh yh hwidth hheight player ()
 
 let draw_combat_hud sprite name level player (max, before, after) () =
   let sprite_width, sprite_height = get_dimension sprite in
@@ -257,7 +130,7 @@ let draw_combat_hud sprite name level player (max, before, after) () =
     moveto 280 (height - 85)
   end;
   draw_string ("Lv" ^ string_of_int level);
-  draw_health_bar max before after player ();
+  draw_health_bar_combat max before after player ();
   set_font_size 40 ()
 
 let draw_combat_commands c redraw () =
@@ -342,17 +215,17 @@ let update_health creature before () =
   let curr, max =
     (get_current_hp creature, (get_stats creature).max_hp)
   in
-  draw_health_bar max before curr false ()
+  draw_health_bar_combat max before curr false ()
 
 let draw_creature_exp creature added_exp render () =
   add_exp creature added_exp;
   let curr_exp, min_exp, max_exp = get_exp creature in
   if render then
     Ui.add_first_foreground
-      (draw_exp_bar (max_exp - min_exp) (curr_exp - min_exp)
+      (draw_exp_bar_combat (max_exp - min_exp) (curr_exp - min_exp)
          (curr_exp - min_exp))
   else
-    (draw_exp_bar (max_exp - min_exp) (curr_exp - min_exp)
+    (draw_exp_bar_combat (max_exp - min_exp) (curr_exp - min_exp)
        (curr_exp - min_exp))
       ()
 
@@ -380,8 +253,8 @@ let handle_combat move =
     (get_current_hp player, get_current_hp enemy)
   in
 
-  draw_health_bar p_maxhp player_b player_a1 true ();
-  draw_health_bar e_maxhp enemy_b enemy_a1 false ();
+  draw_health_bar_combat p_maxhp player_b player_a1 true ();
+  draw_health_bar_combat e_maxhp enemy_b enemy_a1 false ();
   (***=============Second Half =============***)
   Combat.battle_sim_sh battle_sim.contents;
   (* if battle_sim.contents.battle_status <> Combat.Victory *)
@@ -391,8 +264,8 @@ let handle_combat move =
   if battle_sim.contents.battle_status <> Combat.Victory then
     (* if Combat.is_player_first () then damage_render player true ()
        else damage_render enemy false (); *)
-    draw_health_bar p_maxhp player_a1 player_a2 true ();
-  draw_health_bar e_maxhp enemy_a1 enemy_a2 false ();
+    draw_health_bar_combat p_maxhp player_a1 player_a2 true ();
+  draw_health_bar_combat e_maxhp enemy_a1 enemy_a2 false ();
   (***============= Resolution =============***)
   if enemy_a2 <= 0 then (
     (* draw_creature_exp player (get_exp_gain enemy) false (); *)
@@ -401,7 +274,7 @@ let handle_combat move =
     let curr_exp, min_exp, max_exp = get_exp player in
 
     Ui.add_first_gameplay
-      (draw_exp_bar (max_exp - min_exp) (before_exp - min_exp)
+      (draw_exp_bar_combat (max_exp - min_exp) (before_exp - min_exp)
          (curr_exp - min_exp));
     Ui.add_first_gameplay (set_sticky_text false);
 
@@ -443,8 +316,9 @@ let run_tick () =
     | Some c -> c
     | None -> '#'
   in
+
   let b = !combat_button in
-  if key = 'r' then draw_exp_bar 4350 10 2065 ();
+  if key = 'r' then draw_exp_bar_combat 4350 10 2065 ();
   if key = 'd' && (b = 0 || b = 2) then combat_button.contents <- b + 1;
   if key = 'a' && (b = 1 || b = 3) then combat_button.contents <- b - 1;
   if key = 'w' && (b = 2 || b = 3) then combat_button.contents <- b - 2;
@@ -466,6 +340,8 @@ let run_tick () =
           Ui.add_first_foreground
             (draw_moves player b combat_button.contents)
         end
+        else if key = 'e' && combat_button.contents = 1 then
+          clear_screen () (* Inventory_menu.run_tick () *)
     | Moves ->
         if b != combat_button.contents then
           Ui.add_first_foreground

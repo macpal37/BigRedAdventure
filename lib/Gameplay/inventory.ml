@@ -9,7 +9,7 @@ end)
 module ItemMap = Stdlib.Map.Make (struct
   type t = Item.item
 
-  let compare e1 e2 = Item.id e1 - Item.id e2
+  let compare e1 e2 = Item.get_id e1 - Item.get_id e2
 end)
 
 type bag = int ItemMap.t ref
@@ -48,3 +48,11 @@ let consume b ?(count = 1) i =
             else raise (Insufficient v)
         | None -> raise (Insufficient 0))
       !b
+
+let add_item (i : inventory) (item : Item.item) =
+  let bag = get_bag i (Item.get_type item) in
+  add bag item
+
+let consume_item (i : inventory) (item : Item.item) =
+  let bag = get_bag i (Item.get_type item) in
+  consume bag item

@@ -5,17 +5,17 @@ let item_name_test
     (name : string)
     (i : Item.item)
     (expected_output : string) : test =
-  name >:: fun _ -> assert_equal expected_output (Item.name i)
+  name >:: fun _ -> assert_equal expected_output (Item.get_name i)
 
 let item_classification_test
     (name : string)
     (i : Item.item)
     (expected_output : Item.item_type) : test =
-  name >:: fun _ -> assert_equal expected_output (Item.classification i)
+  name >:: fun _ -> assert_equal expected_output (Item.get_type i)
 
 let item_id_test (name : string) (i : Item.item) (expected_output : int)
     : test =
-  name >:: fun _ -> assert_equal expected_output (Item.id i)
+  name >:: fun _ -> assert_equal expected_output (Item.get_id i)
 
 let item_yeet = Item.new_item "YEET" Item.Misc 69 "" 0
 let item_weed = Item.new_item "WEED" Item.Medicine 420 "" 0

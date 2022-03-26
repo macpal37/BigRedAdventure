@@ -81,6 +81,10 @@ let sync_draw draw () =
   draw ();
   usync true ()
 
+let clear_screen () =
+  set_color (rgb 0 0 0);
+  sync_draw (fun () -> fill_rect 0 0 width height) ()
+
 let draw_pixel size x y () =
   fill_rect (x - (size / 2)) (y - (size / 2)) size size
 
@@ -240,15 +244,70 @@ let draw_text text font_size auto () =
   let start_x = 35 in
   let start_y = 132 in
   moveto start_x start_y;
+  let words = String.split_on_char ' ' text in
+  let rec calc_levels w lst = function
+    | [] -> lst @ [ w ]
+    | h :: t ->
+        let new_w = w ^ " " ^ h in
+        if String.length new_w < char_cap then calc_levels new_w lst t
+        else calc_levels h (lst @ [ w ]) t
+  in
+  let levels =
+    match words with
+    | [] -> []
+    | h :: t -> calc_levels h [] t
+  in
+
+  let rec scroll_text start max = function
+    | [] ->
+        if start = 1 then wait wait_time ();
+        set_color text_color
+    | h :: t ->
+        let char_list = string_to_char_list h in
+        let rec draw_chars chars =
+          match chars with
+          | [] -> ()
+          | h :: t ->
+              set_color text_color;
+              draw_char h;
+              rmoveto (-15) 4;
+              set_color white;
+              draw_char h;
+              rmoveto 2 (-4);
+              set_color text_color;
+              Input.sleep 0.025 ();
+              draw_chars t
+        in
+        moveto start_x (start_y - (60 * start));
+        draw_chars char_list;
+        if start == max then begin
+          wait wait_time ();
+          clear_text ();
+          set_color text_color;
+          scroll_text 0 max t
+        end
+        else scroll_text (start + 1) max t
+  in
+  clear_text ();
+  set_color text_color;
+  scroll_text 0 1 levels
+
+let draw_text_string text () =
+  let cap = !text_char_cap in
+  set_text_char_cap 28;
+  set_font_size 40 ();
+  let char_cap = text_char_cap.contents in
+  clear_text ();
+  set_color text_color;
+  let start_x = 35 in
+  let start_y = 142 in
+  moveto start_x start_y;
   let len = String.length text in
   let levels = len / char_cap in
   let rec scroll_text text start max =
-    if start mod 2 = 0 then
-      if start <> 0 && is_sticky.contents = false then begin
-        wait wait_time ();
-        clear_text ();
-        set_color text_color
-      end;
+    if start mod 3 = 0 then
+      if start <> 0 && is_sticky.contents = false then
+        set_color text_color;
     if start <> max + 1 then begin
       let text = remove_space text in
       let short_text =
@@ -273,18 +332,17 @@ let draw_text text font_size auto () =
             draw_char h;
             rmoveto 2 (-4);
             set_color text_color;
-            Input.sleep 0.025 ();
             draw_chars t
       in
 
-      moveto start_x (start_y - (60 * (start mod 2)));
+      moveto start_x (start_y - (50 * (start mod 3)));
       draw_chars char_list;
 
       scroll_text rest_text (start + 1) max
     end
   in
   scroll_text text 0 levels;
-  if levels <= 0 then wait wait_time ()
+  set_text_char_cap cap
 
 (* create a gradient of colors from black at 0,0 to white at w-1,h-1 *)
 let gradient arr w h =
@@ -347,15 +405,16 @@ let add_rgb sprite red green blue () =
 
   sprite.color_palette <- add_rgb_rec sprite.color_palette
 
-let reset_rgb sprite () = sprite.color_palette <- sprite.base_palette
+let make_grayscale sprite () =
+  sprite.color_palette <-
+    List.map
+      (fun c ->
+        let r, g, b = color_to_rgb c in
+        let g = (r + g + b) / 3 in
+        rgb g g g)
+      sprite.color_palette
 
-(* let draw_creature_effect sprite player red green blue value () = let
-   rec effect r g b = let rr = if r = 0 then 0 else if r > 1 then value
-   else -value in let gg = if g = 0 then 0 else if g > 1 then value else
-   -value in let bb = if b = 0 then 0 else if b > 1 then value else
-   -value in add_rgb sprite rr gg bb (); draw_creature sprite player ();
-   Input.sleep 0.05 (); if r > 0 || g > 0 || b > 0 then effect (r -
-   value) (g - value) (b - value) else () in effect red green blue *)
+let reset_rgb sprite () = sprite.color_palette <- sprite.base_palette
 
 let draw_creature_effect sprite player red green blue value () =
   let rec effect count =
@@ -370,6 +429,7 @@ let draw_creature_effect sprite player red green blue value () =
   effect value
 
 let lower_stat_effect sprite player () =
+  make_grayscale sprite ();
   for _ = 0 to 2 do
     draw_creature_effect sprite player (-100) (-100) 0 5 ();
     draw_creature_effect sprite player 80 80 0 5 ()
@@ -378,6 +438,7 @@ let lower_stat_effect sprite player () =
   draw_creature sprite player ()
 
 let raise_stat_effect sprite player () =
+  make_grayscale sprite ();
   for _ = 0 to 2 do
     draw_creature_effect sprite player 0 0 (-200) 5 ();
     draw_creature_effect sprite player 0 0 200 5 ()
