@@ -28,21 +28,33 @@ let draw_menu lead_creature () =
 
   Ui.add_first_gameplay (draw_health_bar max bef aft 56 192 180 6 true)
 
-let draw_creature_status creature () =
-  let x, y = (276, 577) in
+let draw_creature_status creature pos () =
+  let x, y = (276, 577 - (112 * pos)) in
   let xx = 294 + 80 in
+  let yy = 610 - (112 * pos) in
+  Ui.add_first_background (draw_sprite chibi x (y + 10));
   Ui.add_first_background (draw_sprite active x y);
-  Ui.add_first_background (draw_sprite chibi x y);
   Ui.add_first_gameplay
-    (draw_string_colored xx 636 1 30 (get_nickname creature) white);
+    (draw_string_colored xx (yy + 26) 1 30 (get_nickname creature) white);
   Ui.add_first_gameplay
-    (draw_string_colored xx 610 1 20
+    (draw_string_colored xx yy 1 20
        ("LVL: " ^ string_of_int (get_level creature))
        white)
 
+let draw_selector pos () =
+  set_line_width 4;
+  let x, y = (276, 577 - (112 * pos)) in
+  set_color red;
+  fill_rect x y 102 410
+
 let open_party () =
   let clefairy = create_creature "clefairy" 10 in
-  draw_creature_status clefairy ();
+  draw_creature_status clefairy 0 ();
+  draw_creature_status clefairy 1 ();
+  draw_creature_status clefairy 2 ();
+  draw_creature_status clefairy 3 ();
+  draw_creature_status clefairy 4 ();
+  draw_selector 1 ();
   draw_menu clefairy ()
 
 let run_tick () =
