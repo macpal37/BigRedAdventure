@@ -18,6 +18,8 @@ let adhoc_init () =
   Player.add_creature rafu4 current_state.contents.player;
   Creature.set_nickname rafu "Llama Baby";
   Creature.set_nickname rafu2 "Ron";
+  Creature.set_nickname rafu3 "Lucky";
+  Creature.set_nickname rafu4 "Chubby Bunny";
   let inventory = Player.inventory current_state.contents.player in
 
   add_item inventory (create_item "repel");

@@ -1,5 +1,6 @@
 open Yojson.Basic.Util
 open Util
+open Graphics
 
 type stats = {
   mutable max_hp : int;
@@ -148,8 +149,8 @@ let string_of_stat stat_var =
   | HP -> "HP"
   | Attack -> "Attack"
   | Defense -> "Defense"
-  | Sp_Attack -> "Sp_Attack"
-  | Sp_Defense -> "Sp_Defense"
+  | Sp_Attack -> "Sp.Attack"
+  | Sp_Defense -> "Sp.Defense"
   | Speed -> "Speed"
 
 let stat_of_string stat_var =
@@ -454,6 +455,16 @@ let get_nature creature =
 
 let get_types creature = creature.etypes
 let get_stats creature = creature.current_stats
+
+let get_stat creature stat =
+  match stat with
+  | HP -> creature.current_stats.max_hp
+  | Attack -> creature.current_stats.attack
+  | Defense -> creature.current_stats.defense
+  | Sp_Attack -> creature.current_stats.sp_attack
+  | Sp_Defense -> creature.current_stats.sp_defense
+  | Speed -> creature.current_stats.speed
+
 let get_ivs creature = creature.iv_stats
 let get_evs creature = creature.ev_stats
 let get_ev_gain creature = creature.ev_gain
@@ -593,3 +604,14 @@ let add_exp creature amount =
 let get_nickname creature = creature.nickname
 
 let set_nickname creature nickname = creature.nickname <- nickname
+
+let get_color_from_etype etype =
+  match etype with
+  | Normal -> rgb 166 166 166
+  | Fire -> rgb 235 47 0
+  | Water -> rgb 13 150 255
+  | Grass -> rgb 0 168 3
+  | Fairy -> rgb 255 122 244
+  | Ghost -> rgb 102 46 145
+  | Rock -> rgb 108 75 50
+  | _ -> rgb 0 0 0

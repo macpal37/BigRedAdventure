@@ -19,7 +19,7 @@ let draw_hp_val x y curr max player () =
     moveto x y;
     set_color combat_bg;
     fill_rect (current_x () - 2) (current_y () + 4) 100 24;
-    set_color text_color2;
+    set_color white;
     draw_string (hp_to_string curr ^ "/" ^ hp_to_string max)
 
 let draw_health_bar max before after xh yh hwidth hheight hp_text () =

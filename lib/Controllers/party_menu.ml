@@ -123,6 +123,15 @@ let run_tick () =
   if (key = 'w' || key = 's') && minimenu_position.x = 0 then
     minimenu ();
 
+  if key = 'e' && minimenu_position.x = 0 && minimenu_position.y = 0
+  then begin
+    let i = if menu_position.x = 0 then 0 else menu_position.y + 1 in
+    Creature_menu.set_creature i;
+    Creature_menu.init ();
+    Creature_menu.run_tick ();
+    refresh ()
+  end;
+
   if key = 'e' then begin
     minimenu_position.x <- 0;
     minimenu ()

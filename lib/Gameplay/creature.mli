@@ -141,6 +141,7 @@ val get_stats : creature -> stats
     caused by type resistances, weaknesses or immunities from the
     [defender] by the [attack_type].*)
 
+val get_stat : creature -> stat -> int
 val get_ivs : creature -> stats
 val get_evs : creature -> stats
 val get_ev_gain : creature -> stat * int
@@ -192,3 +193,4 @@ val get_back_sprite : creature -> Draw.sprite
 val set_back_sprite : creature -> Draw.sprite -> unit
 val get_hp_status : creature -> int * int * int
 val get_specias : creature -> string
+val get_color_from_etype : etype -> Graphics.color

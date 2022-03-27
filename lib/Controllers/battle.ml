@@ -43,17 +43,6 @@ let start_combat_hud () =
   set_text_bg empty_sprite battle_right;
   set_sticky_text false ()
 
-let get_color_from_etype etype =
-  match etype with
-  | Normal -> rgb 166 166 166
-  | Fire -> rgb 235 47 0
-  | Water -> rgb 13 150 255
-  | Grass -> rgb 0 168 3
-  | Fairy -> rgb 255 122 244
-  | Ghost -> rgb 102 46 145
-  | Rock -> rgb 108 75 50
-  | _ -> rgb 0 0 0
-
 let draw_moves creature c_b c_a () =
   let moves = get_moves creature in
   let size = List.length moves in
