@@ -26,9 +26,9 @@ let combat_hud = load_sprite "opponent_hud" GUI_Folder 3 ()
 let player_hud = load_sprite "player_hud" GUI_Folder 3 ()
 
 (** Test creatures Sprites **)
-let player_creature = create_creature "clefairy" 60
+(* let player_creature = create_creature "clefairy" 60 *)
 
-let enemy_creature = create_creature "clefairy" 40
+let enemy_creature = ref (create_creature "rafu" 40)
 
 (*****************************************************************)
 (***************     Combat Drawing Commands     *********************)
@@ -39,7 +39,7 @@ let start_combat_hud () =
   clear_text ();
   set_text_bg battle_bot_left empty_sprite;
   set_sticky_text true ();
-  draw_text "What will     Clefairy do?   " 40 false ();
+  Ui.add_first_foreground (draw_text "What will" 40 false);
   set_text_bg empty_sprite battle_right;
   set_sticky_text false ()
 
@@ -50,6 +50,8 @@ let get_color_from_etype etype =
   | Water -> rgb 13 150 255
   | Grass -> rgb 0 168 3
   | Fairy -> rgb 255 122 244
+  | Ghost -> rgb 102 46 145
+  | Rock -> rgb 108 75 50
   | _ -> rgb 0 0 0
 
 let draw_moves creature c_b c_a () =
@@ -109,7 +111,8 @@ let draw_health_bar_combat max before after player () =
   let xh, yh =
     if player then (width - hwidth - 31 - 10, 296) else (130, 615)
   in
-  draw_health_bar max before after xh yh hwidth hheight player ()
+  Ui.add_first_gameplay
+    (draw_health_bar max before after xh yh hwidth hheight player)
 
 let draw_combat_hud sprite name level player (max, before, after) () =
   let sprite_width, sprite_height = get_dimension sprite in
@@ -134,6 +137,7 @@ let draw_combat_hud sprite name level player (max, before, after) () =
   set_font_size 40 ()
 
 let draw_combat_commands c redraw () =
+  set_synced_mode false;
   set_font_size 50 ();
   let x, y = (475, 120) in
   if redraw then clear_text ();
@@ -236,10 +240,9 @@ let handle_combat move =
     ( List.nth battle_sim.contents.player_creatures 0,
       List.nth battle_sim.contents.enemy_creatures 0 )
   in
-  (* let pmove = match battle_sim.contents.player_battler.current_move
-     with | Move m -> m | None _ -> empty_move in let emove = match
-     battle_sim.contents.enemy_battler.current_move with | Move m -> m |
-     None _ -> empty_move in *)
+  print_endline ("PLAYER: " ^ get_nickname player);
+  print_endline ("Enemy: " ^ get_nickname enemy);
+
   let p_maxhp, e_maxhp =
     ((get_stats player).max_hp, (get_stats enemy).max_hp)
   in
@@ -291,26 +294,39 @@ let handle_combat move =
       Ui.add_first_gameplay
         (animate_faint (get_front_sprite player) true))
 
-let start_battle () =
-  set_nickname player_creature "BestMon";
-
-  (* set_text_bg battle_bot_left battle_bot_right; draw_text "Press E
-     to\n continue/select." 40 false (); draw_text "USE WASD keys to
-     move\n around" 40 false (); draw_text "USE Q to go back." 40 false
-     (); *)
-  set_text_bg battle_bot_left battle_right;
-  battle_sim.contents <-
-    Combat.wild_init [ player_creature ] [ enemy_creature ];
+let refresh_battle () =
+  Draw.clear_screen ();
   Ui.add_first_gameplay
-    (draw_creature (get_front_sprite player_creature) false);
+    (draw_creature
+       (get_front_sprite battle_sim.contents.enemy_battler.creature)
+       false);
   Ui.add_first_gameplay
-    (draw_creature (get_back_sprite player_creature) true);
+    (draw_creature
+       (get_back_sprite battle_sim.contents.player_battler.creature)
+       true);
   refresh_hud ();
   Ui.add_first_foreground start_combat_hud;
-  draw_creature_exp player_creature 0 true ()
+  draw_creature_exp battle_sim.contents.player_battler.creature 0 true
+    ()
+
+let start_battle () =
+  set_text_bg battle_bot_left battle_right;
+  battle_sim.contents <-
+    Combat.wild_init
+      (Player.party (State.player ()))
+      [ enemy_creature.contents ];
+  Ui.add_first_gameplay
+    (draw_creature (get_front_sprite enemy_creature.contents) false);
+  Ui.add_first_gameplay
+    (draw_creature
+       (get_back_sprite battle_sim.contents.player_battler.creature)
+       true);
+  refresh_hud ();
+  Ui.add_first_foreground start_combat_hud;
+  draw_creature_exp battle_sim.contents.player_battler.creature 0 true
+    ()
 
 let run_tick () =
-  let player = List.nth battle_sim.contents.player_creatures 0 in
   let key =
     match Input.key_option () with
     | Some c -> c
@@ -326,9 +342,13 @@ let run_tick () =
   let action =
     match combat_mode.contents with
     | Commands ->
-        if b != combat_button.contents then
-          draw_combat_commands combat_button.contents true ()
-        else draw_combat_commands combat_button.contents false ();
+        if key <> 'e' then
+          if b != combat_button.contents then
+            Ui.add_first_foreground
+              (draw_combat_commands combat_button.contents true)
+          else
+            Ui.add_first_foreground
+              (draw_combat_commands combat_button.contents false);
         if
           key = 'e'
           && combat_button.contents = 0
@@ -336,23 +356,35 @@ let run_tick () =
         then begin
           set_text_bg moves_window empty_sprite;
           combat_mode.contents <- Moves;
-          clear_text ();
+          Ui.add_first_gameplay clear_text;
           Ui.add_first_foreground
-            (draw_moves player b combat_button.contents)
+            (draw_moves battle_sim.contents.player_battler.creature b
+               combat_button.contents)
         end
-        else if key = 'e' && combat_button.contents = 1 then
-          clear_screen () (* Inventory_menu.run_tick () *)
+        else if key = 'e' && combat_button.contents = 1 then begin
+          Inventory_menu.init ();
+          Inventory_menu.run_tick ();
+          refresh_battle ()
+        end
+        else if key = 'e' && combat_button.contents = 2 then begin
+          Party_menu.init ();
+          Party_menu.run_tick ();
+          refresh_battle ()
+        end
     | Moves ->
         if b != combat_button.contents then
           Ui.add_first_foreground
-            (draw_moves player b combat_button.contents);
+            (draw_moves battle_sim.contents.player_battler.creature b
+               combat_button.contents);
 
         if key = 'e' then begin
           Ui.clear_ui Ui.Foreground;
           set_text_bg battle_bot_left battle_bot_right;
-          clear_text ();
+          Ui.add_last_background clear_text;
           let move =
-            List.nth (get_moves player) combat_button.contents
+            List.nth
+              (get_moves battle_sim.contents.player_battler.creature)
+              combat_button.contents
           in
           handle_combat move;
           combat_mode.contents <- Attack
@@ -361,7 +393,7 @@ let run_tick () =
           Ui.clear_ui Ui.Foreground;
           Ui.add_first_foreground start_combat_hud;
           combat_mode.contents <- Commands;
-          clear_text ()
+          Ui.add_last_background clear_text
         end
     | Attack ->
         set_text_bg battle_bot_left battle_right;

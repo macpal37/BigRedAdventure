@@ -35,7 +35,8 @@
   },
   "Grass": {
     "Supereffective": [
-      "Water"
+      "Water",
+      "Rock"
     ],
     "Resists": [
       "Fire",
@@ -54,17 +55,20 @@
     ],
     "Immune": []
   },
-  "Cosmic": {
+  "Rock": {
     "Supereffective": [
-      "Fire",
-      "Water",
-      "Air"
+      "Fire"
     ],
-    "Resists": [
-      "Grass"
+    "Resists": [],
+    "Immune": []
+  },
+  "Ghost": {
+    "Supereffective": [
+      "Ghost"
     ],
+    "Resists": [],
     "Immune": [
-      "Fairy"
+      "Normal"
     ]
   }
 }

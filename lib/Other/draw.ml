@@ -17,6 +17,7 @@ type folder =
 
 let font_size = ref 50
 let text_color = rgb 68 68 68
+let text_color2 = rgb 215 215 255
 
 let empty_sprite =
   {
@@ -82,7 +83,7 @@ let sync_draw draw () =
   usync true ()
 
 let clear_screen () =
-  set_color (rgb 0 0 0);
+  set_color (rgb 255 255 255);
   sync_draw (fun () -> fill_rect 0 0 width height) ()
 
 let draw_pixel size x y () =
@@ -373,6 +374,7 @@ let draw_string_colored x y shadow_offset font_size text custom_color ()
   set_font_size cache_font_size ()
 
 let damage_render sprite player () =
+  set_synced_mode true;
   let rec damage_render_rec c creature_pixels player () =
     if c = 0 then draw_creature creature_pixels player ()
     else begin
@@ -389,6 +391,7 @@ let damage_render sprite player () =
     end
   in
   damage_render_rec 7 sprite player ();
+  set_synced_mode false;
   set_color text_color
 
 let add_rgb sprite red green blue () =

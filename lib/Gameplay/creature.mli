@@ -50,6 +50,8 @@ type etype =
   | Water
   | Grass
   | Fairy
+  | Rock
+  | Ghost
   | None
 
 (** Represents the elemental type of a creature*)

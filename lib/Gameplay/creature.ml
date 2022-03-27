@@ -39,6 +39,8 @@ type etype =
   | Water
   | Grass
   | Fairy
+  | Rock
+  | Ghost
   | None
 
 type leveling_rate =
@@ -167,6 +169,8 @@ let string_of_etype etype_var =
   | Water -> "Water"
   | Grass -> "Grass"
   | Fairy -> "Fairy"
+  | Rock -> "Rock"
+  | Ghost -> "Ghost"
   | _ -> "None"
 
 let etype_of_string etype_string =
@@ -176,6 +180,8 @@ let etype_of_string etype_string =
   | "Water" -> Water
   | "Grass" -> Grass
   | "Fairy" -> Fairy
+  | "Rock" -> Rock
+  | "Ghost" -> Ghost
   | _ -> None
 
 let category_of_string cat_string =
@@ -395,7 +401,8 @@ let creature_from_json json level =
   let learnset =
     json |> member "learnset" |> to_list |> List.map parse_learn_set
   in
-  curr_hp_cache.contents <- bstats.max_hp;
+  let shiny_chance = Random.int 4 = 0 in
+  curr_hp_cache.contents <- curr_stats.max_hp;
   {
     nickname = name;
     species = name;
@@ -421,11 +428,21 @@ let creature_from_json json level =
     moves = generate_moves learnset level;
     front_sprite =
       (if name = "#" then Draw.empty_sprite
+      else if shiny_chance = false then
+        Draw.load_creature (String.lowercase_ascii name ^ "_front") ()
       else
-        Draw.load_creature (String.lowercase_ascii name ^ "_front") ());
+        Draw.load_creature
+          (String.lowercase_ascii name ^ "_front_shiny")
+          ());
+    (* Draw.load_creature ("jollitriks" ^ "_front") ()); *)
     back_sprite =
       (if name = "#" then Draw.empty_sprite
-      else Draw.load_creature (String.lowercase_ascii name ^ "_back") ());
+      else if shiny_chance = false then
+        Draw.load_creature (String.lowercase_ascii name ^ "_back") ()
+      else
+        Draw.load_creature
+          (String.lowercase_ascii name ^ "_back_shiny")
+          ());
   }
 
 let create_creature name level =

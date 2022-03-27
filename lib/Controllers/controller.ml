@@ -9,12 +9,6 @@ type modes =
   | ModeBattle
   | ModeMenu
 
-type state = { player : Player.player }
-
-let current_state = ref { player = Player.new_player "Red" }
-let get_state _ = !current_state
-let player _ = !current_state.player
-
 let debug_draw () =
   let x, y = mouse_pos () in
   Draw.sync false ();
@@ -60,9 +54,10 @@ let setup _ = ()
 
 let main _ =
   open_window;
+  State.adhoc_init ();
   let mode = ModeMenu in
   (* Battle.start_battle (); *)
-  Party_menu.open_party ();
+  Party_menu.init ();
   moveto 100 200;
   set_font "-*-fixed-bold-r-semicondensed--40-*-*-*-*-*-iso8859-1";
   setup ();

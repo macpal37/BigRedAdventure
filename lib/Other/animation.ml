@@ -14,13 +14,12 @@ let hp_to_string hp =
 let draw_hp_val x y curr max player () =
   if player = false then ()
   else
-    (* let combat_bg = rgb 248 248 216 in *)
     let combat_bg = point_color x y in
     set_font_size 30 ();
     moveto x y;
     set_color combat_bg;
     fill_rect (current_x () - 2) (current_y () + 4) 100 24;
-    set_color text_color;
+    set_color text_color2;
     draw_string (hp_to_string curr ^ "/" ^ hp_to_string max)
 
 let draw_health_bar max before after xh yh hwidth hheight hp_text () =

@@ -28,6 +28,9 @@ val empty_sprite : sprite
 val text_color : Graphics.color
 (** Represents the color of the text.*)
 
+val text_color2 : Graphics.color
+(** Represents the color of the text.*)
+
 (** {1 Getters and Setters}*)
 
 val set_text_bg : sprite -> sprite -> unit

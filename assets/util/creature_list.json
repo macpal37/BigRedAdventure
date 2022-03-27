@@ -164,6 +164,48 @@
       }
     ]
   },
+  "rafu": {
+    "name": "Rafu",
+    "poke_id": 13,
+    "catch_rate": 235,
+    "base_exp": 60,
+    "level_rate": "Medium",
+    "type1": "Fairy",
+    "type2": "Rock",
+    "base_stats": {
+      "hp": 55,
+      "attack": 45,
+      "defense": 35,
+      "sp_attack": 45,
+      "sp_defense": 65,
+      "speed": 35
+    },
+    "ev_stat": "sp_defense",
+    "ev_amount": 1,
+    "evolution": {
+      "name": "None",
+      "poke_id": 0,
+      "level_up": -1
+    },
+    "learnset": [
+      {
+        "move": "Pound",
+        "level": 1
+      },
+      {
+        "move": "Growl",
+        "level": 3
+      },
+      {
+        "move": "Crystal Barrage",
+        "level": 13
+      },
+      {
+        "move": "Mystical Power",
+        "level": 20
+      }
+    ]
+  },
   "rayquaza": {
     "name": "Rayquaza",
     "poke_id": 151,
