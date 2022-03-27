@@ -11,6 +11,7 @@
   party_menu
   menu
   overworld
+  state
   ; =====GAMEPLAY=====
   camera
   combat

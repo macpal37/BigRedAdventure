@@ -74,9 +74,7 @@ let redraw_bag () =
     | _ -> Misc
   in
 
-  let bag =
-    get_bag (Player.inventory (Controller.player ())) bag_type
-  in
+  let bag = get_bag (Player.inventory (State.player ())) bag_type in
   max_items.contents <- List.length (list_items bag);
   get_items_from_bag bag;
   if List.length display_queue.contents > 0 then
@@ -92,7 +90,7 @@ let inventory_text_bg = load_sprite "inventory_text_bg" GUI_Folder 3 ()
 
 let open_inventory () =
   set_text_bg inventory_text_bg empty_sprite;
-  let inventory = Player.inventory (Controller.player ()) in
+  let inventory = Player.inventory (State.player ()) in
 
   add_item inventory (create_item "repel");
   add_item inventory (create_item "super repel");

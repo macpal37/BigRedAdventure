@@ -39,7 +39,8 @@ type battle_record = {
   mutable enemy_creatures : creature list;
   battle_type : btype;
   mutable battle_status : bstatus;
-  escape_attempts : int;
+  mutable catch_attempts : int;
+  mutable escape_attempts : int;
   mutable player_battler : battle_creature;
   mutable enemy_battler : battle_creature;
   mutable turn_counter : int;
@@ -55,6 +56,7 @@ let empty_battle =
     enemy_creatures = [];
     battle_type = Wild;
     battle_status = Ongoing;
+    catch_attempts = 0;
     escape_attempts = 0;
     player_battler =
       {
@@ -92,6 +94,7 @@ let wild_init plist elist =
     battle_type = Wild;
     battle_status = Ongoing;
     escape_attempts = 0;
+    catch_attempts = 0;
     player_battler = generate_battler player true;
     enemy_battler = generate_battler enemy false;
     turn_counter = 0;
@@ -106,6 +109,7 @@ let trainer_init plist elist =
     battle_type = Trainer;
     battle_status = Ongoing;
     escape_attempts = 0;
+    catch_attempts = 0;
     player_battler = generate_battler player true;
     enemy_battler = generate_battler enemy false;
     turn_counter = 0;
@@ -387,22 +391,47 @@ let run_away brecord =
   if
     pspeed >= espeed || odds_escape > 255
     || Random.int 256 > odds_escape
-  then { brecord with battle_status = Flee }
-  else { brecord with escape_attempts = brecord.escape_attempts + 1 }
+  then brecord.battle_status <- Flee
+  else brecord.escape_attempts <- brecord.escape_attempts + 1
+
+let status_bonus st =
+  match st with
+  | Sleep _ -> 2.0
+  | Freeze _ -> 2.0
+  | Paralyze _ -> 1.5
+  | Poison _ -> 1.5
+  | Burn _ -> 1.5
+  | _ -> 1.0
+
+let rec pow a = function
+  (* CHECK THIS!!!!!!!!!!!!!!!!!!!!!*)
+  | 0 -> 1
+  | 1 -> a
+  | n ->
+      let b = pow a (n / 2) in
+      b * b * if n mod 2 = 0 then 1 else a
 
 let capture brecord =
-  let e_currHP = get_current_hp (List.nth brecord.enemy_creatures 0) in
-  let e_maxHP =
-    (get_stats (List.nth brecord.enemy_creatures 0)).max_hp
+  let e_currhp =
+    float_of_int (get_current_hp (List.nth brecord.enemy_creatures 0))
   in
-  let e_rate = 150 in
-  let e_status = 1 (*Get status effect here*) in
-  let ball_bonus = 1 in
-  let odds_catch =
-    ((3 * e_maxHP) - (2 * e_currHP * e_rate * ball_bonus))
-    / (3 * e_maxHP) * e_status / 2
-    (*might adjust to do floats instead*)
+  let e_maxhp =
+    float_of_int (get_stats (List.nth brecord.enemy_creatures 0)).max_hp
   in
-  if odds_catch >= 255 then { brecord with battle_status = Catch }
-  else { brecord with battle_status = Loss }
-(*Filler, implement rest here*)
+  let e_rate = get_catch_rate (List.nth brecord.enemy_creatures 0) in
+  let catch_rate =
+    ((3.0 *. e_maxhp) -. (2.0 *. e_currhp))
+    *. e_rate *. 1.0 /. (3.0 *. e_maxhp)
+    *. status_bonus (get_status (List.nth brecord.enemy_creatures 0))
+  in
+  let shake_probability =
+    pow 2 16 * pow (int_of_float catch_rate / (pow 2 8 - 1)) (1 / 4)
+  in
+  if
+    shake_probability > Random.int 65535
+    && shake_probability > Random.int 65535
+    && shake_probability > Random.int 65535
+    && shake_probability > Random.int 65535
+  then brecord.battle_status <- Catch
+  else if brecord.catch_attempts >= 3 then brecord.battle_status <- Flee
+  else brecord.escape_attempts <- brecord.escape_attempts + 1
