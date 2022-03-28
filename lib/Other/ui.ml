@@ -38,14 +38,17 @@ let add_first_background draw_func =
   renderer.contents.background <-
     draw_func :: renderer.contents.background
 
-(* let last_first_foreground draw_func = renderer.contents.foreground <-
-   renderer.contents.foreground @ [ draw_func ]
+let add_last_foreground draw_func =
+  renderer.contents.foreground <-
+    renderer.contents.foreground @ [ draw_func ]
 
-   let last_first_gameplay draw_func = renderer.contents.gameplay <-
-   renderer.contents.gameplay @ [ draw_func ]
+let add_last_gameplay draw_func =
+  renderer.contents.gameplay <-
+    renderer.contents.gameplay @ [ draw_func ]
 
-   let last_first_background draw_func = renderer.contents.background <-
-   renderer.contents.background @ [ draw_func ] *)
+let add_last_background draw_func =
+  renderer.contents.background <-
+    renderer.contents.background @ [ draw_func ]
 
 let rec draw_all_background = function
   | [] -> ()

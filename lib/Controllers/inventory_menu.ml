@@ -49,7 +49,6 @@ let inventory_position = Util.new_point ()
 
 let draw_bag item_type x y () =
   let w, h = Draw.get_dimension item_list_bg in
-  Draw.set_synced_mode false;
 
   Ui.add_first_background
     (Draw.draw_sprite item_list_bg (Draw.width - w) (Draw.height - h));
@@ -64,7 +63,7 @@ let draw_bag item_type x y () =
       set_line_width 6;
       draw_rect x (y - (40 * inventory_position.y)) 370 40)
 
-let redraw_bag () =
+let refresh () =
   let bag_type =
     match inventory_position.x with
     | 0 -> Misc
@@ -74,9 +73,7 @@ let redraw_bag () =
     | _ -> Misc
   in
 
-  let bag =
-    get_bag (Player.inventory (Controller.player ())) bag_type
-  in
+  let bag = get_bag (Player.inventory (State.player ())) bag_type in
   max_items.contents <- List.length (list_items bag);
   get_items_from_bag bag;
   if List.length display_queue.contents > 0 then
@@ -90,28 +87,15 @@ let redraw_bag () =
 
 let inventory_text_bg = load_sprite "inventory_text_bg" GUI_Folder 3 ()
 
-let open_inventory () =
+let init () =
+  Draw.set_synced_mode false;
+
   set_text_bg inventory_text_bg empty_sprite;
-  let inventory = Player.inventory (Controller.player ()) in
-
-  add_item inventory (create_item "repel");
-  add_item inventory (create_item "super repel");
-  add_item inventory (create_item "max repel");
-
-  add_item inventory (create_item "potion");
-  add_item inventory (create_item "potion");
-  add_item inventory (create_item "potion");
-  add_item inventory (create_item "potion");
-  add_item inventory (create_item "super potion");
-  add_item inventory (create_item "hyper potion");
-  add_item inventory (create_item "max potion");
-  add_item inventory (create_item "ether");
-  add_item inventory (create_item "max ether");
-  add_item inventory (create_item "revive");
-  add_item inventory (create_item "max revive");
-  redraw_bag ()
+  refresh ();
+  Ui.add_first_background clear_screen
 
 let rec run_tick () =
+  Input.poll ();
   let key =
     match Input.key_option () with
     | Some c -> c
@@ -133,12 +117,14 @@ let rec run_tick () =
 
   if key = 'd' || key = 'a' then begin
     inventory_position.y <- 0;
-    redraw_bag ()
+    refresh ()
   end;
 
   if key = 'w' || key = 's' then begin
     print_endline ("Y: " ^ string_of_int inventory_position.y);
-    redraw_bag ()
+    refresh ()
   end;
   Ui.update_all ();
-  if key <> 'q' then run_tick ()
+  print_endline (String.make 1 key);
+  Unix.sleepf 0.016;
+  if key <> 'q' then run_tick () else Draw.set_synced_mode true
