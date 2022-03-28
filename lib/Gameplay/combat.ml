@@ -403,13 +403,11 @@ let status_bonus st =
   | Burn _ -> 1.5
   | _ -> 1.0
 
-let rec pow a = function
-  (* CHECK THIS!!!!!!!!!!!!!!!!!!!!!*)
+let rec pow a b =
+  match b with
   | 0 -> 1
   | 1 -> a
-  | n ->
-      let b = pow a (n / 2) in
-      b * b * if n mod 2 = 0 then 1 else a
+  | c -> a * pow a (c - 1)
 
 let capture brecord =
   let e_currhp =
