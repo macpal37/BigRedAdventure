@@ -49,7 +49,6 @@ let inventory_position = Util.new_point ()
 
 let draw_bag item_type x y () =
   let w, h = Draw.get_dimension item_list_bg in
-  Draw.set_synced_mode false;
 
   Ui.add_first_background
     (Draw.draw_sprite item_list_bg (Draw.width - w) (Draw.height - h));
@@ -64,7 +63,7 @@ let draw_bag item_type x y () =
       set_line_width 6;
       draw_rect x (y - (40 * inventory_position.y)) 370 40)
 
-let redraw_bag () =
+let refresh () =
   let bag_type =
     match inventory_position.x with
     | 0 -> Misc
@@ -88,8 +87,11 @@ let redraw_bag () =
 
 let inventory_text_bg = load_sprite "inventory_text_bg" GUI_Folder 3 ()
 
-let open_inventory () =
+let init () =
+  Draw.set_synced_mode false;
+
   set_text_bg inventory_text_bg empty_sprite;
+<<<<<<< HEAD
   let inventory = Player.inventory (State.player ()) in
 
   add_item inventory (create_item "repel");
@@ -108,8 +110,13 @@ let open_inventory () =
   add_item inventory (create_item "revive");
   add_item inventory (create_item "max revive");
   redraw_bag ()
+=======
+  refresh ();
+  Ui.add_first_background clear_screen
+>>>>>>> 7fa1ba462446f6dfa029ccf6c86786c065961da5
 
 let rec run_tick () =
+  Input.poll ();
   let key =
     match Input.key_option () with
     | Some c -> c
@@ -131,12 +138,14 @@ let rec run_tick () =
 
   if key = 'd' || key = 'a' then begin
     inventory_position.y <- 0;
-    redraw_bag ()
+    refresh ()
   end;
 
   if key = 'w' || key = 's' then begin
     print_endline ("Y: " ^ string_of_int inventory_position.y);
-    redraw_bag ()
+    refresh ()
   end;
   Ui.update_all ();
-  if key <> 'q' then run_tick ()
+  print_endline (String.make 1 key);
+  Unix.sleepf 0.016;
+  if key <> 'q' then run_tick () else Draw.set_synced_mode true

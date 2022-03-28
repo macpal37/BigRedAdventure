@@ -37,9 +37,13 @@ let inventory p = p.inventory
 let time_played p = p.time_played
 let badges p = p.badges
 let party p = p.party
+let party_i p i = List.nth p.party i
 let set_party party player = player.party <- party
 let creatures player = player.creatures
-let add_creature c p = p.creatures <- c :: p.creatures
+
+let add_creature c p =
+  if List.length p.party < 6 then p.party <- p.party @ [ c ]
+  else p.creatures <- c :: p.creatures
 
 let rec remove_creature_rec c l =
   match l with

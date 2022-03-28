@@ -8,3 +8,5 @@ val get_state : unit -> state
 
 val player : unit -> Player.player
 (** [player _] is the player of game*)
+
+val adhoc_init : unit -> unit
