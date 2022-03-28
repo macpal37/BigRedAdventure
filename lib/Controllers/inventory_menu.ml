@@ -87,13 +87,6 @@ let refresh () =
 
 let inventory_text_bg = load_sprite "inventory_text_bg" GUI_Folder 3 ()
 
-let init () =
-  Draw.set_synced_mode false;
-
-  set_text_bg inventory_text_bg empty_sprite;
-  refresh ();
-  Ui.add_first_background clear_screen
-
 let rec run_tick () =
   Input.poll ();
   let key =
@@ -128,3 +121,11 @@ let rec run_tick () =
   print_endline (String.make 1 key);
   Unix.sleepf 0.016;
   if key <> 'q' then run_tick () else Draw.set_synced_mode true
+
+let init () =
+  Draw.set_synced_mode false;
+
+  set_text_bg inventory_text_bg empty_sprite;
+  refresh ();
+  Ui.add_first_background clear_screen;
+  run_tick ()

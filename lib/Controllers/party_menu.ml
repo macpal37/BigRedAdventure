@@ -155,9 +155,9 @@ let switch () =
   let new_party = switch_creature [] party in
   Player.set_party new_party (State.player ())
 
-let run_tick () =
+let rec run_tick () =
   print_endline (string_of_int menu_position.x);
-  (* Input.poll (); *)
+  Input.poll ();
   let key =
     match Input.key_option () with
     | Some c -> c
@@ -218,13 +218,13 @@ let run_tick () =
       refresh ()
     end
   end;
-  Ui.update_all ()
-(* if key <> 'q' then run_tick () else Draw.set_synced_mode true *)
+  Ui.update_all ();
+  if key <> 'q' then run_tick () else Draw.set_synced_mode true
 
 let init () =
   minimenu_position.x <- -1;
   switch_position.x <- -1;
   Draw.set_synced_mode false;
   refresh ();
-  Ui.add_first_background clear_screen
-(* run_tick () *)
+  Ui.add_first_background clear_screen;
+  run_tick ()

@@ -23,7 +23,7 @@ let battle_bot_left = load_sprite "battle_bot_left" GUI_Folder 3 ()
 let battle_right = load_sprite "battle_top" GUI_Folder 3 ()
 let moves_window = load_sprite "moves_window" GUI_Folder 3 ()
 let combat_hud = load_sprite "opponent_hud" GUI_Folder 3 ()
-let player_hud = load_sprite "player_hud" GUI_Folder 3 ()
+let player_hud = load_sprite "player_hud2" GUI_Folder 3 ()
 
 (** Test creatures Sprites **)
 (* let player_creature = create_creature "clefairy" 60 *)
@@ -100,8 +100,8 @@ let draw_health_bar_combat max before after player () =
   let xh, yh =
     if player then (width - hwidth - 31 - 10, 296) else (130, 615)
   in
-  Ui.add_first_gameplay
-    (draw_health_bar max before after xh yh hwidth hheight player)
+
+  draw_health_bar max before after xh yh hwidth hheight player ()
 
 let draw_combat_hud sprite name level player (max, before, after) () =
   let sprite_width, sprite_height = get_dimension sprite in
@@ -110,23 +110,30 @@ let draw_combat_hud sprite name level player (max, before, after) () =
     draw_sprite sprite
       (width - sprite_width - 14)
       (360 - sprite_height) ();
-    moveto (width - 320) 316;
-    draw_string (String.uppercase_ascii name);
-    moveto (width - 100) 316
+    draw_string_colored (width - 320) 316 2 30
+      (String.uppercase_ascii name)
+      white ();
+
+    draw_string_colored (width - 100) 316 2 30
+      ("Lv" ^ string_of_int level)
+      white ()
   end
   else begin
     set_font_size 30 ();
     draw_sprite sprite 42 (height - 45 - sprite_height) ();
-    moveto 60 (height - 85);
-    draw_string (String.uppercase_ascii name);
-    moveto 280 (height - 85)
+    draw_string_colored 60 (height - 85) 2 30
+      (String.uppercase_ascii name)
+      white ();
+
+    draw_string_colored 280 (height - 85) 2 30
+      ("Lv" ^ string_of_int level)
+      white ()
   end;
-  draw_string ("Lv" ^ string_of_int level);
+
   draw_health_bar_combat max before after player ();
   set_font_size 40 ()
 
 let draw_combat_commands c redraw () =
-  set_synced_mode false;
   set_font_size 50 ();
   let x, y = (475, 120) in
   if redraw then clear_text ();
@@ -146,6 +153,7 @@ let draw_combat_commands c redraw () =
   set_font_size 40 ()
 
 let rec faint base c sprite player () =
+  set_synced_mode true;
   let sprite_width, sprite_height = get_dimension sprite in
   let xx, yy =
     if player then (50, 166)
@@ -177,7 +185,8 @@ let rec faint base c sprite player () =
 
     faint base (c + 1) sprite player ()
   end;
-  set_color text_color
+  set_color text_color;
+  set_synced_mode false
 
 let animate_faint creature player () = faint 20 1 creature player ()
 
@@ -223,14 +232,14 @@ let draw_creature_exp creature added_exp render () =
       ()
 
 let handle_combat move =
+  Ui.clear_ui Gameplay;
+  Ui.clear_ui Foreground;
   Combat.turn_builder battle_sim.contents move;
   set_text_char_cap 28;
   let player, enemy =
     ( List.nth battle_sim.contents.player_creatures 0,
       List.nth battle_sim.contents.enemy_creatures 0 )
   in
-  print_endline ("PLAYER: " ^ get_nickname player);
-  print_endline ("Enemy: " ^ get_nickname enemy);
 
   let p_maxhp, e_maxhp =
     ((get_stats player).max_hp, (get_stats enemy).max_hp)
@@ -299,11 +308,14 @@ let refresh_battle () =
     ()
 
 let start_battle () =
+  set_synced_mode false;
   set_text_bg battle_bot_left battle_right;
+  (* ========= Start the Battle ========= *)
   battle_sim.contents <-
     Combat.wild_init
       (Player.party (State.player ()))
       [ enemy_creature.contents ];
+  (* ========= Draw the Battle ========= *)
   Ui.add_first_gameplay
     (draw_creature (get_front_sprite enemy_creature.contents) false);
   Ui.add_first_gameplay
@@ -323,7 +335,6 @@ let run_tick () =
   in
 
   let b = !combat_button in
-  if key = 'r' then draw_exp_bar_combat 4350 10 2065 ();
   if key = 'd' && (b = 0 || b = 2) then combat_button.contents <- b + 1;
   if key = 'a' && (b = 1 || b = 3) then combat_button.contents <- b - 1;
   if key = 'w' && (b = 2 || b = 3) then combat_button.contents <- b - 2;
@@ -352,12 +363,12 @@ let run_tick () =
         end
         else if key = 'e' && combat_button.contents = 1 then begin
           Inventory_menu.init ();
-          Inventory_menu.run_tick ();
+          (* Inventory_menu.run_tick (); *)
           refresh_battle ()
         end
         else if key = 'e' && combat_button.contents = 2 then begin
           Party_menu.init ();
-          Party_menu.run_tick ();
+          (* Party_menu.run_tick (); *)
           refresh_battle ()
         end
     | Moves ->
