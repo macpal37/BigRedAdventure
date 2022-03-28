@@ -7,17 +7,23 @@ let creature_menu_bg = load_sprite "creature_menu" GUI_Folder 3 ()
 let menu_position = Util.new_point ()
 let party_position = Util.new_point ()
 let current_creature = ref (create_creature "clefairy" 100)
+let switch_position = Util.new_point ()
 
 let move_x x () =
-  if
-    menu_position.x + x >= 0
-    && menu_position.x + x <= 1
-    && List.length (Player.party (State.player ())) > 1
-  then menu_position.x <- menu_position.x + x
+  if switch_position.x = -1 then begin
+    if menu_position.x + x >= 0 && menu_position.x + x <= 1 then
+      menu_position.x <- menu_position.x + x
+  end
+  else if switch_position.x + x >= 0 && switch_position.x + x <= 1 then
+    switch_position.x <- switch_position.x + x
 
 let move_y y () =
-  if menu_position.y + y >= 0 && menu_position.y + y <= 1 then
-    menu_position.y <- menu_position.y + y
+  if switch_position.x = -1 then begin
+    if menu_position.y + y >= 0 && menu_position.y + y <= 1 then
+      menu_position.y <- menu_position.y + y
+  end
+  else if switch_position.y + y >= 0 && switch_position.y + y <= 1 then
+    switch_position.y <- switch_position.y + y
 
 let draw_stats () =
   let x, y, dif, x2 = (290, 623, 35, 556) in
@@ -47,11 +53,19 @@ let draw_stats () =
 
 let draw_selector w h () =
   if menu_position.x >= 0 then begin
-    set_line_width 4;
+    set_line_width 6;
     let x, y =
       (282 + (w * menu_position.x), 274 - (h * menu_position.y))
     in
     set_color red;
+    draw_rect x y w h
+  end;
+  if switch_position.x <> -1 then begin
+    set_line_width 6;
+    let x, y =
+      (282 + (w * switch_position.x), 274 - (h * switch_position.y))
+    in
+    set_color blue;
     draw_rect x y w h
   end
 
@@ -93,6 +107,8 @@ let draw_moves () =
   Ui.add_last_foreground (draw_selector box_w box_h)
 
 let refresh () =
+  Ui.add_first_foreground
+    (draw_string_colored 24 605 4 60 "SUMMARY" (rgb 255 170 40));
   Ui.add_last_background (draw_sprite creature_menu_bg 0 0);
   Ui.add_first_gameplay
     (draw_sprite (get_front_sprite current_creature.contents) 12 318);
@@ -125,7 +141,9 @@ let refresh () =
   Ui.add_first_foreground
     (draw_string_colored 398 636 2 36 "Stats" white);
   Ui.add_first_foreground
-    (draw_string_colored 290 120 2 30 "Fire move that shots fire!"
+    (draw_text_string_pos 290 120 30 32
+       (get_move_description_i current_creature.contents
+          (menu_position.x + (2 * menu_position.y)))
        text_color2);
   draw_moves ()
 
@@ -140,8 +158,27 @@ let next_creature i =
   set_creature i;
   refresh ()
 
+let switch_move () =
+  let a, b =
+    ( get_move_i current_creature.contents
+        (menu_position.x + (2 * menu_position.y)),
+      get_move_i current_creature.contents
+        (switch_position.x + (2 * switch_position.y)) )
+  in
+  let moves = get_moves current_creature.contents in
+  let rec switch_move new_lst = function
+    | [] -> new_lst
+    | h :: t ->
+        if a = h then switch_move (new_lst @ [ b ]) t
+        else if b = h then switch_move (new_lst @ [ a ]) t
+        else switch_move (new_lst @ [ h ]) t
+  in
+  let new_moves = switch_move [] moves in
+  set_moves current_creature.contents new_moves
+
 let init () =
   menu_position.x <- -2;
+  switch_position.x <- -1;
   Draw.set_synced_mode false;
   refresh ();
   Ui.add_first_background clear_screen
@@ -166,8 +203,25 @@ let rec run_tick () =
     if key = 'd' then next_creature 1
   end;
 
+  (*====== Switch ====== *)
+  if key = 'e' && menu_position.x >= 0 && switch_position.x = -1 then begin
+    switch_position.x <- menu_position.x + 0;
+    switch_position.y <- menu_position.y + 0;
+    refresh ()
+  end
+  else if key = 'e' && switch_position.x <> -1 && menu_position.x <> -2
+  then begin
+    switch_move ();
+    menu_position.x <- switch_position.x + 0;
+    menu_position.y <- switch_position.y + 0;
+
+    switch_position.x <- -1;
+    refresh ()
+  end;
+
   if key = 'e' && menu_position.x = -2 then begin
     menu_position.x <- 0;
+    refresh ();
     draw_moves ()
   end;
   if key = 'q' && menu_position.x <> -2 then begin

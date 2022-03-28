@@ -132,6 +132,17 @@ let string_of_status stat_var =
   | Fainted -> "Fainted"
 
 let get_moves creature = creature.moves
+let set_moves creature moves = creature.moves <- moves
+
+let get_move_i creature i =
+  let size = List.length creature.moves in
+  if size <= i then List.nth creature.moves (size - 1)
+  else if i < 0 then List.nth creature.moves 0
+  else List.nth creature.moves i
+
+let get_move_description_i creature i =
+  if List.length creature.moves <= i || i < 0 then ""
+  else (List.nth creature.moves i).description
 
 let add_pp creature move_name amount =
   let move =
@@ -607,7 +618,7 @@ let set_nickname creature nickname = creature.nickname <- nickname
 
 let get_color_from_etype etype =
   match etype with
-  | Normal -> rgb 166 166 166
+  | Normal -> rgb 196 196 196
   | Fire -> rgb 235 47 0
   | Water -> rgb 13 150 255
   | Grass -> rgb 0 168 3

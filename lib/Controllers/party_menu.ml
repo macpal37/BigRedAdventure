@@ -5,30 +5,45 @@ open Animation
 
 (* let max_creatures = 5 let max_creatures = ref 0 *)
 let party_menu_bg = load_sprite "party_menu" GUI_Folder 3 ()
-let active = load_sprite "active_party_creature" GUI_Folder 3 ()
+let active = load_sprite "active_party_creature3" GUI_Folder 3 ()
 let minimenu1 = load_sprite "party_minimenu" GUI_Folder 3 ()
-let chibi = load_sprite "rafu_front" Creature_Folder 1 ()
 let menu_position = Util.new_point ()
+let switch_position = Util.new_point ()
 let minimenu_position = Util.new_point ()
 
 let move_x x () =
-  if minimenu_position.x = -1 then
-    if
-      menu_position.x + x >= 0
-      && menu_position.x + x < 2
-      && List.length (Player.party (State.player ())) > 1
-    then menu_position.x <- menu_position.x + x
+  if switch_position.x = -1 then begin
+    if minimenu_position.x = -1 then
+      if
+        menu_position.x + x >= 0
+        && menu_position.x + x < 2
+        && List.length (Player.party (State.player ())) > 1
+      then menu_position.x <- menu_position.x + x
+  end
+  else if
+    switch_position.x + x >= 0
+    && switch_position.x + x < 2
+    && List.length (Player.party (State.player ())) > 1
+  then switch_position.x <- switch_position.x + x
 
 let move_y y () =
-  if minimenu_position.x = -1 then begin
-    if
-      menu_position.y + y >= 0
-      && menu_position.y + y
-         < List.length (Player.party (State.player ())) - 1
-    then menu_position.y <- menu_position.y + y
+  print_endline ("Y: " ^ string_of_int switch_position.y);
+  if switch_position.x = -1 then begin
+    if minimenu_position.x = -1 then begin
+      if
+        menu_position.y + y >= 0
+        && menu_position.y + y
+           < List.length (Player.party (State.player ())) - 1
+      then menu_position.y <- menu_position.y + y
+    end
+    else if minimenu_position.y + y >= 0 && minimenu_position.y + y < 4
+    then minimenu_position.y <- minimenu_position.y + y
   end
-  else if minimenu_position.y + y >= 0 && minimenu_position.y + y < 4
-  then minimenu_position.y <- minimenu_position.y + y
+  else if
+    switch_position.y + y >= 0
+    && switch_position.y + y
+       < List.length (Player.party (State.player ())) - 1
+  then switch_position.y <- switch_position.y + y
 
 let draw_menu lead_creature () =
   Ui.add_first_background (draw_sprite party_menu_bg 0 0);
@@ -51,7 +66,10 @@ let draw_creature_status creature pos () =
   let x, y = (276, 577 - (112 * pos)) in
   let xx = 294 + 80 in
   let yy = 610 - (112 * pos) in
-  Ui.add_first_background (draw_sprite chibi x (y + 10));
+  Ui.add_first_background
+    (draw_sprite
+       (change_dpi (get_front_sprite creature) 1)
+       (x + 14) (y + 11));
   Ui.add_first_background (draw_sprite active x y);
   Ui.add_first_gameplay
     (draw_string_colored xx (yy + 26) 1 30 (get_nickname creature) white);
@@ -64,16 +82,28 @@ let draw_creature_status creature pos () =
     (draw_health_bar max aft aft (xx + 130) (yy + 6) 250 6 true)
 
 let draw_selector () =
-  set_line_width 4;
-  if menu_position.x = 1 then begin
-    let x, y = (276, 577 - (112 * menu_position.y)) in
-    set_color red;
-    draw_rect x y 510 100
-  end
+  set_line_width 6;
+
+  (if menu_position.x = 1 then begin
+   let x, y = (276, 577 - (112 * menu_position.y)) in
+   set_color red;
+   draw_rect x y 510 100
+ end
   else
     let x, y = (9, 140) in
     set_color red;
-    draw_rect x y 254 152
+    draw_rect x y 254 152);
+  if switch_position.x <> -1 then begin
+    if switch_position.x = 1 then begin
+      let x, y = (276, 577 - (112 * switch_position.y)) in
+      set_color blue;
+      draw_rect x y 510 100
+    end
+    else
+      let x, y = (9, 140) in
+      set_color blue;
+      draw_rect x y 254 152
+  end
 
 let refresh () =
   let length = List.length (Player.party (State.player ())) in
@@ -103,7 +133,30 @@ let minimenu () =
     (draw_string_colored x (y - (dif * 3)) 2 f "Back" text_color2);
   Ui.add_first_foreground (draw_sprite minimenu1 576 12)
 
+let get_party_index () =
+  print_endline (string_of_int menu_position.x);
+  if menu_position.x = 0 then 0 else menu_position.y + 1
+
+let switch () =
+  let a, b =
+    ( Player.party_i (State.player ())
+        (if menu_position.x = 0 then 0 else menu_position.y + 1),
+      Player.party_i (State.player ())
+        (if switch_position.x = 0 then 0 else switch_position.y + 1) )
+  in
+  let party = Player.party (State.player ()) in
+  let rec switch_creature new_lst = function
+    | [] -> new_lst
+    | h :: t ->
+        if a = h then switch_creature (new_lst @ [ b ]) t
+        else if b = h then switch_creature (new_lst @ [ a ]) t
+        else switch_creature (new_lst @ [ h ]) t
+  in
+  let new_party = switch_creature [] party in
+  Player.set_party new_party (State.player ())
+
 let run_tick () =
+  print_endline (string_of_int menu_position.x);
   (* Input.poll (); *)
   let key =
     match Input.key_option () with
@@ -111,41 +164,66 @@ let run_tick () =
     | None -> '#'
   in
 
+  (*====== Move Selector ====== *)
   if key = 'w' then move_y (-1) ();
   if key = 's' then move_y 1 ();
   if key = 'a' then move_x (-1) ();
   if key = 'd' then move_x 1 ();
-
+  (*====== Refersh Selector ====== *)
   if
     (key = 'w' || key = 's' || key = 'a' || key = 'd')
     && minimenu_position.x = -1
   then refresh ();
+  (*====== Open Minimenu====== *)
   if (key = 'w' || key = 's') && minimenu_position.x = 0 then
     minimenu ();
-
+  print_endline (string_of_int menu_position.x);
+  (*====== Summary ====== *)
   if key = 'e' && minimenu_position.x = 0 && minimenu_position.y = 0
   then begin
-    let i = if menu_position.x = 0 then 0 else menu_position.y + 1 in
-    Creature_menu.set_creature i;
+    Creature_menu.set_creature (get_party_index ());
     Creature_menu.init ();
     Creature_menu.run_tick ();
     refresh ()
   end;
 
-  if key = 'e' then begin
-    minimenu_position.x <- 0;
-    minimenu ()
-  end;
-  if key = 'q' then begin
-    minimenu_position.y <- 0;
+  (*====== Switch ====== *)
+  if
+    key = 'e' && minimenu_position.x = 0 && minimenu_position.y = 1
+    && switch_position.x = -1
+  then begin
     minimenu_position.x <- -1;
+    switch_position.x <- menu_position.x + 0;
+    switch_position.y <- menu_position.y + 0;
     refresh ()
+  end
+  else if key = 'e' && switch_position.x <> -1 then begin
+    switch ();
+    menu_position.x <- switch_position.x + 0;
+    menu_position.y <- switch_position.y + 0;
+    minimenu_position.x <- 0;
+    switch_position.x <- -1;
+    refresh ()
+  end;
+
+  (*====== MiniMenu ====== *)
+  if switch_position.x = -1 then begin
+    if key = 'e' then begin
+      minimenu_position.x <- 0;
+      minimenu ()
+    end;
+    if key = 'q' then begin
+      minimenu_position.y <- 0;
+      minimenu_position.x <- -1;
+      refresh ()
+    end
   end;
   Ui.update_all ()
 (* if key <> 'q' then run_tick () else Draw.set_synced_mode true *)
 
 let init () =
   minimenu_position.x <- -1;
+  switch_position.x <- -1;
   Draw.set_synced_mode false;
   refresh ();
   Ui.add_first_background clear_screen

@@ -53,6 +53,7 @@ val set_erase_mode : bool -> unit -> unit
 val set_synced_mode : bool -> unit
 val set_font_size : int -> unit -> unit
 val get_font_size : unit -> int
+val change_dpi : sprite -> int -> sprite
 
 val clear_screen : unit -> unit
 (** [clear_screen ()] Clears the screen with the background color.*)
@@ -128,6 +129,12 @@ val draw_text_string : string -> unit -> unit
 (** [draw_text_string text font_size (_)] draws the given [text] with
     the given [font_size]on the bottom of the screen. There is no text
     scroll.*)
+
+val draw_text_string_pos :
+  int -> int -> int -> int -> string -> Graphics.color -> unit -> unit
+(** [draw_text_string_pos x y font_size char_cap  text color (_)] draws
+    the given [text] with the given [font_size]on the [x y]. There is no
+    text scroll.*)
 
 val damage_render : sprite -> bool -> unit -> unit
 (** [damage_render sprite is_player (_)] performs the damage animation

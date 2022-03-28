@@ -194,3 +194,6 @@ val set_back_sprite : creature -> Draw.sprite -> unit
 val get_hp_status : creature -> int * int * int
 val get_specias : creature -> string
 val get_color_from_etype : etype -> Graphics.color
+val get_move_description_i : creature -> int -> string
+val get_move_i : creature -> int -> move
+val set_moves : creature -> move list -> unit

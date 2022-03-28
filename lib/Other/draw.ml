@@ -77,6 +77,14 @@ let set_sticky_text flag () = is_sticky.contents <- flag
 let set_erase_mode flag () = erase_mode.contents <- flag
 let set_synced_mode flag = synced_mode.contents <- flag
 
+let change_dpi sprite dpi =
+  {
+    sprite with
+    width = sprite.width / sprite.dpi * dpi;
+    height = sprite.height / sprite.dpi * dpi;
+    dpi;
+  }
+
 let sync_draw draw () =
   usync false ();
   draw ();
@@ -292,6 +300,47 @@ let draw_text text font_size auto () =
   clear_text ();
   set_color text_color;
   scroll_text 0 1 levels
+
+let draw_text_string_pos x y font_size char_cap text color () =
+  set_font_size font_size ();
+  moveto x y;
+  let words = String.split_on_char ' ' text in
+  let rec calc_levels w lst = function
+    | [] -> lst @ [ w ]
+    | h :: t ->
+        let new_w = w ^ " " ^ h in
+        if String.length new_w < char_cap then calc_levels new_w lst t
+        else calc_levels h (lst @ [ w ]) t
+  in
+  let levels =
+    match words with
+    | [] -> []
+    | h :: t -> calc_levels h [] t
+  in
+
+  let rec scroll_text i = function
+    | [] -> set_color text_color
+    | h :: t ->
+        let char_list = string_to_char_list h in
+        let rec draw_chars chars =
+          match chars with
+          | [] -> ()
+          | h :: t ->
+              set_color text_color;
+              draw_char h;
+              rmoveto (-15) 4;
+              set_color color;
+              draw_char h;
+              rmoveto 2 (-4);
+              set_color text_color;
+              draw_chars t
+        in
+        moveto x (y - ((font_size + 5) * i));
+        draw_chars char_list;
+        scroll_text (i + 1) t
+  in
+  set_color text_color;
+  scroll_text 0 levels
 
 let draw_text_string text () =
   let cap = !text_char_cap in
