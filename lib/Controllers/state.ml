@@ -12,6 +12,7 @@ let current_state =
 
 let get_state _ = !current_state
 let player _ = !current_state.player
+
 let player_x _ = Player.x !current_state.player
 let player_y _ = Player.y !current_state.player
 let map _ = !current_state.map
