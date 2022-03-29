@@ -82,14 +82,14 @@ let init_map map_name =
   |> ll_to_matrix
   |> matrix_map (code_to_tile g e)
 
-let get_dim map = (Array.length map, Array.get map 0 |> Array.length)
+let get_dim map = (Array.get map 0 |> Array.length, Array.length map)
 
 (** [get_tile t (x, y)] is the tile at the coordinate (x, y) in map [t].
     Raises [Out_of_Bounds] if [c] is not a coordinate in [t] *)
 let get_tile (t : t) ((x, y) : coord) =
   try
-    let x_arr = Array.get t x in
-    Array.get x_arr y
+    let x_arr = Array.get t y in
+    Array.get x_arr x
   with Invalid_argument _ -> raise Out_of_Bounds
 
 let get_type t c =
