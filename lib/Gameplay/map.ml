@@ -23,7 +23,10 @@ type tile = {
   ttype : tile_type;
 }
 
-type t = { tiles : tile array array }
+type t = {
+  tiles : tile array array;
+  spritesheet : Spritesheet.sprite_sheet;
+}
 
 let json_val json f key = json |> member key |> f
 let json_list json f key = json |> member key |> to_list |> List.map f
@@ -155,9 +158,18 @@ let set_encounters tile_m encounter_m e =
            | _ -> raise (Malformed_Json "Impossible tile type"))
     done
   done
-(* let get_tile_graphics json = let src_path = json |> member "source"
-   |> to_string in let png_path = "assets/" ^ String.sub src_path 3
-   (String.length src_path - 8) in ()*)
+
+let json_spritesheet json =
+  let src_path = json |> member "source" |> to_string in
+  let png_path =
+    "assets/"
+    ^ String.sub src_path 3 (String.length src_path - 8)
+    ^ ".png"
+  in
+  let t_json = Yojson.Basic.from_file (tileset_path_parser src_path) in
+  let tilewidth = t_json |> member "tilewidth" |> to_int in
+  let tileheight = t_json |> member "tileheight" |> to_int in
+  Spritesheet.init_spritesheet png_path tilewidth tileheight
 
 let load_map map_name =
   let json =
@@ -172,7 +184,8 @@ let load_map map_name =
           let encounter_l = json_encounters encounter_t in
           let tile_m = build_tile_matrix tile_id_m tileset_l in
           set_encounters tile_m encounter_id_m encounter_l;
-          { tiles = tile_m }
+          let spritesheet = json_spritesheet tile_t in
+          { tiles = tile_m; spritesheet }
       | [] | _ :: _ -> raise (Malformed_Json "Impossible case!"))
   | [] | _ :: _ -> raise (Malformed_Json "Impossible case!")
 
@@ -183,6 +196,9 @@ let load_map map_name =
 let get_dim map =
   let map = map.tiles in
   (Array.get map 0 |> Array.length, Array.length map)
+
+let get_width map = Array.length (Array.get map.tiles 0)
+let get_height map = Array.length map.tiles
 
 (** [get_tile t (x, y)] is the tile at the coordinate (x, y) in map [t].
     Raises [Out_of_Bounds] if [c] is not a coordinate in [t] *)
@@ -201,8 +217,7 @@ let get_graphic_id t c =
   | { graphic; _ } -> graphic
 
 let get_sprite t c =
-  ignore (get_graphic_id t c);
-  failwith "Unimplemented"
+  Spritesheet.get_sprite t.spritesheet (get_graphic_id t c)
 
 let creature_level (min, max) = min + Random.int (max - min + 1)
 

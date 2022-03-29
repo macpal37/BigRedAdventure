@@ -27,6 +27,9 @@ val get_dim : t -> int * int
 (** [get_dim m] is a tuple [(width, height)] representing the number of
     tiles in the width and height of m *)
 
+val get_width : t -> int
+val get_height : t -> int
+
 val get_type : t -> coord -> tile_type
 (** [get_type m c] is the type ([Path, Grass, Obstacle]) of the tile at
     [c] in map [m]. Raises [Out_of_Bounds] if [c] is not a valid

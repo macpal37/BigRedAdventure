@@ -17,6 +17,8 @@ let player_y _ = Player.y !current_state.player
 let map _ = !current_state.map
 
 let adhoc_init () =
+  Player.set_x 5 (player ());
+  Player.set_y 5 (player ());
   let rafu = Creature.create_creature "rafu" 50 in
   let rafu2 = Creature.create_creature "rafu" 30 in
   let rafu3 = Creature.create_creature "clefairy" 30 in
