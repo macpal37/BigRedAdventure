@@ -70,11 +70,11 @@ val battle_sim_sh : battle_record -> unit
    acted. Raises: NotBattleReady if battle record's turn_pos is not
    Halfway*)
 
-val run_away : battle_record -> battle_record
+val run_away : battle_record -> unit
 (**Given a battle record, checks if the player is able to run away. If
    so, return battle_record with victory status set as Flee.*)
 
-val capture : battle_record -> battle_record
+val capture : battle_record -> unit
 (**Given a battle record, checks if the player is able to catch the
    creature. If so, return battle_record with victory status set as
    Catch*)

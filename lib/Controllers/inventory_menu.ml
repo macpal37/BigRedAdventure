@@ -87,6 +87,13 @@ let refresh () =
 
 let inventory_text_bg = load_sprite "inventory_text_bg" GUI_Folder 3 ()
 
+let init () =
+  Draw.set_synced_mode false;
+
+  set_text_bg inventory_text_bg empty_sprite;
+  refresh ();
+  Ui.add_first_background clear_screen
+
 let rec run_tick () =
   Input.poll ();
   let key =
