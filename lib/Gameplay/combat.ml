@@ -238,13 +238,17 @@ let stat_bound stat_val name stat_name =
 let handle_stat_changes battler stat stages =
   if battler.is_player then
     if stages < 0 then
-      Draw.lower_stat_effect (get_back_sprite battler.creature) true ()
+      Ui.add_last_gameplay
+        (Draw.lower_stat_effect (get_back_sprite battler.creature) true)
     else
-      Draw.raise_stat_effect (get_back_sprite battler.creature) true ()
+      Ui.add_last_gameplay
+        (Draw.raise_stat_effect (get_back_sprite battler.creature) true)
   else if stages < 0 then
-    Draw.lower_stat_effect (get_front_sprite battler.creature) false ()
+    Ui.add_last_gameplay
+      (Draw.lower_stat_effect (get_front_sprite battler.creature) false)
   else
-    Draw.raise_stat_effect (get_front_sprite battler.creature) false ();
+    Ui.add_last_gameplay
+      (Draw.raise_stat_effect (get_front_sprite battler.creature) false);
 
   print_endline ("Name: " ^ get_nickname battler.creature);
   print_endline ("ATK: " ^ string_of_int battler.stat_changes.attack);
@@ -285,17 +289,19 @@ let handle_effects move attacker defender () =
   add_pp attacker.creature move.move_name (-1);
   match move.effect_id with
   | 1 ->
-      Draw.set_sticky_text true ();
-      draw_text
-        (get_nickname defender.creature ^ "'s ATK fell")
-        40 true ();
+      Ui.add_last_gameplay (Draw.set_sticky_text true);
+      Ui.add_last_gameplay
+        (draw_text
+           (get_nickname defender.creature ^ "'s ATK fell")
+           40 true);
       handle_stat_changes defender Attack (-1);
-      Draw.set_sticky_text false ()
+      Ui.add_last_gameplay (Draw.set_sticky_text false)
   | 7 ->
       handle_stat_changes attacker Attack 1;
-      draw_text
-        (get_nickname attacker.creature ^ "'s ATK rose")
-        40 true ()
+      Ui.add_last_gameplay
+        (draw_text
+           (get_nickname attacker.creature ^ "'s ATK rose")
+           40 true)
   | _ -> ()
 
 (* ==============================================================*)
@@ -306,21 +312,25 @@ let exec_turn attacker defender brecord =
     match attacker.current_move with
     | None _ -> 0.0
     | Move m ->
-        draw_text
-          (get_nickname attacker.creature ^ " used " ^ m.move_name)
-          40 true ();
+        Ui.add_last_gameplay
+          (draw_text
+             (get_nickname attacker.creature ^ " used " ^ m.move_name)
+             40 true);
         handle_effects m attacker defender ();
         if m.power > 0 then begin
           if attacker.creature = brecord.player_battler.creature then
-            Draw.damage_render
-              (get_front_sprite defender.creature)
-              false ()
+            Ui.add_last_gameplay
+              (Draw.damage_render
+                 (get_front_sprite defender.creature)
+                 false)
           else
-            Draw.damage_render
-              (get_back_sprite defender.creature)
-              true ();
+            Ui.add_last_gameplay
+              (Draw.damage_render
+                 (get_back_sprite defender.creature)
+                 true);
           let damage, is_crit = damage_calc m attacker defender in
-          if is_crit then Draw.draw_text "Critical Hit!" 40 true ();
+          if is_crit then
+            Ui.add_last_gameplay (draw_text "Critical Hit!" 40 true);
           damage
         end
         else 0.0
@@ -350,9 +360,10 @@ let execute_turn brecord =
 let battle_sim_fh brecord =
   let res = player_faster brecord in
   player_first.contents <- res;
+  brecord.turn_pos <- Pending;
   execute_turn brecord;
 
-  if player_faster brecord then begin
+  if res then begin
     brecord.player_battler.current_move <-
       None (get_status brecord.player_battler.creature);
     brecord.turn_pos <- Halfway
@@ -366,8 +377,10 @@ let battle_sim_fh brecord =
 let battle_sim_sh brecord =
   if brecord.battle_status <> Victory then begin
     execute_turn brecord;
+
     brecord.player_battler.current_move <-
       None (get_status brecord.player_battler.creature);
+
     brecord.enemy_battler.current_move <-
       None (get_status brecord.enemy_battler.creature);
     brecord.turn_pos <- Finished

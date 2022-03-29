@@ -1,5 +1,6 @@
 open Yojson.Basic.Util
 open Util
+open Graphics
 
 type stats = {
   mutable max_hp : int;
@@ -39,6 +40,8 @@ type etype =
   | Water
   | Grass
   | Fairy
+  | Rock
+  | Ghost
   | None
 
 type leveling_rate =
@@ -129,6 +132,17 @@ let string_of_status stat_var =
   | Fainted -> "Fainted"
 
 let get_moves creature = creature.moves
+let set_moves creature moves = creature.moves <- moves
+
+let get_move_i creature i =
+  let size = List.length creature.moves in
+  if size <= i then List.nth creature.moves (size - 1)
+  else if i < 0 then List.nth creature.moves 0
+  else List.nth creature.moves i
+
+let get_move_description_i creature i =
+  if List.length creature.moves <= i || i < 0 then ""
+  else (List.nth creature.moves i).description
 
 let add_pp creature move_name amount =
   let move =
@@ -146,8 +160,8 @@ let string_of_stat stat_var =
   | HP -> "HP"
   | Attack -> "Attack"
   | Defense -> "Defense"
-  | Sp_Attack -> "Sp_Attack"
-  | Sp_Defense -> "Sp_Defense"
+  | Sp_Attack -> "Sp.Attack"
+  | Sp_Defense -> "Sp.Defense"
   | Speed -> "Speed"
 
 let stat_of_string stat_var =
@@ -167,6 +181,8 @@ let string_of_etype etype_var =
   | Water -> "Water"
   | Grass -> "Grass"
   | Fairy -> "Fairy"
+  | Rock -> "Rock"
+  | Ghost -> "Ghost"
   | _ -> "None"
 
 let etype_of_string etype_string =
@@ -176,6 +192,8 @@ let etype_of_string etype_string =
   | "Water" -> Water
   | "Grass" -> Grass
   | "Fairy" -> Fairy
+  | "Rock" -> Rock
+  | "Ghost" -> Ghost
   | _ -> None
 
 let category_of_string cat_string =
@@ -395,7 +413,8 @@ let creature_from_json json level =
   let learnset =
     json |> member "learnset" |> to_list |> List.map parse_learn_set
   in
-  curr_hp_cache.contents <- bstats.max_hp;
+  let shiny_chance = Random.int 4 = 0 in
+  curr_hp_cache.contents <- curr_stats.max_hp;
   {
     nickname = name;
     species = name;
@@ -421,11 +440,21 @@ let creature_from_json json level =
     moves = generate_moves learnset level;
     front_sprite =
       (if name = "#" then Draw.empty_sprite
+      else if shiny_chance = false then
+        Draw.load_creature (String.lowercase_ascii name ^ "_front") ()
       else
-        Draw.load_creature (String.lowercase_ascii name ^ "_front") ());
+        Draw.load_creature
+          (String.lowercase_ascii name ^ "_front_shiny")
+          ());
+    (* Draw.load_creature ("jollitriks" ^ "_front") ()); *)
     back_sprite =
       (if name = "#" then Draw.empty_sprite
-      else Draw.load_creature (String.lowercase_ascii name ^ "_back") ());
+      else if shiny_chance = false then
+        Draw.load_creature (String.lowercase_ascii name ^ "_back") ()
+      else
+        Draw.load_creature
+          (String.lowercase_ascii name ^ "_back_shiny")
+          ());
   }
 
 let create_creature name level =
@@ -437,6 +466,16 @@ let get_nature creature =
 
 let get_types creature = creature.etypes
 let get_stats creature = creature.current_stats
+
+let get_stat creature stat =
+  match stat with
+  | HP -> creature.current_stats.max_hp
+  | Attack -> creature.current_stats.attack
+  | Defense -> creature.current_stats.defense
+  | Sp_Attack -> creature.current_stats.sp_attack
+  | Sp_Defense -> creature.current_stats.sp_defense
+  | Speed -> creature.current_stats.speed
+
 let get_ivs creature = creature.iv_stats
 let get_evs creature = creature.ev_stats
 let get_ev_gain creature = creature.ev_gain
@@ -576,3 +615,14 @@ let add_exp creature amount =
 let get_nickname creature = creature.nickname
 
 let set_nickname creature nickname = creature.nickname <- nickname
+
+let get_color_from_etype etype =
+  match etype with
+  | Normal -> rgb 196 196 196
+  | Fire -> rgb 235 47 0
+  | Water -> rgb 13 150 255
+  | Grass -> rgb 0 168 3
+  | Fairy -> rgb 255 122 244
+  | Ghost -> rgb 102 46 145
+  | Rock -> rgb 108 75 50
+  | _ -> rgb 0 0 0

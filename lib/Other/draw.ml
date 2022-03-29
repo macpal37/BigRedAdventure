@@ -17,6 +17,7 @@ type folder =
 
 let font_size = ref 50
 let text_color = rgb 68 68 68
+let text_color2 = rgb 215 215 255
 
 let empty_sprite =
   {
@@ -76,13 +77,21 @@ let set_sticky_text flag () = is_sticky.contents <- flag
 let set_erase_mode flag () = erase_mode.contents <- flag
 let set_synced_mode flag = synced_mode.contents <- flag
 
+let change_dpi sprite dpi =
+  {
+    sprite with
+    width = sprite.width / sprite.dpi * dpi;
+    height = sprite.height / sprite.dpi * dpi;
+    dpi;
+  }
+
 let sync_draw draw () =
   usync false ();
   draw ();
   usync true ()
 
 let clear_screen () =
-  set_color (rgb 0 0 0);
+  set_color (rgb 255 255 255);
   sync_draw (fun () -> fill_rect 0 0 width height) ()
 
 let draw_pixel size x y () =
@@ -292,6 +301,47 @@ let draw_text text font_size auto () =
   set_color text_color;
   scroll_text 0 1 levels
 
+let draw_text_string_pos x y font_size char_cap text color () =
+  set_font_size font_size ();
+  moveto x y;
+  let words = String.split_on_char ' ' text in
+  let rec calc_levels w lst = function
+    | [] -> lst @ [ w ]
+    | h :: t ->
+        let new_w = w ^ " " ^ h in
+        if String.length new_w < char_cap then calc_levels new_w lst t
+        else calc_levels h (lst @ [ w ]) t
+  in
+  let levels =
+    match words with
+    | [] -> []
+    | h :: t -> calc_levels h [] t
+  in
+
+  let rec scroll_text i = function
+    | [] -> set_color text_color
+    | h :: t ->
+        let char_list = string_to_char_list h in
+        let rec draw_chars chars =
+          match chars with
+          | [] -> ()
+          | h :: t ->
+              set_color text_color;
+              draw_char h;
+              rmoveto (-15) 4;
+              set_color color;
+              draw_char h;
+              rmoveto 2 (-4);
+              set_color text_color;
+              draw_chars t
+        in
+        moveto x (y - ((font_size + 5) * i));
+        draw_chars char_list;
+        scroll_text (i + 1) t
+  in
+  set_color text_color;
+  scroll_text 0 levels
+
 let draw_text_string text () =
   let cap = !text_char_cap in
   set_text_char_cap 28;
@@ -373,6 +423,7 @@ let draw_string_colored x y shadow_offset font_size text custom_color ()
   set_font_size cache_font_size ()
 
 let damage_render sprite player () =
+  set_synced_mode true;
   let rec damage_render_rec c creature_pixels player () =
     if c = 0 then draw_creature creature_pixels player ()
     else begin
@@ -389,6 +440,7 @@ let damage_render sprite player () =
     end
   in
   damage_render_rec 7 sprite player ();
+  set_synced_mode false;
   set_color text_color
 
 let add_rgb sprite red green blue () =
@@ -429,19 +481,23 @@ let draw_creature_effect sprite player red green blue value () =
   effect value
 
 let lower_stat_effect sprite player () =
+  set_synced_mode true;
   make_grayscale sprite ();
   for _ = 0 to 2 do
     draw_creature_effect sprite player (-100) (-100) 0 5 ();
     draw_creature_effect sprite player 80 80 0 5 ()
   done;
   reset_rgb sprite ();
-  draw_creature sprite player ()
+  draw_creature sprite player ();
+  set_synced_mode false
 
 let raise_stat_effect sprite player () =
+  set_synced_mode true;
   make_grayscale sprite ();
   for _ = 0 to 2 do
     draw_creature_effect sprite player 0 0 (-200) 5 ();
     draw_creature_effect sprite player 0 0 200 5 ()
   done;
   reset_rgb sprite ();
-  draw_creature sprite player ()
+  draw_creature sprite player ();
+  set_synced_mode false

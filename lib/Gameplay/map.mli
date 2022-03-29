@@ -19,9 +19,9 @@ type tile_type =
   | Grass of encounters
   | Obstacle  (** type representing the type of a tile on the map *)
 
-val init_map : Yojson.Basic.t -> t
-(** [init_map j] is the map represented by j. Raises [Malformed_Json] if
-    the json file is invalid *)
+val load_map : string -> t
+(** [load_map file] is the map represented by [file]. Raises
+    [Malformed_Json] if the json file is invalid *)
 
 val get_dim : t -> int * int
 (** [get_dim m] is a tuple [(width, height)] representing the number of
@@ -32,11 +32,18 @@ val get_type : t -> coord -> tile_type
     [c] in map [m]. Raises [Out_of_Bounds] if [c] is not a valid
     coordinate *)
 
-val get_graphic_id : t -> coord -> string
+val get_graphic_id : t -> coord -> int
 (** [get_graphic_id m c] is the id of the graphic of the tile at [c] in
     map [m]. Raises [Out_of_Bounds] if [c] is not a valid coordinate *)
+
+val get_sprite : t -> coord -> Draw.sprite
+(** [get_graphic_id m c] is the sprite of the graphic of the tile at [c]
+    in map [m]. Raises [Out_of_Bounds] if [c] is not a valid coordinate *)
 
 val encounter_creature : encounters -> Creature.creature option
 (** [encounter_creature e] is the random creature that is encountered
     based on the specification in [e]. Returns None if no creature is
     encountered *)
+
+val graphics_matrix : t -> string array array
+val string_of_encounters : encounters -> string

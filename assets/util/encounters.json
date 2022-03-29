@@ -1,0 +1,25 @@
+{
+  "test_map": {
+    "encounters": [
+      [
+        {
+          "creatures": "Rafu",
+          "level_range": "12-20",
+          "encounter_rate": 0.50
+        },
+        {
+          "creatures": "Clefairy",
+          "level_range": "12-20",
+          "encounter_rate": 0.50
+        }
+      ],
+      [
+        {
+          "creatures": "clefairy",
+          "level_range": "20-25",
+          "encounter_rate": 1.0
+        }
+      ]
+    ]
+  }
+}

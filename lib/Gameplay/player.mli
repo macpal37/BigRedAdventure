@@ -38,6 +38,9 @@ val has_badge : string -> player -> bool
 val party : player -> Creature.creature list
 (** [party p] is the party of player [p]*)
 
+val party_i : player -> int -> Creature.creature
+(** [party_i p i] returns the [i]th creature of player [p]*)
+
 val set_party : Creature.creature list -> player -> unit
 (** [set_party party player] sets the party of [player] to [party]. This
     call mutates [player]*)

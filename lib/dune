@@ -8,8 +8,10 @@
   battle
   controller
   inventory_menu
+  creature_menu
   party_menu
   menu
+  state
   overworld
   ; =====GAMEPLAY=====
   camera
@@ -21,6 +23,7 @@
   player
   ; =====Other=====
   animation
+  tileset
   draw
   author
   ui
