@@ -23,7 +23,7 @@
   player
   ; =====Other=====
   animation
-  tileset
+  spritesheet
   draw
   author
   ui

@@ -94,22 +94,18 @@
     "learnset": [
       {
         "move": "Pound",
-        "move_id": 1,
         "level": 1
       },
       {
         "move": "Growl",
-        "move_id": 2,
         "level": 3
       },
       {
         "move": "Disarming Voice",
-        "move_id": 3,
         "level": 6
       },
       {
         "move": "Flamethrower",
-        "move_id": 5,
         "level": 35
       }
     ]

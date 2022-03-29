@@ -158,3 +158,6 @@ val lower_stat_effect : sprite -> bool -> unit -> unit
 
 val raise_stat_effect : sprite -> bool -> unit -> unit
 (** Cool Random Effects :)*)
+
+val create_sprite :
+  int list -> Graphics.color list -> int -> int -> int -> sprite

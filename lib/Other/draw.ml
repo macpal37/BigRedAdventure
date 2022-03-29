@@ -51,6 +51,16 @@ let text_bg2 =
       dpi = 1;
     }
 
+let create_sprite pixels palette width height dpi =
+  {
+    pixels;
+    width = width * dpi;
+    height = height * dpi;
+    color_palette = palette;
+    base_palette = palette;
+    dpi;
+  }
+
 let is_sticky = ref false
 let erase_mode = ref false
 let synced_mode = ref true

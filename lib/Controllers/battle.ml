@@ -308,6 +308,23 @@ let refresh_battle () =
     ()
 
 let start_battle () =
+  let ss =
+    Spritesheet.init_spritesheet
+      "assets/tile_sprites/small_outside_tileset.png" 16 16
+  in
+
+  for i = 0 to 4 do
+    for j = 0 to 3 do
+      Ui.add_last_foreground
+        (draw_sprite
+           (Spritesheet.get_sprite ss (j + (i * 4)))
+           (50 + (48 * j))
+           (400 - (48 * i)))
+    done
+  done;
+
+  (* Ui.add_last_foreground (draw_sprite (Spritesheet.get_sprite ss 12)
+     100 400); *)
   set_synced_mode false;
   set_text_bg battle_bot_left battle_right;
   (* ========= Start the Battle ========= *)
