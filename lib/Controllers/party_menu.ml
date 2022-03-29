@@ -11,6 +11,11 @@ let menu_position = Util.new_point ()
 let switch_position = Util.new_point ()
 let minimenu_position = Util.new_point ()
 
+(* let itemmenu_position = Util.new_point () *)
+(* type menu = | MainMenu | MiniMenu | SwitchMode | ItemMenu
+
+   let menu_mode = ref MainMenu *)
+
 let move_x x () =
   if switch_position.x = -1 then begin
     if minimenu_position.x = -1 then
@@ -169,6 +174,7 @@ let rec run_tick () =
   if key = 's' then move_y 1 ();
   if key = 'a' then move_x (-1) ();
   if key = 'd' then move_x 1 ();
+
   (*====== Refersh Selector ====== *)
   if
     (key = 'w' || key = 's' || key = 'a' || key = 'd')

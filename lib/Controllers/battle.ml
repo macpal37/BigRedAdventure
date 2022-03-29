@@ -232,8 +232,7 @@ let draw_creature_exp creature added_exp render () =
       ()
 
 let handle_combat move =
-  Ui.clear_ui Gameplay;
-  Ui.clear_ui Foreground;
+  (* Ui.clear_ui Gameplay; Ui.clear_ui Foreground; *)
   Combat.turn_builder battle_sim.contents move;
   set_text_char_cap 28;
   let player, enemy =
@@ -253,9 +252,10 @@ let handle_combat move =
   let player_a1, enemy_a1 =
     (get_current_hp player, get_current_hp enemy)
   in
-
-  draw_health_bar_combat p_maxhp player_b player_a1 true ();
-  draw_health_bar_combat e_maxhp enemy_b enemy_a1 false ();
+  Ui.add_last_gameplay
+    (draw_health_bar_combat p_maxhp player_b player_a1 true);
+  Ui.add_last_gameplay
+    (draw_health_bar_combat e_maxhp enemy_b enemy_a1 false);
   (***=============Second Half =============***)
   Combat.battle_sim_sh battle_sim.contents;
   (* if battle_sim.contents.battle_status <> Combat.Victory *)
@@ -263,33 +263,33 @@ let handle_combat move =
     (get_current_hp player, get_current_hp enemy)
   in
   if battle_sim.contents.battle_status <> Combat.Victory then
-    (* if Combat.is_player_first () then damage_render player true ()
-       else damage_render enemy false (); *)
-    draw_health_bar_combat p_maxhp player_a1 player_a2 true ();
-  draw_health_bar_combat e_maxhp enemy_a1 enemy_a2 false ();
+    Ui.add_last_gameplay
+      (draw_health_bar_combat p_maxhp player_a1 player_a2 true);
+  Ui.add_last_foreground
+    (draw_health_bar_combat e_maxhp enemy_a1 enemy_a2 false);
   (***============= Resolution =============***)
   if enemy_a2 <= 0 then (
-    (* draw_creature_exp player (get_exp_gain enemy) false (); *)
     let before_exp, _, _ = get_exp player in
     add_exp player (get_exp_gain enemy);
     let curr_exp, min_exp, max_exp = get_exp player in
 
-    Ui.add_first_gameplay
+    Ui.add_last_foreground
       (draw_exp_bar_combat (max_exp - min_exp) (before_exp - min_exp)
          (curr_exp - min_exp));
-    Ui.add_first_gameplay (set_sticky_text false);
+    Ui.add_last_foreground (set_sticky_text false);
 
-    Ui.add_first_gameplay
+    Ui.add_last_foreground
       (draw_text
          (get_nickname player ^ " gained "
          ^ string_of_int (get_exp_gain enemy)
          ^ " EXP. Points!")
          40 true);
-    Ui.add_first_gameplay (set_sticky_text true);
-    Ui.add_first_gameplay (animate_faint (get_front_sprite enemy) false);
-    Ui.add_first_gameplay (Input.sleep 0.5);
+    Ui.add_last_foreground (set_sticky_text true);
+    Ui.add_last_foreground
+      (animate_faint (get_front_sprite enemy) false);
+    Ui.add_last_foreground (Input.sleep 0.5);
     if player_a2 <= 0 then
-      Ui.add_first_gameplay
+      Ui.add_last_foreground
         (animate_faint (get_front_sprite player) true))
 
 let refresh_battle () =
@@ -380,7 +380,7 @@ let run_tick () =
         if key = 'e' then begin
           Ui.clear_ui Ui.Foreground;
           set_text_bg battle_bot_left battle_bot_right;
-          Ui.add_last_background clear_text;
+          clear_text ();
           let move =
             List.nth
               (get_moves battle_sim.contents.player_battler.creature)
@@ -397,7 +397,7 @@ let run_tick () =
         end
     | Attack ->
         set_text_bg battle_bot_left battle_right;
-        clear_text ();
+        Ui.add_first_gameplay clear_text;
         combat_mode.contents <- Commands;
         combat_button.contents <- 0
   in
