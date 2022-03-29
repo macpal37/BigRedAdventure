@@ -72,7 +72,10 @@ let ll_to_matrix ll = Array.of_list (List.map Array.of_list ll)
 let matrix_map f m = Array.(map (map f) m)
 let codes_of_json json = json |> to_string |> String.split_on_char ','
 
-let init_map json =
+let init_map map_name =
+  let json =
+    Yojson.Basic.from_file ("assets/maps/" ^ map_name ^ ".json")
+  in
   let e = all_encounters_of_json json in
   let g = sprites_of_json json in
   json |> member "map" |> to_list |> List.map codes_of_json

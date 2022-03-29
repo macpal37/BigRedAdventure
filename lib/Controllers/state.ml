@@ -8,7 +8,7 @@ let get_state _ = !current_state
 let player _ = !current_state.player
 
 let adhoc_init () =
-  let rafu = Creature.create_creature "rafu" 30 in
+  let rafu = Creature.create_creature "rafu" 50 in
   let rafu2 = Creature.create_creature "rafu" 30 in
   let rafu3 = Creature.create_creature "clefairy" 30 in
   let rafu4 = Creature.create_creature "rafu" 30 in

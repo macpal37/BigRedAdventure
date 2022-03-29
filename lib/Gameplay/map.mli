@@ -18,9 +18,9 @@ type tile_type =
   | Grass of encounters
   | Obstacle  (** type representing the type of a tile on the map *)
 
-val init_map : Yojson.Basic.t -> t
-(** [init_map j] is the map represented by j. Raises [Malformed_Json] if
-    the json file is invalid *)
+val init_map : string -> t
+(** [init_map file] is the map represented by [file]. Raises
+    [Malformed_Json] if the json file is invalid *)
 
 val get_dim : t -> int * int
 (** [get_dim m] is a tuple [(width, height)] representing the number of

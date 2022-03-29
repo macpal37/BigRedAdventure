@@ -481,19 +481,23 @@ let draw_creature_effect sprite player red green blue value () =
   effect value
 
 let lower_stat_effect sprite player () =
+  set_synced_mode true;
   make_grayscale sprite ();
   for _ = 0 to 2 do
     draw_creature_effect sprite player (-100) (-100) 0 5 ();
     draw_creature_effect sprite player 80 80 0 5 ()
   done;
   reset_rgb sprite ();
-  draw_creature sprite player ()
+  draw_creature sprite player ();
+  set_synced_mode false
 
 let raise_stat_effect sprite player () =
+  set_synced_mode true;
   make_grayscale sprite ();
   for _ = 0 to 2 do
     draw_creature_effect sprite player 0 0 (-200) 5 ();
     draw_creature_effect sprite player 0 0 200 5 ()
   done;
   reset_rgb sprite ();
-  draw_creature sprite player ()
+  draw_creature sprite player ();
+  set_synced_mode false
