@@ -46,8 +46,7 @@ let init_spritesheet filepath sprite_width sprite_height =
   let image = ImageLib_unix.openfile filepath in
   let w = (image.width / sprite_width) - 1 in
   let h = image.height / sprite_height in
-  print_endline ("W: " ^ string_of_int w);
-  print_endline ("H: " ^ string_of_int h);
+
   let rec split_sprites i j lst =
     if j < h then
       let pixels, palette =
@@ -56,7 +55,7 @@ let init_spritesheet filepath sprite_width sprite_height =
       in
 
       let sprite =
-        create_sprite pixels palette sprite_width sprite_height 3
+        create_sprite pixels palette sprite_width sprite_height 4
       in
 
       if i < w then split_sprites (i + 1) j (sprite :: lst)

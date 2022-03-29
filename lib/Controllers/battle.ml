@@ -318,8 +318,8 @@ let start_battle () =
       Ui.add_last_foreground
         (draw_sprite
            (Spritesheet.get_sprite ss (j + (i * 4)))
-           (50 + (48 * j))
-           (400 - (48 * i)))
+           (50 + (64 * j))
+           (400 - (64 * i)))
     done
   done;
 

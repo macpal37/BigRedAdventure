@@ -3,21 +3,21 @@
     "encounters": [
       [
         {
-          "creatures": "Rafu",
+          "creatures": "rafu",
           "level_range": "12-20",
           "encounter_rate": 0.50
         },
         {
-          "creatures": "Clefariy",
+          "creatures": "clefairy",
           "level_range": "12-20",
           "encounter_rate": 0.50
         }
       ],
       [
         {
-          "creatures": "clefiary",
+          "creatures": "clefairy",
           "level_range": "20-25",
-          "encounter_rate": 1
+          "encounter_rate": 1.0
         }
       ]
     ]

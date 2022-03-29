@@ -23,6 +23,7 @@
   player
   ; =====Other=====
   animation
+  animator
   spritesheet
   draw
   author
