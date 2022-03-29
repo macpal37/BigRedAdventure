@@ -31,6 +31,7 @@ type battle_creature = {
   mutable creature : creature;
   mutable current_move : move_status;
   mutable stat_changes : stats;
+  mutable status_effect : status;
   is_player : bool;
 }
 
@@ -63,6 +64,7 @@ let empty_battle =
         creature = create_creature "missingno" 1;
         current_move = None Fainted;
         stat_changes = empty_stats;
+        status_effect = Healthy;
         is_player = true;
       };
     enemy_battler =
@@ -70,6 +72,7 @@ let empty_battle =
         creature = create_creature "missingno" 1;
         current_move = None Fainted;
         stat_changes = empty_stats;
+        status_effect = Healthy;
         is_player = false;
       };
     turn_counter = 0;
@@ -81,6 +84,7 @@ let generate_battler creature player =
     creature;
     current_move = None (get_status creature);
     stat_changes = empty_stats;
+    status_effect = get_status creature;
     is_player = player;
   }
 
@@ -303,7 +307,15 @@ let handle_effects move attacker defender () =
   | _ -> ()
 
 (* ==============================================================*)
-(* ================ Stat Changes Handler END===================*)
+(* ================ Stat Changes Handler END=====================*)
+(* ==============================================================*)
+
+(* ==============================================================*)
+(* ================ Status Effects Handler BEGIN=================*)
+(* ==============================================================*)
+
+(* ==============================================================*)
+(* ================ Stat Changes Handler END=====================*)
 (* ==============================================================*)
 let exec_turn attacker defender brecord =
   let damage_pte =
@@ -415,26 +427,32 @@ let rec pow a b =
   | c -> a * pow a (c - 1)
 
 let capture brecord =
-  let e_currhp =
-    float_of_int (get_current_hp (List.nth brecord.enemy_creatures 0))
-  in
-  let e_maxhp =
-    float_of_int (get_stats (List.nth brecord.enemy_creatures 0)).max_hp
-  in
-  let e_rate = get_catch_rate (List.nth brecord.enemy_creatures 0) in
-  let catch_rate =
-    ((3.0 *. e_maxhp) -. (2.0 *. e_currhp))
-    *. e_rate *. 1.0 /. (3.0 *. e_maxhp)
-    *. status_bonus (get_status (List.nth brecord.enemy_creatures 0))
-  in
-  let shake_probability =
-    pow 2 16 * pow (int_of_float catch_rate / (pow 2 8 - 1)) (1 / 4)
-  in
-  if
-    shake_probability > Random.int 65535
-    && shake_probability > Random.int 65535
-    && shake_probability > Random.int 65535
-    && shake_probability > Random.int 65535
-  then brecord.battle_status <- Catch
-  else if brecord.catch_attempts >= 3 then brecord.battle_status <- Flee
-  else brecord.escape_attempts <- brecord.escape_attempts + 1
+  if brecord.battle_type = Trainer then ()
+    (*Marco print a message about not being able to capture in a trainer
+      battle here :D *)
+  else
+    let e_currhp =
+      float_of_int (get_current_hp (List.nth brecord.enemy_creatures 0))
+    in
+    let e_maxhp =
+      float_of_int
+        (get_stats (List.nth brecord.enemy_creatures 0)).max_hp
+    in
+    let e_rate = get_catch_rate (List.nth brecord.enemy_creatures 0) in
+    let catch_rate =
+      ((3.0 *. e_maxhp) -. (2.0 *. e_currhp))
+      *. e_rate *. 1.0 /. (3.0 *. e_maxhp)
+      *. status_bonus (get_status (List.nth brecord.enemy_creatures 0))
+    in
+    let shake_probability =
+      pow 2 16 * pow (int_of_float catch_rate / (pow 2 8 - 1)) (1 / 4)
+    in
+    if
+      shake_probability > Random.int 65535
+      && shake_probability > Random.int 65535
+      && shake_probability > Random.int 65535
+      && shake_probability > Random.int 65535
+    then brecord.battle_status <- Catch
+    else if brecord.catch_attempts >= 3 then
+      brecord.battle_status <- Flee
+    else brecord.escape_attempts <- brecord.escape_attempts + 1
