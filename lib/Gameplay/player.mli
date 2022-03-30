@@ -82,6 +82,10 @@ val set_x : int -> player -> unit
 val set_y : int -> player -> unit
 (** [set_y y p] sets the y position of [p] to [y]. This call mutates [p]*)
 
+val set_coord : int -> int -> player -> unit
+(** [set_coord x y p] sets the player position of [p] to [x,y]. This
+    call mutates [p]*)
+
 val set_orie : orientations -> player -> unit
 (** [set_orie o p] sets the orientation of [p] to [o]. This call mutates
     [p]*)

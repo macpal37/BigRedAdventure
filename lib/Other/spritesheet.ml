@@ -39,7 +39,7 @@ let little_sprite (image : Image.image) x y w h =
   in
   pixel_map 0 (h - 1) ([], [])
 
-let init_spritesheet filepath sprite_width sprite_height =
+let init_spritesheet filepath sprite_width sprite_height dpi =
   let image = ImageLib_unix.openfile filepath in
   let w = (image.width / sprite_width) - 1 in
   let h = image.height / sprite_height in
@@ -51,7 +51,7 @@ let init_spritesheet filepath sprite_width sprite_height =
       in
 
       let sprite =
-        create_sprite pixels palette sprite_width sprite_height 4
+        create_sprite pixels palette sprite_width sprite_height dpi
       in
 
       if i < w then split_sprites (i + 1) j (sprite :: lst)

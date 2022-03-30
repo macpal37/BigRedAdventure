@@ -3,7 +3,7 @@ open Draw
 
     This module orchestrates the gameplay in battle*)
 
-val start_battle : unit -> unit
+val start_battle : Creature.creature -> unit
 val update_health : Creature.creature -> int -> unit -> unit
 val draw_combat_commands : int -> bool -> unit -> unit
 

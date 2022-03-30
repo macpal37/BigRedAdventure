@@ -169,7 +169,7 @@ let json_spritesheet json =
   let t_json = Yojson.Basic.from_file (tileset_path_parser src_path) in
   let tilewidth = t_json |> member "tilewidth" |> to_int in
   let tileheight = t_json |> member "tileheight" |> to_int in
-  Spritesheet.init_spritesheet png_path tilewidth tileheight
+  Spritesheet.init_spritesheet png_path tilewidth tileheight 4
 
 let load_map map_name =
   let json =
