@@ -25,6 +25,8 @@ type battle_creature = {
   mutable creature : creature;
   mutable current_move : move_status;
   mutable stat_changes : stats;
+  mutable status_effect : status;
+  mutable inactive : bool;
   is_player : bool;
 }
 
@@ -33,7 +35,8 @@ type battle_record = {
   mutable enemy_creatures : creature list;
   battle_type : btype;
   mutable battle_status : bstatus;
-  escape_attempts : int;
+  mutable catch_attempts : int;
+  mutable escape_attempts : int;
   mutable player_battler : battle_creature;
   mutable enemy_battler : battle_creature;
   mutable turn_counter : int;
@@ -70,11 +73,11 @@ val battle_sim_sh : battle_record -> unit
    acted. Raises: NotBattleReady if battle record's turn_pos is not
    Halfway*)
 
-val run_away : battle_record -> battle_record
+val run_away : battle_record -> unit
 (**Given a battle record, checks if the player is able to run away. If
    so, return battle_record with victory status set as Flee.*)
 
-val capture : battle_record -> battle_record
+val capture : battle_record -> unit
 (**Given a battle record, checks if the player is able to catch the
    creature. If so, return battle_record with victory status set as
    Catch*)

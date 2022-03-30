@@ -33,7 +33,9 @@ let run_tick _ =
   | Some 'a' -> ()
   | Some 's' -> ()
   | Some 'd' -> ()
-  | Some 'e' -> ()
+  | Some 'e' ->
+      Battle.start_battle ();
+      print_endline "End!!!!"
   | Some 'q' -> ()
   | Some k -> ignore k
   | None -> ());

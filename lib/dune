@@ -13,6 +13,7 @@
   menu
   state
   overworld
+  state
   ; =====GAMEPLAY=====
   camera
   combat
@@ -23,6 +24,7 @@
   player
   ; =====Other=====
   animation
+  animator
   spritesheet
   draw
   author

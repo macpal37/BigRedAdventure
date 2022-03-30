@@ -226,16 +226,23 @@ type random_pokemon = {
   level : int;
 }
 
+let shuffle d =
+  let nd = List.map (fun c -> (Random.bits (), c)) d in
+  let sond = List.sort compare nd in
+  List.map snd sond
+
 let rec creature_type (e : encounters) (v : float) =
   match e with
   | [] -> None
   | h :: t ->
       if h.rate >= v then
         Some { name = h.name; level = creature_level h.levels }
-      else creature_type t v
+      else creature_type t (v -. h.rate)
 
 let encounter_creature e =
-  match creature_type e (Random.float 1.0) with
+  Random.self_init ();
+  let shuffled_encounters = shuffle e in
+  match creature_type shuffled_encounters (Random.float 1.0) with
   | None -> None
   | Some { name; level } -> Some (Creature.create_creature name level)
 

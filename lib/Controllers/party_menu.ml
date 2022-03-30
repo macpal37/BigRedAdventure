@@ -32,7 +32,6 @@ let move_x x () =
   then switch_position.x <- switch_position.x + x
 
 let move_y y () =
-  print_endline ("Y: " ^ string_of_int switch_position.y);
   if switch_position.x = -1 then begin
     if minimenu_position.x = -1 then begin
       if
@@ -57,7 +56,7 @@ let draw_menu lead_creature () =
   Ui.add_first_foreground
     (draw_string_colored 24 605 4 60 "PARTY" (rgb 255 170 40));
   Ui.add_first_gameplay
-    (draw_sprite (get_front_sprite lead_creature) 12 318);
+    (draw_sprite (get_front_sprite lead_creature) 9 318);
   Ui.add_first_gameplay
     (draw_string_colored 20 246 1 30 (get_nickname lead_creature) white);
   Ui.add_first_gameplay
@@ -74,7 +73,7 @@ let draw_creature_status creature pos () =
   Ui.add_first_background
     (draw_sprite
        (change_dpi (get_front_sprite creature) 1)
-       (x + 14) (y + 11));
+       (x + 11) (y + 11));
   Ui.add_first_background (draw_sprite active x y);
   Ui.add_first_gameplay
     (draw_string_colored xx (yy + 26) 1 30 (get_nickname creature) white);
@@ -139,7 +138,6 @@ let minimenu () =
   Ui.add_first_foreground (draw_sprite minimenu1 576 12)
 
 let get_party_index () =
-  print_endline (string_of_int menu_position.x);
   if menu_position.x = 0 then 0 else menu_position.y + 1
 
 let switch () =
@@ -161,7 +159,6 @@ let switch () =
   Player.set_party new_party (State.player ())
 
 let rec run_tick () =
-  print_endline (string_of_int menu_position.x);
   Input.poll ();
   let key =
     match Input.key_option () with
@@ -183,7 +180,7 @@ let rec run_tick () =
   (*====== Open Minimenu====== *)
   if (key = 'w' || key = 's') && minimenu_position.x = 0 then
     minimenu ();
-  print_endline (string_of_int menu_position.x);
+
   (*====== Summary ====== *)
   if key = 'e' && minimenu_position.x = 0 && minimenu_position.y = 0
   then begin
@@ -225,7 +222,7 @@ let rec run_tick () =
     end
   end;
   Ui.update_all ();
-  if key <> 'q' then run_tick () else Draw.set_synced_mode true
+  if key <> 'q' then run_tick ()
 
 let init () =
   minimenu_position.x <- -1;
