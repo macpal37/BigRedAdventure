@@ -33,17 +33,33 @@ let draw _ =
     ((Player.y (State.player ()) * tile_size) - ((720 - tile_size) / 2))
     (Player.orie (State.player ()))
 
+let encounter_anim _ =
+  for i = 1 to 60 do
+    Graphics.set_color Graphics.black;
+    Graphics.auto_synchronize false;
+    Graphics.fill_arc 400 360 570 570 0 (i * 6);
+    (match Player.orie (State.player ()) with
+    | Player.N -> Draw.draw_sprite player_sprite_n 368 328 ()
+    | Player.E -> Draw.draw_sprite player_sprite_e 368 328 ()
+    | Player.S -> Draw.draw_sprite player_sprite_s 368 328 ()
+    | Player.W -> Draw.draw_sprite player_sprite_w 368 328 ());
+    Graphics.auto_synchronize true;
+    Unix.sleepf 0.016
+  done;
+  Unix.sleepf 0.1
+
 let attempt_move dx dy orie =
   let new_x, new_y = (State.player_x () + dx, State.player_y () + dy) in
   (match Map.get_type (State.map ()) (new_x, new_y) with
   | Path -> Player.set_coord new_x new_y (State.player ())
   | Obstacle -> ()
   | Grass e ->
-      if Random.float 1. < 0.2 then
+      if Random.float 1. < 0.2 then (
+        encounter_anim ();
         let c = Map.encounter_creature e in
         match c with
         | Some c -> Battle.start_battle c
-        | None -> failwith "no creature encountered"
+        | None -> failwith "no creature encountered")
       else Player.set_coord new_x new_y (State.player ()));
   Player.set_orie orie (State.player ())
 (*let move_scroll _ = () *)
