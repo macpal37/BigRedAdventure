@@ -1,7 +1,9 @@
 {
   "Normal": {
     "Supereffective": [],
-    "Resists": [],
+    "Resists": [
+      "Rock"
+    ],
     "Immune": []
   },
   "Fire": {
@@ -17,7 +19,8 @@
   },
   "Water": {
     "Supereffective": [
-      "Fire"
+      "Fire",
+      "Rock"
     ],
     "Resists": [
       "Water",

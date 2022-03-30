@@ -232,5 +232,89 @@
         "level": 1
       }
     ]
+  },
+  "psyduck": {
+    "name": "Psyduck",
+    "poke_id": 54,
+    "catch_rate": 190,
+    "base_exp": 64,
+    "level_rate": "Medium Fast",
+    "type1": "Water",
+    "type2": "None",
+    "base_stats": {
+      "hp": 50,
+      "attack": 52,
+      "defense": 48,
+      "sp_attack": 65,
+      "sp_defense": 50,
+      "speed": 55
+    },
+    "ev_stat": "sp_attack",
+    "ev_amount": 1,
+    "evolution": {
+      "name": "Golduck",
+      "poke_id": -1,
+      "level_up": -1
+    },
+    "learnset": [
+      {
+        "move": "Pound",
+        "level": 1
+      },
+      {
+        "move": "Growl",
+        "level": 3
+      },
+      {
+        "move": "Water Gun",
+        "level": 6
+      },
+      {
+        "move": "Mystical Power",
+        "level": 35
+      }
+    ]
+  },
+  "stregoom": {
+    "name": "Stregoom",
+    "poke_id": 54,
+    "catch_rate": 190,
+    "base_exp": 64,
+    "level_rate": "Medium Fast",
+    "type1": "Water",
+    "type2": "Grass",
+    "base_stats": {
+      "hp": 50,
+      "attack": 52,
+      "defense": 48,
+      "sp_attack": 65,
+      "sp_defense": 50,
+      "speed": 55
+    },
+    "ev_stat": "sp_attack",
+    "ev_amount": 1,
+    "evolution": {
+      "name": "None",
+      "poke_id": -1,
+      "level_up": -1
+    },
+    "learnset": [
+      {
+        "move": "Pound",
+        "level": 1
+      },
+      {
+        "move": "Growl",
+        "level": 3
+      },
+      {
+        "move": "Water Gun",
+        "level": 6
+      },
+      {
+        "move": "Mystical Power",
+        "level": 35
+      }
+    ]
   }
 }

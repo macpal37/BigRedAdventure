@@ -43,7 +43,9 @@ let run_tick _ =
   | Some 'a' -> attempt_move (-1) 0 Player.W
   | Some 's' -> attempt_move 0 (-1) Player.S
   | Some 'd' -> attempt_move 1 0 Player.E
-  | Some 'e' -> ()
+  | Some 'e' ->
+      Battle.start_battle ();
+      print_endline "End!!!!"
   | Some 'q' -> ()
   | Some k -> ignore k
   | None -> ());

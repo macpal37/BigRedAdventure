@@ -139,7 +139,7 @@ let rec find x lst =
   | h :: t -> if x = h then 0 else 1 + find x t
 
 let image_to_sprite (image : Image.image) =
-  let rec pixel_map i j sprite =
+  let rec pixel_map i j sprite y =
     if i < image.height then
       let new_i, new_j =
         if j = 0 then (i + 1, image.width - 1) else (i, j - 1)
@@ -156,13 +156,15 @@ let image_to_sprite (image : Image.image) =
         else palette
       in
 
+      let y = if alpha > 0 then new_i else y in
+
       if alpha > 0 then
         let index = find color new_pallette in
-        pixel_map new_i new_j ((index + 1) :: pixels, new_pallette)
-      else pixel_map new_i new_j (0 :: pixels, new_pallette)
+        pixel_map new_i new_j ((index + 1) :: pixels, new_pallette) y
+      else pixel_map new_i new_j (0 :: pixels, new_pallette) y
     else sprite
   in
-  pixel_map 0 (image.width - 1) ([], [])
+  pixel_map 0 (image.width - 1) ([], []) 0
 
 (* no function for converting color back to rgb in Graphics *)
 
@@ -247,17 +249,25 @@ let rec wait timer () =
   else wait (timer - 1) ()
 
 let clear_text () =
+  usync false ();
   draw_sprite text_bg1.contents 3 0 ();
-  draw_sprite text_bg2.contents 400 0 ()
+  draw_sprite text_bg2.contents 400 0 ();
+  usync true ()
 
 let text_char_cap = ref 28
 let auto_text_time = 175000
 let set_text_char_cap cap = text_char_cap.contents <- cap
+let battle_bot_right = load_sprite "battle_bot_right" GUI_Folder 3 ()
+let battle_bot_left = load_sprite "battle_bot_left" GUI_Folder 3 ()
 
 let draw_text text font_size auto () =
+  auto_synchronize true;
+  set_synced_mode true;
   set_font_size font_size ();
   let wait_time = if auto then auto_text_time else -1 in
   let char_cap = text_char_cap.contents in
+  set_text_bg battle_bot_left battle_bot_right;
+
   clear_text ();
   set_color text_color;
   let start_x = 35 in
@@ -309,7 +319,9 @@ let draw_text text font_size auto () =
   in
   clear_text ();
   set_color text_color;
-  scroll_text 0 1 levels
+  scroll_text 0 1 levels;
+  set_synced_mode false;
+  auto_synchronize false
 
 let draw_text_string_pos x y font_size char_cap text color () =
   set_font_size font_size ();
