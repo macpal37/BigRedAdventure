@@ -4,13 +4,13 @@ build:
 	dune build
 
 utop:
-	dune utop lib
+	OCAMLRUNPARAM=b dune utop lib
 
 test:
 	OCAMLRUNPARAM=b dune exec test/main.exe
 
 play:
-	dune exec CreatureGame
+	OCAMLRUNPARAM=b dune exec CreatureGame
 
 check:
 	@bash check.sh

@@ -25,6 +25,8 @@ type battle_creature = {
   mutable creature : creature;
   mutable current_move : move_status;
   mutable stat_changes : stats;
+  mutable status_effect : status;
+  mutable inactive : bool;
   is_player : bool;
 }
 
@@ -33,7 +35,8 @@ type battle_record = {
   mutable enemy_creatures : creature list;
   battle_type : btype;
   mutable battle_status : bstatus;
-  escape_attempts : int;
+  mutable catch_attempts : int;
+  mutable escape_attempts : int;
   mutable player_battler : battle_creature;
   mutable enemy_battler : battle_creature;
   mutable turn_counter : int;

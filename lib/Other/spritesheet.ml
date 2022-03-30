@@ -20,9 +20,6 @@ let little_sprite (image : Image.image) x y w h =
       let new_i, new_j = if j = 0 then (i + 1, w - 1) else (i, j - 1) in
 
       let pixels, palette = sprite in
-
-      (* print_endline ("X: " ^ string_of_int x ^ " Y: " ^ string_of_int
-         j); *)
       let color, alpha =
         Image.read_rgba image (j + x) (i + y)
           (fun r g b a () -> (rgb r g b, a))
@@ -46,7 +43,6 @@ let init_spritesheet filepath sprite_width sprite_height =
   let image = ImageLib_unix.openfile filepath in
   let w = (image.width / sprite_width) - 1 in
   let h = image.height / sprite_height in
-
   let rec split_sprites i j lst =
     if j < h then
       let pixels, palette =
@@ -73,8 +69,6 @@ let init_spritesheet filepath sprite_width sprite_height =
   }
 
 let get_sprite sprite_sheet i =
-  (* print_endline *)
-  (* ("Size: " ^ string_of_int ()); *)
   if i >= 0 && i < List.length sprite_sheet.sprites then
     List.nth sprite_sheet.sprites i
   else empty_sprite

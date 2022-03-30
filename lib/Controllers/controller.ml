@@ -55,8 +55,9 @@ let setup _ = ()
 let main _ =
   open_window;
   State.adhoc_init ();
-  let mode = ModeBattle in
-  Battle.start_battle ();
+  Draw.set_synced_mode false;
+  let mode = ModeOverworld in
+  (*Battle.start_battle ();*)
   (* Party_menu.init (); *)
   moveto 100 200;
   set_font "-*-fixed-bold-r-semicondensed--40-*-*-*-*-*-iso8859-1";

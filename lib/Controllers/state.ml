@@ -1,15 +1,26 @@
 open Item
 open Inventory
 
-type state = { player : Player.player }
+type state = {
+  player : Player.player;
+  map : Map.t;
+}
 
-let current_state = ref { player = Player.new_player "Red" }
+let current_state =
+  ref
+    { player = Player.new_player "Red"; map = Map.load_map "test_map" }
+
 let get_state _ = !current_state
 let player _ = !current_state.player
+let player_x _ = Player.x !current_state.player
+let player_y _ = Player.y !current_state.player
+let map _ = !current_state.map
 
 let adhoc_init () =
+  Player.set_x 5 (player ());
+  Player.set_y 5 (player ());
   let rafu = Creature.create_creature "rafu" 50 in
-  let rafu2 = Creature.create_creature "rafu" 30 in
+  let rafu2 = Creature.create_creature "psyduck" 30 in
   let rafu3 = Creature.create_creature "clefairy" 30 in
   let rafu4 = Creature.create_creature "rafu" 30 in
   Player.add_creature rafu current_state.contents.player;
@@ -25,6 +36,12 @@ let adhoc_init () =
   add_item inventory (create_item "repel");
   add_item inventory (create_item "super repel");
   add_item inventory (create_item "max repel");
+
+  add_item inventory (create_item "pokeball");
+  add_item inventory (create_item "pokeball");
+  add_item inventory (create_item "pokeball");
+  add_item inventory (create_item "pokeball");
+  add_item inventory (create_item "pokeball");
 
   add_item inventory (create_item "potion");
   add_item inventory (create_item "potion");

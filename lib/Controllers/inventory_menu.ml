@@ -8,6 +8,14 @@ let display_queue = ref []
 let max_list_size = 10
 let max_items = ref 0
 let item_list_bg = load_sprite "item_bag_list" GUI_Folder 3 ()
+let selected_item = ref None
+
+type menu_mode =
+  | Selecting
+  | Minimenu
+
+let minimenu_position = Util.new_point ()
+let mode = ref Selecting
 
 let get_items_from_bag (bag : bag) =
   let queue_items = list_items bag in
@@ -63,6 +71,14 @@ let draw_bag item_type x y () =
       set_line_width 6;
       draw_rect x (y - (40 * inventory_position.y)) 370 40)
 
+let get_selected_item () =
+  if List.length display_queue.contents = 0 then None
+  else
+    let item, _ =
+      List.nth display_queue.contents inventory_position.y
+    in
+    Some item
+
 let refresh () =
   let bag_type =
     match inventory_position.x with
@@ -87,13 +103,6 @@ let refresh () =
 
 let inventory_text_bg = load_sprite "inventory_text_bg" GUI_Folder 3 ()
 
-let init () =
-  Draw.set_synced_mode false;
-
-  set_text_bg inventory_text_bg empty_sprite;
-  refresh ();
-  Ui.add_first_background clear_screen
-
 let rec run_tick () =
   Input.poll ();
   let key =
@@ -101,37 +110,55 @@ let rec run_tick () =
     | Some c -> c
     | None -> '#'
   in
-  let x, y = (inventory_position.x, inventory_position.y) in
-  if key = 's' && y >= 0 && y < max_items.contents - 1 then
-    inventory_position.y <- y + 1;
-  if key = 'w' && y < max_items.contents && y > 0 then
-    inventory_position.y <- y - 1;
-  if key = 'd' then inventory_position.x <- x + 1;
-  if key = 'a' then inventory_position.x <- x - 1;
+  (match mode.contents with
+  | Selecting ->
+      let x, y = (inventory_position.x, inventory_position.y) in
+      if key = 's' && y >= 0 && y < max_items.contents - 1 then
+        inventory_position.y <- y + 1;
+      if key = 'w' && y < max_items.contents && y > 0 then
+        inventory_position.y <- y - 1;
+      if key = 'd' then inventory_position.x <- x + 1;
+      if key = 'a' then inventory_position.x <- x - 1;
 
-  if inventory_position.x >= num_item_types then
-    inventory_position.x <- 0
-  else if inventory_position.x < 0 then
-    inventory_position.x <- num_item_types - 1
-  else ();
+      if inventory_position.x >= num_item_types then
+        inventory_position.x <- 0
+      else if inventory_position.x < 0 then
+        inventory_position.x <- num_item_types - 1
+      else ();
 
-  if key = 'd' || key = 'a' then begin
-    inventory_position.y <- 0;
-    refresh ()
-  end;
+      if key = 'd' || key = 'a' then begin
+        inventory_position.y <- 0;
+        refresh ()
+      end;
+      if key = 'w' || key = 's' then refresh ();
+      if key = 'e' then begin
+        minimenu_position.y <- 0;
+        let item = get_selected_item () in
+        (match item with
+        | Some i -> consume_item (Player.inventory (State.player ())) i
+        | None -> ());
 
-  if key = 'w' || key = 's' then begin
-    print_endline ("Y: " ^ string_of_int inventory_position.y);
-    refresh ()
-  end;
+        selected_item.contents <- item
+      end;
+      if key = 'q' then mode.contents <- Minimenu
+  | Minimenu ->
+      if key = 'e' then begin
+        minimenu_position.y <- 0;
+        selected_item.contents <- get_selected_item ()
+      end;
+      if key = 'q' then begin
+        minimenu_position.y <- 0;
+        mode.contents <- Selecting
+      end);
+
   Ui.update_all ();
-  print_endline (String.make 1 key);
   Unix.sleepf 0.016;
-  if key <> 'q' then run_tick () else Draw.set_synced_mode true
+  if key <> 'q' && selected_item.contents = None then run_tick ()
 
 let init () =
   Draw.set_synced_mode false;
-
+  mode.contents <- Selecting;
+  selected_item.contents <- None;
   set_text_bg inventory_text_bg empty_sprite;
   refresh ();
   Ui.add_first_background clear_screen;
