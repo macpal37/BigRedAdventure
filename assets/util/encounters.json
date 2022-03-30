@@ -5,12 +5,22 @@
         {
           "creatures": "rafu",
           "level_range": "12-20",
-          "encounter_rate": 0.50
+          "encounter_rate": 0.33
         },
         {
           "creatures": "clefairy",
-          "level_range": "12-20",
-          "encounter_rate": 0.50
+          "level_range": "15-20",
+          "encounter_rate": 0.33
+        },
+        {
+          "creatures": "psyduck",
+          "level_range": "18-20",
+          "encounter_rate": 0.33
+        },
+        {
+          "creatures": "stregoom",
+          "level_range": "1-100",
+          "encounter_rate": 0.01
         }
       ],
       [

@@ -300,7 +300,7 @@ let handle_effects move attacker defender () =
   (match move.effect_id with
   | 1 ->
       handle_stat_changes defender Attack (-1);
-      Ui.add_last_gameplay clear_text;
+      Ui.add_last_gameplay (clear_text Draw.battle_bot);
 
       Ui.add_last_gameplay
         (draw_text
@@ -308,7 +308,7 @@ let handle_effects move attacker defender () =
            40 true)
   | 7 ->
       handle_stat_changes attacker Attack 1;
-      Ui.add_last_gameplay clear_text;
+      Ui.add_last_gameplay (clear_text Draw.battle_bot);
       Ui.add_last_gameplay
         (draw_text
            (get_nickname attacker.creature ^ "'s ATK rose")

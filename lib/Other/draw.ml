@@ -101,8 +101,10 @@ let sync_draw draw () =
   usync true ()
 
 let clear_screen () =
+  (* auto_synchronize false; *)
   set_color (rgb 255 255 255);
   sync_draw (fun () -> fill_rect 0 0 width height) ()
+(* auto_synchronize true *)
 
 let draw_pixel size x y () =
   fill_rect (x - (size / 2)) (y - (size / 2)) size size
@@ -192,6 +194,8 @@ let load_sprite name folder dpi () =
   let image = ImageLib_unix.openfile filename in
   load_image image dpi
 
+let battle_bot = load_sprite "battle_bot" GUI_Folder 3 ()
+
 let load_sprite_from_filepath filepath dpi () =
   let image = ImageLib_unix.openfile filepath in
   load_image image dpi
@@ -248,27 +252,24 @@ let rec wait timer () =
   end
   else wait (timer - 1) ()
 
-let clear_text () =
+let clear_text clear_sprite () =
   usync false ();
-  draw_sprite text_bg1.contents 3 0 ();
-  draw_sprite text_bg2.contents 400 0 ();
+  draw_sprite clear_sprite 3 0 ();
   usync true ()
 
 let text_char_cap = ref 28
 let auto_text_time = 175000
 let set_text_char_cap cap = text_char_cap.contents <- cap
-let battle_bot_right = load_sprite "battle_bot_right" GUI_Folder 3 ()
-let battle_bot_left = load_sprite "battle_bot_left" GUI_Folder 3 ()
 
 let draw_text text font_size auto () =
   auto_synchronize true;
   set_synced_mode true;
   set_font_size font_size ();
+  set_text_char_cap 28;
   let wait_time = if auto then auto_text_time else -1 in
   let char_cap = text_char_cap.contents in
-  set_text_bg battle_bot_left battle_bot_right;
 
-  clear_text ();
+  clear_text battle_bot ();
   set_color text_color;
   let start_x = 35 in
   let start_y = 132 in
@@ -311,13 +312,13 @@ let draw_text text font_size auto () =
         draw_chars char_list;
         if start == max then begin
           wait wait_time ();
-          clear_text ();
+          clear_text battle_bot ();
           set_color text_color;
           scroll_text 0 max t
         end
         else scroll_text (start + 1) max t
   in
-  clear_text ();
+  clear_text battle_bot ();
   set_color text_color;
   scroll_text 0 1 levels;
   set_synced_mode false;
@@ -369,7 +370,7 @@ let draw_text_string text () =
   set_text_char_cap 28;
   set_font_size 40 ();
   let char_cap = text_char_cap.contents in
-  clear_text ();
+  clear_text battle_bot ();
   set_color text_color;
   let start_x = 35 in
   let start_y = 142 in

@@ -176,13 +176,6 @@ let switch_move () =
   let new_moves = switch_move [] moves in
   set_moves current_creature.contents new_moves
 
-let init () =
-  menu_position.x <- -2;
-  switch_position.x <- -1;
-  Draw.set_synced_mode false;
-  refresh ();
-  Ui.add_first_background clear_screen
-
 let rec run_tick () =
   Input.poll ();
   let key =
@@ -233,3 +226,12 @@ let rec run_tick () =
 
   Ui.update_all ();
   if key <> 'q' || menu_position.x <> -2 then run_tick ()
+
+let init () =
+  set_synced_mode false;
+  menu_position.x <- -2;
+  switch_position.x <- -1;
+
+  refresh ();
+  Ui.add_first_background clear_screen;
+  run_tick ()

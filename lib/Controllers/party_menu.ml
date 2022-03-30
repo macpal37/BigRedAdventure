@@ -186,7 +186,6 @@ let rec run_tick () =
   then begin
     Creature_menu.set_creature (get_party_index ());
     Creature_menu.init ();
-    Creature_menu.run_tick ();
     refresh ()
   end;
 
@@ -227,7 +226,6 @@ let rec run_tick () =
 let init () =
   minimenu_position.x <- -1;
   switch_position.x <- -1;
-  Draw.set_synced_mode false;
   refresh ();
   Ui.add_first_background clear_screen;
   run_tick ()
