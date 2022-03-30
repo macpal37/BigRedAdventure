@@ -6,10 +6,10 @@ type sprite_sheet = {
   sheet_height : int;
 }
 
-val init_spritesheet : string -> int -> int -> sprite_sheet
-(** [init_spritesheet filepath sprite_width sprite_column] Returns a
+val init_spritesheet : string -> int -> int -> int -> sprite_sheet
+(** [init_spritesheet filepath sprite_width sprite_column dpi] Returns a
     sprite_sheet type from a given [image] given the number of [row] and
-    [columns]. *)
+    [columns] with dpi [dpi]. *)
 
 val get_sprite : sprite_sheet -> int -> Draw.sprite
 (** [get_sprite sprite_sheet id] Returns the sprite at index [i] from

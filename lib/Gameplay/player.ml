@@ -62,4 +62,9 @@ let y p = p.y
 let orie p = p.orie
 let set_x x p = p.x <- x
 let set_y y p = p.y <- y
+
+let set_coord x y p =
+  set_x x p;
+  set_y y p
+
 let set_orie o p = p.orie <- o

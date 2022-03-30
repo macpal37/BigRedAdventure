@@ -457,10 +457,9 @@ let rec run_tick () =
   Unix.sleepf 0.016;
   if key = 'q' || combat_mode.contents <> End_Battle then run_tick ()
 
-let start_battle () =
+let start_battle c =
   enemy_active.contents <- true;
-  enemy_creature.contents <-
-    (fun () -> create_creature "rafu" (Random.int 10 + 35)) ();
+  enemy_creature.contents <- (fun () -> c) ();
   set_synced_mode false;
   clear_screen ();
   combat_mode.contents <- Commands;
