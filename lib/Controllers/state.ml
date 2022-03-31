@@ -19,15 +19,18 @@ let map _ = !current_state.map
 let adhoc_init () =
   Player.set_x 4 (player ());
   Player.set_y 4 (player ());
-  let rafu = Creature.create_creature "rafu" 50 in
+  let rafu = Creature.create_creature "rafu" 20 in
+  let clefairy = Creature.create_creature "clefairy" 35 in
   (* let rafu2 = Creature.create_creature "psyduck" 30 in let rafu3 =
      Creature.create_creature "clefairy" 30 in let rafu4 =
      Creature.create_creature "rafu" 30 in *)
   Player.add_creature rafu current_state.contents.player;
+  Player.add_creature clefairy current_state.contents.player;
   (* Player.add_creature rafu2 current_state.contents.player;
      Player.add_creature rafu3 current_state.contents.player;
      Player.add_creature rafu4 current_state.contents.player; *)
   Creature.set_nickname rafu "Llama Baby";
+  Creature.set_nickname rafu "Lucky";
   (* Creature.set_nickname rafu2 "Ron"; Creature.set_nickname rafu3
      "Lucky"; Creature.set_nickname rafu4 "Chubby Bunny"; *)
   let inventory = Player.inventory current_state.contents.player in

@@ -191,8 +191,8 @@ let animate_faint creature player () = faint 20 1 creature player ()
 (*****************************************************************)
 let refresh_hud () =
   let player, opponent =
-    ( List.nth battle_sim.contents.player_creatures 0,
-      List.nth battle_sim.contents.enemy_creatures 0 )
+    ( battle_sim.contents.player_battler.creature,
+      battle_sim.contents.enemy_battler.creature )
   in
 
   Ui.add_first_gameplay
@@ -235,15 +235,15 @@ let handle_exp player_creature enemy_creature () =
   Ui.add_first_foreground
     (draw_exp_bar_combat (max_exp - min_exp) (before_exp - min_exp)
        (curr_exp - min_exp));
-  Ui.add_last_foreground (set_sticky_text false);
-
+  Ui.add_first_foreground (set_sticky_text false);
   Ui.add_first_foreground
     (draw_text
        (get_nickname player_creature
        ^ " gained "
        ^ string_of_int (get_exp_gain player_creature)
        ^ " EXP. Points!")
-       40 true)
+       40 false);
+  Ui.add_first_foreground (set_sticky_text true)
 
 let handle_combat move =
   (* Ui.clear_ui Gameplay; Ui.clear_ui Foreground; *)
@@ -251,8 +251,8 @@ let handle_combat move =
     Combat.turn_builder battle_sim.contents move;
     set_text_char_cap 28;
     let player, enemy =
-      ( List.nth battle_sim.contents.player_creatures 0,
-        List.nth battle_sim.contents.enemy_creatures 0 )
+      ( battle_sim.contents.player_battler.creature,
+        battle_sim.contents.enemy_battler.creature )
     in
 
     let p_maxhp, e_maxhp =
@@ -286,6 +286,7 @@ let handle_combat move =
     Ui.update_all ();
     (***============= Resolution =============***)
     if enemy_a2 <= 0 then (
+      combat_mode.contents <- End_Battle;
       handle_exp player enemy ();
       Ui.add_first_foreground (set_sticky_text true);
       Ui.add_first_foreground
@@ -308,8 +309,9 @@ let handle_item item () =
 
       if battle_sim.contents.battle_status = Catch then begin
         print_endline "Success";
-        handle_exp battle_sim.contents.player_battler.creature
-          enemy_creature.contents ();
+        Ui.add_first_foreground
+          (handle_exp battle_sim.contents.player_battler.creature
+             battle_sim.contents.enemy_battler.creature);
         Ui.add_first_foreground
           (draw_text
              ("You captured "
@@ -393,8 +395,20 @@ let rec run_tick () =
               Ui.update_all ()
         end
         else if key = 'e' && combat_button.contents = 2 then begin
-          Party_menu.init ();
-          refresh_battle ()
+          Party_menu.init true ();
+          match Combat.switching_pending.contents with
+          | Some c ->
+              Ui.add_first_foreground (draw_text "Come back!" 40 true);
+              Ui.add_first_foreground (clear_text battle_bot);
+
+              Combat.switch_player battle_sim.contents c
+                (Player.party (State.player ()));
+              refresh_battle ();
+              Ui.update_all ();
+              combat_mode.contents <- Attack;
+              Combat.switching_pending.contents <- None;
+              handle_combat empty_move
+          | Option.None -> refresh_battle ()
         end
         else if key = 'e' && combat_button.contents = 3 then begin
           Combat.run_away battle_sim.contents;
@@ -407,12 +421,11 @@ let rec run_tick () =
           else begin
             Ui.add_first_foreground
               (draw_text "You could not run away!" 40 true);
-            (* Ui.add_first_foreground (fun () ->
-               Graphics.auto_synchronize true); *)
+            Ui.update_all ();
+
             handle_combat Creature.empty_move
           end
-        end;
-        if key = 'q' then combat_mode.contents <- End_Battle
+        end
     | Moves ->
         if b != combat_button.contents then
           Ui.add_first_foreground
@@ -420,7 +433,6 @@ let rec run_tick () =
                combat_button.contents);
 
         if key = 'e' then begin
-          (* Ui.clear_ui Ui.Foreground; *)
           Ui.add_first_foreground (clear_text battle_bot);
           let move =
             List.nth
@@ -428,8 +440,8 @@ let rec run_tick () =
               combat_button.contents
           in
           Ui.update_all ();
-          handle_combat move;
-          combat_mode.contents <- Attack
+          combat_mode.contents <- Attack;
+          handle_combat move
         end;
         if key = 'q' then begin
           Ui.clear_ui Ui.Foreground;
@@ -439,7 +451,9 @@ let rec run_tick () =
         end
     | Attack ->
         Ui.add_first_gameplay (clear_text battle_right);
-        combat_mode.contents <- Commands;
+        if enemy_active.contents then combat_mode.contents <- Commands
+        else combat_mode.contents <- End_Battle;
+
         combat_button.contents <- 0
     | End_Battle -> ()
   in
@@ -448,7 +462,7 @@ let rec run_tick () =
 
   Ui.update_all ();
   Unix.sleepf 0.016;
-  if key = 'q' || combat_mode.contents <> End_Battle then run_tick ()
+  if combat_mode.contents <> End_Battle then run_tick ()
 
 let start_battle c =
   enemy_active.contents <- true;

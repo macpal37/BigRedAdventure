@@ -111,7 +111,7 @@ let refresh () =
     (draw_string_colored 24 605 4 60 "SUMMARY" (rgb 255 170 40));
   Ui.add_last_background (draw_sprite creature_menu_bg 0 0);
   Ui.add_first_gameplay
-    (draw_sprite (get_front_sprite current_creature.contents) 12 318);
+    (draw_sprite (get_front_sprite current_creature.contents) 9 318);
   Ui.add_first_gameplay
     (draw_string_colored 20 246 1 30
        (get_nickname current_creature.contents)

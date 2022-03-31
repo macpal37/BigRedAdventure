@@ -13,7 +13,8 @@
     ],
     "Resists": [
       "Water",
-      "Fire"
+      "Fire",
+      "Rock"
     ],
     "Immune": []
   },

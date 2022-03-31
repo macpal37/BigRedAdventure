@@ -501,3 +501,14 @@ let capture brecord =
     then brecord.battle_status <- Catch
 (* else if brecord.catch_attempts >= 3 then brecord.battle_status <-
    Flee else brecord.escape_attempts <- brecord.escape_attempts + 1 *)
+
+(* ==============================================================*)
+(* =============== Switchig Party Members===================*)
+(* ==============================================================*)
+
+let switching_pending = ref Option.None
+
+let switch_player brecord creature new_party =
+  let new_battler = generate_battler creature true in
+  brecord.player_creatures <- new_party;
+  brecord.player_battler <- new_battler

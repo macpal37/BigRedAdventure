@@ -312,13 +312,13 @@ let draw_text text font_size auto () =
         draw_chars char_list;
         if start == max then begin
           wait wait_time ();
-          clear_text battle_bot ();
+          if is_sticky.contents = false then clear_text battle_bot ();
           set_color text_color;
           scroll_text 0 max t
         end
         else scroll_text (start + 1) max t
   in
-  clear_text battle_bot ();
+  (* clear_text battle_bot (); *)
   set_color text_color;
   scroll_text 0 1 levels;
   set_synced_mode false;

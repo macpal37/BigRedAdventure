@@ -81,3 +81,6 @@ val capture : battle_record -> unit
 (**Given a battle record, checks if the player is able to catch the
    creature. If so, return battle_record with victory status set as
    Catch*)
+
+val switch_player : battle_record -> creature -> creature list -> unit
+val switching_pending : creature option ref
