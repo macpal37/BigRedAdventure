@@ -16,6 +16,8 @@ type folder =
       (** Variant that represents what folder to look into to retrieve
           the assets.*)
 
+val battle_bot : sprite
+
 val width : int
 (** Width of the screen*)
 
@@ -82,10 +84,8 @@ val load_sprite_from_filepath : string -> int -> unit -> sprite
 
 (** {1 Drawing Functions}*)
 
-val clear_text : unit -> unit
-(** [draw_text is_synced] clears the text screen by redrawing the text
-    background sprites. The drawing function is synced if
-    [is_synced = true] *)
+val clear_text : sprite -> unit -> unit
+(** [clear_text clear_sprite] Clears the text with the givn sprite. *)
 
 val draw_string_colored :
   int -> int -> int -> int -> string -> Graphics.color -> unit -> unit

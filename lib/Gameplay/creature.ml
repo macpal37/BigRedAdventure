@@ -413,7 +413,7 @@ let creature_from_json json level =
   let learnset =
     json |> member "learnset" |> to_list |> List.map parse_learn_set
   in
-  let shiny_chance = Random.int 4 = 0 in
+  let shiny_chance = Random.int 100 = 0 in
   curr_hp_cache.contents <- curr_stats.max_hp;
   {
     nickname = name;
@@ -479,7 +479,7 @@ let get_stat creature stat =
 let get_ivs creature = creature.iv_stats
 let get_evs creature = creature.ev_stats
 let get_ev_gain creature = creature.ev_gain
-let get_exp_gain creature = creature.level * creature.base_exp
+let get_exp_gain creature = creature.level * creature.base_exp / 7
 let get_current_hp creature = creature.current_hp
 let get_specias creature = creature.species
 

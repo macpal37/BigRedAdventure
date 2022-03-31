@@ -300,7 +300,7 @@ let handle_effects move attacker defender () =
   (match move.effect_id with
   | 1 ->
       handle_stat_changes defender Attack (-1);
-      Ui.add_last_gameplay clear_text;
+      Ui.add_last_gameplay (clear_text Draw.battle_bot);
 
       Ui.add_last_gameplay
         (draw_text
@@ -308,7 +308,7 @@ let handle_effects move attacker defender () =
            40 true)
   | 7 ->
       handle_stat_changes attacker Attack 1;
-      Ui.add_last_gameplay clear_text;
+      Ui.add_last_gameplay (clear_text Draw.battle_bot);
       Ui.add_last_gameplay
         (draw_text
            (get_nickname attacker.creature ^ "'s ATK rose")
@@ -501,3 +501,14 @@ let capture brecord =
     then brecord.battle_status <- Catch
 (* else if brecord.catch_attempts >= 3 then brecord.battle_status <-
    Flee else brecord.escape_attempts <- brecord.escape_attempts + 1 *)
+
+(* ==============================================================*)
+(* =============== Switchig Party Members===================*)
+(* ==============================================================*)
+
+let switching_pending = ref Option.None
+
+let switch_player brecord creature new_party =
+  let new_battler = generate_battler creature true in
+  brecord.player_creatures <- new_party;
+  brecord.player_battler <- new_battler

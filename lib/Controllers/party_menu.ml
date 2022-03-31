@@ -10,44 +10,52 @@ let minimenu1 = load_sprite "party_minimenu" GUI_Folder 3 ()
 let menu_position = Util.new_point ()
 let switch_position = Util.new_point ()
 let minimenu_position = Util.new_point ()
+let during_battle = ref false
 
 (* let itemmenu_position = Util.new_point () *)
-(* type menu = | MainMenu | MiniMenu | SwitchMode | ItemMenu
+type menu =
+  | MainMenu
+  | MiniMenu
+  | SwitchMode
+  | ItemMenu
+  | Exit
 
-   let menu_mode = ref MainMenu *)
+let menu_mode = ref MainMenu
 
 let move_x x () =
-  if switch_position.x = -1 then begin
-    if minimenu_position.x = -1 then
+  match menu_mode.contents with
+  | MainMenu ->
       if
         menu_position.x + x >= 0
         && menu_position.x + x < 2
         && List.length (Player.party (State.player ())) > 1
       then menu_position.x <- menu_position.x + x
-  end
-  else if
-    switch_position.x + x >= 0
-    && switch_position.x + x < 2
-    && List.length (Player.party (State.player ())) > 1
-  then switch_position.x <- switch_position.x + x
+  | SwitchMode ->
+      if
+        switch_position.x + x >= 0
+        && switch_position.x + x < 2
+        && List.length (Player.party (State.player ())) > 1
+      then switch_position.x <- switch_position.x + x
+  | _ -> ()
 
 let move_y y () =
-  if switch_position.x = -1 then begin
-    if minimenu_position.x = -1 then begin
+  match menu_mode.contents with
+  | MainMenu ->
       if
         menu_position.y + y >= 0
         && menu_position.y + y
            < List.length (Player.party (State.player ())) - 1
       then menu_position.y <- menu_position.y + y
-    end
-    else if minimenu_position.y + y >= 0 && minimenu_position.y + y < 4
-    then minimenu_position.y <- minimenu_position.y + y
-  end
-  else if
-    switch_position.y + y >= 0
-    && switch_position.y + y
-       < List.length (Player.party (State.player ())) - 1
-  then switch_position.y <- switch_position.y + y
+  | MiniMenu ->
+      if minimenu_position.y + y >= 0 && minimenu_position.y + y < 4
+      then minimenu_position.y <- minimenu_position.y + y
+  | SwitchMode ->
+      if
+        switch_position.y + y >= 0
+        && switch_position.y + y
+           < List.length (Player.party (State.player ())) - 1
+      then switch_position.y <- switch_position.y + y
+  | _ -> ()
 
 let draw_menu lead_creature () =
   Ui.add_first_background (draw_sprite party_menu_bg 0 0);
@@ -97,7 +105,7 @@ let draw_selector () =
     let x, y = (9, 140) in
     set_color red;
     draw_rect x y 254 152);
-  if switch_position.x <> -1 then begin
+  if menu_mode.contents = SwitchMode then begin
     if switch_position.x = 1 then begin
       let x, y = (276, 577 - (112 * switch_position.y)) in
       set_color blue;
@@ -171,63 +179,98 @@ let rec run_tick () =
   if key = 's' then move_y 1 ();
   if key = 'a' then move_x (-1) ();
   if key = 'd' then move_x 1 ();
+  if key = 'w' || key = 's' || key = 'a' || key = 'd' then refresh ();
+  (match menu_mode.contents with
+  | MainMenu ->
+      if key = 'e' then begin
+        minimenu_position.x <- 0;
+        minimenu ();
+        menu_mode.contents <- MiniMenu
+      end;
+      if key = 'q' then menu_mode.contents <- Exit
+  | MiniMenu ->
+      if key = 'w' || key = 's' then minimenu ();
+      if key = 'q' then begin
+        minimenu_position.y <- 0;
+        menu_mode.contents <- MainMenu;
+        refresh ()
+      end;
+      if key = 'e' && minimenu_position.y = 0 then begin
+        Creature_menu.set_creature (get_party_index ());
+        Creature_menu.init ();
+        minimenu ();
+        refresh ()
+      end;
 
-  (*====== Refersh Selector ====== *)
-  if
-    (key = 'w' || key = 's' || key = 'a' || key = 'd')
-    && minimenu_position.x = -1
-  then refresh ();
-  (*====== Open Minimenu====== *)
-  if (key = 'w' || key = 's') && minimenu_position.x = 0 then
-    minimenu ();
+      if
+        key = 'e' && minimenu_position.y = 1
+        && during_battle.contents = false
+      then begin
+        switch_position.x <- menu_position.x + 0;
+        switch_position.y <- menu_position.y + 0;
+        refresh ();
+        menu_mode.contents <- SwitchMode
+      end;
+      if
+        key = 'e' && minimenu_position.y = 1
+        && during_battle.contents = true
+      then begin
+        let a, b =
+          ( Player.party_i (State.player ()) 0,
+            Player.party_i (State.player ())
+              (if menu_position.x = 0 then 0 else menu_position.y + 1)
+          )
+        in
+        let party = Player.party (State.player ()) in
+        let rec switch_creature new_lst = function
+          | [] -> new_lst
+          | h :: t ->
+              if a = h then switch_creature (new_lst @ [ b ]) t
+              else if b = h then switch_creature (new_lst @ [ a ]) t
+              else switch_creature (new_lst @ [ h ]) t
+        in
+        let new_party = switch_creature [] party in
+        Player.set_party new_party (State.player ());
+        Combat.switching_pending.contents <- Some b;
 
-  (*====== Summary ====== *)
-  if key = 'e' && minimenu_position.x = 0 && minimenu_position.y = 0
-  then begin
-    Creature_menu.set_creature (get_party_index ());
-    Creature_menu.init ();
-    Creature_menu.run_tick ();
-    refresh ()
-  end;
+        refresh ();
 
-  (*====== Switch ====== *)
-  if
-    key = 'e' && minimenu_position.x = 0 && minimenu_position.y = 1
-    && switch_position.x = -1
-  then begin
-    minimenu_position.x <- -1;
-    switch_position.x <- menu_position.x + 0;
-    switch_position.y <- menu_position.y + 0;
-    refresh ()
-  end
-  else if key = 'e' && switch_position.x <> -1 then begin
-    switch ();
-    menu_position.x <- switch_position.x + 0;
-    menu_position.y <- switch_position.y + 0;
-    minimenu_position.x <- 0;
-    switch_position.x <- -1;
-    refresh ()
-  end;
+        menu_mode.contents <- Exit
+      end;
+
+      if key = 'e' && minimenu_position.y = 3 then begin
+        menu_mode.contents <- MainMenu;
+        refresh ()
+      end
+  | SwitchMode ->
+      if key = 'e' then begin
+        switch ();
+
+        menu_position.x <- switch_position.x + 0;
+        menu_position.y <- switch_position.y + 0;
+        minimenu_position.x <- 1;
+        switch_position.x <- 0;
+        switch_position.y <- 0;
+        minimenu ();
+        refresh ();
+
+        menu_mode.contents <- MiniMenu
+      end
+  | ItemMenu -> ()
+  | Exit -> ());
 
   (*====== MiniMenu ====== *)
-  if switch_position.x = -1 then begin
-    if key = 'e' then begin
-      minimenu_position.x <- 0;
-      minimenu ()
-    end;
-    if key = 'q' then begin
-      minimenu_position.y <- 0;
-      minimenu_position.x <- -1;
-      refresh ()
-    end
-  end;
   Ui.update_all ();
-  if key <> 'q' then run_tick ()
+  if menu_mode.contents <> Exit then run_tick ()
 
-let init () =
-  minimenu_position.x <- -1;
-  switch_position.x <- -1;
-  Draw.set_synced_mode false;
+let init is_battle () =
+  menu_mode.contents <- MainMenu;
+  Combat.switching_pending.contents <- None;
+  during_battle.contents <- is_battle;
+  minimenu_position.x <- 0;
+  minimenu_position.y <- 0;
+  switch_position.x <- 0;
+  switch_position.y <- 0;
   refresh ();
   Ui.add_first_background clear_screen;
   run_tick ()

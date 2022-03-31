@@ -139,9 +139,9 @@ let run_tick _ =
   | Some 'a' -> attempt_move (-1) 0 Player.W
   | Some 's' -> attempt_move 0 (-1) Player.S
   | Some 'd' -> attempt_move 1 0 Player.E
-  | Some 'e' ->
-      Battle.start_battle
-        (Creature.create_creature "rafu" (Random.int 10 + 35))
+  | Some 'e' -> Party_menu.init false ()
+  (* Battle.start_battle (Creature.create_creature "rafu" (Random.int 10
+     + 35)) *)
   | Some 'q' -> ()
   | Some k -> ignore k
   | None -> ());

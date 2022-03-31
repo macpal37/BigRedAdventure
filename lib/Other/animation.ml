@@ -23,6 +23,10 @@ let draw_hp_val x y curr max player () =
     draw_string (hp_to_string curr ^ "/" ^ hp_to_string max)
 
 let draw_health_bar max before after xh yh hwidth hheight hp_text () =
+  if before <> after then begin
+    set_synced_mode true;
+    auto_synchronize true
+  end;
   let max, before, after =
     (bound max 0 max, bound before 0 max, bound after 0 max)
   in
@@ -97,10 +101,17 @@ let draw_health_bar max before after xh yh hwidth hheight hp_text () =
       (yh - hheight - 5 - 22)
       (if after >= 0 then after else 0)
       max hp_text ()
+  end;
+  if before <> after then begin
+    set_synced_mode false;
+    auto_synchronize false
   end
 
 let draw_exp_bar max before after xh yh hwidth hheight () =
-  (* Draw.sync true (); *)
+  if before <> after then begin
+    set_synced_mode true;
+    auto_synchronize true
+  end;
   let max, before, after =
     (bound max 0 max, bound before 0 after, bound after 0 max)
   in
@@ -129,5 +140,11 @@ let draw_exp_bar max before after xh yh hwidth hheight () =
      end
    in
    render_bar_progress before_bar after_bar);
-  (* Draw.sync false (); *)
-  set_color text_color
+
+  set_color text_color;
+  if before <> after then begin
+    set_sticky_text false ();
+    Draw.wait (-1) ();
+    set_synced_mode false;
+    auto_synchronize false
+  end

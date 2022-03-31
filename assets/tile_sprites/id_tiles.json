@@ -1,96 +1,107 @@
-{ "columns":3,
- "image":"id_tiles.png",
- "imageheight":48,
- "imagewidth":48,
- "margin":0,
- "name":"id_tiles",
- "spacing":0,
- "tilecount":9,
- "tiledversion":"1.8.2",
- "tileheight":16,
- "tiles":[
-        {
-         "id":0,
-         "properties":[
-                {
-                 "name":"id",
-                 "type":"int",
-                 "value":0
-                }]
-        }, 
-        {
-         "id":1,
-         "properties":[
-                {
-                 "name":"id",
-                 "type":"int",
-                 "value":1
-                }]
-        }, 
-        {
-         "id":2,
-         "properties":[
-                {
-                 "name":"id",
-                 "type":"int",
-                 "value":2
-                }]
-        }, 
-        {
-         "id":3,
-         "properties":[
-                {
-                 "name":"id",
-                 "type":"int",
-                 "value":3
-                }]
-        }, 
-        {
-         "id":4,
-         "properties":[
-                {
-                 "name":"id",
-                 "type":"int",
-                 "value":4
-                }]
-        }, 
-        {
-         "id":5,
-         "properties":[
-                {
-                 "name":"id",
-                 "type":"int",
-                 "value":5
-                }]
-        }, 
-        {
-         "id":6,
-         "properties":[
-                {
-                 "name":"id",
-                 "type":"int",
-                 "value":6
-                }]
-        }, 
-        {
-         "id":7,
-         "properties":[
-                {
-                 "name":"id",
-                 "type":"int",
-                 "value":7
-                }]
-        }, 
-        {
-         "id":8,
-         "properties":[
-                {
-                 "name":"id",
-                 "type":"int",
-                 "value":8
-                }]
-        }],
- "tilewidth":16,
- "type":"tileset",
- "version":"1.8"
+{
+       "columns": 3,
+       "image": "id_tiles.png",
+       "imageheight": 48,
+       "imagewidth": 48,
+       "margin": 0,
+       "name": "id_tiles",
+       "spacing": 0,
+       "tilecount": 9,
+       "tiledversion": "1.8.2",
+       "tileheight": 16,
+       "tiles": [
+              {
+                     "id": 0,
+                     "properties": [
+                            {
+                                   "name": "id",
+                                   "type": "int",
+                                   "value": 0
+                            }
+                     ]
+              },
+              {
+                     "id": 1,
+                     "properties": [
+                            {
+                                   "name": "id",
+                                   "type": "int",
+                                   "value": 1
+                            }
+                     ]
+              },
+              {
+                     "id": 2,
+                     "properties": [
+                            {
+                                   "name": "id",
+                                   "type": "int",
+                                   "value": 2
+                            }
+                     ]
+              },
+              {
+                     "id": 3,
+                     "properties": [
+                            {
+                                   "name": "id",
+                                   "type": "int",
+                                   "value": 3
+                            }
+                     ]
+              },
+              {
+                     "id": 4,
+                     "properties": [
+                            {
+                                   "name": "id",
+                                   "type": "int",
+                                   "value": 4
+                            }
+                     ]
+              },
+              {
+                     "id": 5,
+                     "properties": [
+                            {
+                                   "name": "id",
+                                   "type": "int",
+                                   "value": 5
+                            }
+                     ]
+              },
+              {
+                     "id": 6,
+                     "properties": [
+                            {
+                                   "name": "id",
+                                   "type": "int",
+                                   "value": 6
+                            }
+                     ]
+              },
+              {
+                     "id": 7,
+                     "properties": [
+                            {
+                                   "name": "id",
+                                   "type": "int",
+                                   "value": 7
+                            }
+                     ]
+              },
+              {
+                     "id": 8,
+                     "properties": [
+                            {
+                                   "name": "id",
+                                   "type": "int",
+                                   "value": 8
+                            }
+                     ]
+              }
+       ],
+       "tilewidth": 16,
+       "type": "tileset",
+       "version": "1.8"
 }

@@ -79,6 +79,8 @@ let get_selected_item () =
     in
     Some item
 
+let inventory_text_bg = load_sprite "inventory_text_bg" GUI_Folder 3 ()
+
 let refresh () =
   let bag_type =
     match inventory_position.x with
@@ -97,11 +99,9 @@ let refresh () =
       List.nth display_queue.contents inventory_position.y
     in
     Ui.add_first_foreground (draw_text_string (get_description item))
-  else Ui.add_first_foreground clear_text;
+  else Ui.add_first_foreground (clear_text inventory_text_bg);
 
   draw_bag bag_type 415 575 ()
-
-let inventory_text_bg = load_sprite "inventory_text_bg" GUI_Folder 3 ()
 
 let rec run_tick () =
   Input.poll ();

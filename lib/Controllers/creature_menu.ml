@@ -111,7 +111,7 @@ let refresh () =
     (draw_string_colored 24 605 4 60 "SUMMARY" (rgb 255 170 40));
   Ui.add_last_background (draw_sprite creature_menu_bg 0 0);
   Ui.add_first_gameplay
-    (draw_sprite (get_front_sprite current_creature.contents) 12 318);
+    (draw_sprite (get_front_sprite current_creature.contents) 9 318);
   Ui.add_first_gameplay
     (draw_string_colored 20 246 1 30
        (get_nickname current_creature.contents)
@@ -176,13 +176,6 @@ let switch_move () =
   let new_moves = switch_move [] moves in
   set_moves current_creature.contents new_moves
 
-let init () =
-  menu_position.x <- -2;
-  switch_position.x <- -1;
-  Draw.set_synced_mode false;
-  refresh ();
-  Ui.add_first_background clear_screen
-
 let rec run_tick () =
   Input.poll ();
   let key =
@@ -233,3 +226,12 @@ let rec run_tick () =
 
   Ui.update_all ();
   if key <> 'q' || menu_position.x <> -2 then run_tick ()
+
+let init () =
+  set_synced_mode false;
+  menu_position.x <- -2;
+  switch_position.x <- -1;
+
+  refresh ();
+  Ui.add_first_background clear_screen;
+  run_tick ()
