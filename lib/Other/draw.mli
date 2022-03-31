@@ -88,8 +88,16 @@ val clear_text : sprite -> unit -> unit
 (** [clear_text clear_sprite] Clears the text with the givn sprite. *)
 
 val draw_string_colored :
-  int -> int -> int -> int -> string -> Graphics.color -> unit -> unit
-(** [draw_string_colored x y shadow_offset font_size text text_color]
+  int ->
+  int ->
+  int ->
+  int ->
+  string ->
+  Graphics.color ->
+  Graphics.color ->
+  unit ->
+  unit
+(** [draw_string_colored x y shadow_offset font_size text text_color shadow_color]
     Draws the [text] at [x,y] of the screen with the given [text_color].
     [shadow_offset] represents the offset disstance of the shodow to the
     text, when drawn. *)

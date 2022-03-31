@@ -2,9 +2,12 @@
   "Normal": {
     "Supereffective": [],
     "Resists": [
-      "Rock"
+      "Rock",
+      "Steel"
     ],
-    "Immune": []
+    "Immune": [
+      "Ghost"
+    ]
   },
   "Fire": {
     "Supereffective": [
@@ -67,6 +70,96 @@
     "Immune": []
   },
   "Ghost": {
+    "Supereffective": [
+      "Ghost"
+    ],
+    "Resists": [],
+    "Immune": [
+      "Normal"
+    ]
+  },
+  "Dark": {
+    "Supereffective": [
+      "Ghost"
+    ],
+    "Resists": [],
+    "Immune": [
+      "Normal"
+    ]
+  },
+  "Poison": {
+    "Supereffective": [
+      "Ghost"
+    ],
+    "Resists": [],
+    "Immune": [
+      "Normal"
+    ]
+  },
+  "Electric": {
+    "Supereffective": [
+      "Ghost"
+    ],
+    "Resists": [],
+    "Immune": [
+      "Normal"
+    ]
+  },
+  "Ground": {
+    "Supereffective": [
+      "Ghost"
+    ],
+    "Resists": [],
+    "Immune": [
+      "Normal"
+    ]
+  },
+  "Psychic": {
+    "Supereffective": [
+      "Ghost"
+    ],
+    "Resists": [],
+    "Immune": [
+      "Normal"
+    ]
+  },
+  "Dragon": {
+    "Supereffective": [
+      "Ghost"
+    ],
+    "Resists": [],
+    "Immune": [
+      "Normal"
+    ]
+  },
+  "Bug": {
+    "Supereffective": [
+      "Ghost"
+    ],
+    "Resists": [],
+    "Immune": [
+      "Normal"
+    ]
+  },
+  "Steel": {
+    "Supereffective": [
+      "Ghost"
+    ],
+    "Resists": [],
+    "Immune": [
+      "Normal"
+    ]
+  },
+  "Fighting": {
+    "Supereffective": [
+      "Ghost"
+    ],
+    "Resists": [],
+    "Immune": [
+      "Normal"
+    ]
+  },
+  "Ice": {
     "Supereffective": [
       "Ghost"
     ],

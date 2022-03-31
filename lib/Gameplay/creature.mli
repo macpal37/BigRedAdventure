@@ -52,6 +52,16 @@ type etype =
   | Fairy
   | Rock
   | Ghost
+  | Dark
+  | Steel
+  | Electric
+  | Poison
+  | Psychic
+  | Ground
+  | Dragon
+  | Bug
+  | Ice
+  | Fighting
   | None
 
 (** Represents the elemental type of a creature*)

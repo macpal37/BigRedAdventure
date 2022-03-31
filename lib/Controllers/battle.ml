@@ -4,7 +4,10 @@ open Creature
 open Animation
 
 let text_box_height = 212
-let combat_button = ref 0
+(* let combat_button = ref 0 *)
+
+let moves_position = Util.new_point ()
+let commands_position = Util.new_point ()
 
 type combat_m =
   | Commands
@@ -33,17 +36,14 @@ let enemy_creature = ref (create_creature "stregoom" 1)
 (*****************************************************************)
 (***************     Combat Drawing Commands     *********************)
 (*****************************************************************)
-let start_combat_hud () =
-  Ui.add_first_foreground (clear_text battle_right);
-  Ui.add_first_foreground
-    (draw_text_string_pos 35 132 40 14 "What will" white)
 
-let draw_moves creature c_b c_a () =
+let draw_moves creature () =
+  clear_text moves_window ();
   let moves = get_moves creature in
   let size = List.length moves in
-  let box_w, box_h = (378, 92) in
-  let box_x, box_y = (20, 200 - box_h) in
-  let text_x, text_y = (30, (4 * text_box_height / 5) - 12) in
+  let box_w, box_h = (370, 92) in
+  let box_x, box_y = (28, 200 - box_h) in
+  let text_x, text_y = (38, (4 * text_box_height / 5) - 12) in
   let text_xdif, text_ydif = (376, 95) in
   set_font_size 30 ();
   set_line_width 6;
@@ -54,31 +54,31 @@ let draw_moves creature c_b c_a () =
       let x, y = (text_x + (text_xdif * i), text_y - (text_ydif * j)) in
       draw_string_colored x y 2 40 move.move_name
         (get_color_from_etype move.etype)
-        ();
-      moveto x (y - 40);
-      set_color (get_color_from_etype move.etype);
-      draw_string (string_of_etype move.etype);
-      set_color text_color;
-      moveto (x + 120) (y - 40);
-      draw_string
+        text_color ();
+
+      draw_string_colored x (y - 40) 1 30
+        (string_of_etype move.etype)
+        (get_color_from_etype move.etype)
+        text_color ();
+
+      draw_string_colored (x + 110) (y - 40) 1 30
         ("PP:"
         ^ string_of_int move.curr_pp
         ^ "/"
-        ^ string_of_int move.max_pp);
+        ^ string_of_int move.max_pp)
+        white text_color ();
 
       if i = 1 then draw_all_moves 0 (j + 1) (length - 1)
       else draw_all_moves (i + 1) j (length - 1)
   in
   draw_all_moves 0 0 size;
 
-  draw_rect
-    (box_x + (box_w * if c_b = 1 || c_b = 3 then 1 else 0))
-    (box_y - (box_h * if c_b >= 2 then 1 else 0))
-    box_w box_h;
+  (* draw_rect (box_x + (box_w * moves_position.x)) (box_y - (box_h *
+     moves_position.y)) box_w box_h; *)
   set_color (rgb 255 0 0);
   draw_rect
-    (box_x + (box_w * if c_a = 1 || c_a = 3 then 1 else 0))
-    (box_y - (box_h * if c_a >= 2 then 1 else 0))
+    (box_x + (box_w * moves_position.x))
+    (box_y - (box_h * moves_position.y))
     box_w box_h;
   set_color text_color
 
@@ -107,46 +107,47 @@ let draw_combat_hud sprite name level player (max, before, after) () =
       (360 - sprite_height) ();
     draw_string_colored (width - 320) 316 2 30
       (String.uppercase_ascii name)
-      white ();
+      white text_color ();
 
     draw_string_colored (width - 100) 316 2 30
       ("Lv" ^ string_of_int level)
-      white ()
+      white text_color ()
   end
   else begin
     set_font_size 30 ();
     draw_sprite sprite 42 (height - 45 - sprite_height) ();
     draw_string_colored 60 (height - 85) 2 30
       (String.uppercase_ascii name)
-      white ();
+      white text_color ();
 
     draw_string_colored 280 (height - 85) 2 30
       ("Lv" ^ string_of_int level)
-      white ()
+      white text_color ()
   end;
 
   draw_health_bar_combat max before after player ();
   set_font_size 40 ()
 
-let draw_combat_commands c _ () =
+let draw_combat_commands () =
   set_font_size 50 ();
   let x, y = (475, 120) in
   set_color text_color;
   clear_text battle_right ();
-  moveto x y;
-  draw_string "FIGHT";
-  moveto x (y - 75);
-  draw_string "PARTY";
-  moveto (x + 200) y;
-  draw_string "BAG";
-  moveto (x + 200) (y - 75);
-  draw_string "RUN";
-  moveto
-    (x - 40 + (200 * if c = 1 || c = 3 then 1 else 0))
-    (y - (75 * if c >= 2 then 1 else 0));
-  draw_char '>';
-
+  draw_string_colored x y 2 50 "FIGHT" white text_color ();
+  draw_string_colored x (y - 75) 2 50 "PARTY" white text_color ();
+  draw_string_colored (x + 200) y 2 50 "BAG" white text_color ();
+  draw_string_colored (x + 200) (y - 75) 2 50 "BAG" white text_color ();
+  draw_string_colored
+    (x - 40 + (200 * commands_position.x))
+    (y - (75 * commands_position.y))
+    2 50 ">" white text_color ();
   set_font_size 40 ()
+
+let start_combat_hud () =
+  Ui.add_first_foreground (clear_text battle_right);
+  Ui.add_first_foreground draw_combat_commands;
+  Ui.add_first_foreground
+    (draw_text_string_pos 35 132 40 14 "What will" white)
 
 let rec faint base c sprite player () =
   set_synced_mode true;
@@ -347,6 +348,26 @@ let refresh_battle () =
     ();
   start_combat_hud ()
 
+let move_x x () =
+  match combat_mode.contents with
+  | Commands ->
+      if commands_position.x + x >= 0 && commands_position.x + x < 2
+      then commands_position.x <- commands_position.x + x
+  | Moves ->
+      if moves_position.x + x >= 0 && moves_position.x + x < 2 then
+        moves_position.x <- moves_position.x + x
+  | _ -> ()
+
+let move_y y () =
+  match combat_mode.contents with
+  | Commands ->
+      if commands_position.y + y >= 0 && commands_position.y + y < 2
+      then commands_position.y <- commands_position.y + y
+  | Moves ->
+      if moves_position.y + y >= 0 && moves_position.y + y < 2 then
+        moves_position.y <- moves_position.y + y
+  | _ -> ()
+
 let rec run_tick () =
   Input.poll ();
   let key =
@@ -355,33 +376,29 @@ let rec run_tick () =
     | None -> '#'
   in
 
-  let b = !combat_button in
-  if key = 'd' && (b = 0 || b = 2) then combat_button.contents <- b + 1;
-  if key = 'a' && (b = 1 || b = 3) then combat_button.contents <- b - 1;
-  if key = 'w' && (b = 2 || b = 3) then combat_button.contents <- b - 2;
-  if key = 's' && (b = 0 || b = 1) then combat_button.contents <- b + 2;
+  if key = 'd' then move_x 1 ();
+  if key = 'a' then move_x (-1) ();
+  if key = 'w' then move_y (-1) ();
+  if key = 's' then move_y 1 ();
   let action =
     match combat_mode.contents with
     | Commands ->
-        if key <> 'e' then
-          if b != combat_button.contents then
-            Ui.add_first_foreground
-              (draw_combat_commands combat_button.contents true)
-          else
-            Ui.add_first_foreground
-              (draw_combat_commands combat_button.contents false);
+        if key <> 'e' || key = 'a' || key = 'w' || key = 's' then
+          Ui.add_first_foreground draw_combat_commands;
         if
-          key = 'e'
-          && combat_button.contents = 0
+          key = 'e' && commands_position.x = 0
+          && commands_position.y = 0
           && battle_sim.contents.battle_status <> Combat.Victory
         then begin
           combat_mode.contents <- Moves;
           Ui.add_first_gameplay (clear_text moves_window);
           Ui.add_first_foreground
-            (draw_moves battle_sim.contents.player_battler.creature b
-               combat_button.contents)
+            (draw_moves battle_sim.contents.player_battler.creature)
         end
-        else if key = 'e' && combat_button.contents = 1 then begin
+        else if
+          key = 'e' && commands_position.x = 1
+          && commands_position.y = 0
+        then begin
           Inventory_menu.init ();
 
           match Inventory_menu.selected_item.contents with
@@ -394,7 +411,10 @@ let rec run_tick () =
               refresh_battle ();
               Ui.update_all ()
         end
-        else if key = 'e' && combat_button.contents = 2 then begin
+        else if
+          key = 'e' && commands_position.x = 0
+          && commands_position.y = 1
+        then begin
           Party_menu.init true ();
           match Combat.switching_pending.contents with
           | Some c ->
@@ -410,7 +430,10 @@ let rec run_tick () =
               handle_combat empty_move
           | Option.None -> refresh_battle ()
         end
-        else if key = 'e' && combat_button.contents = 3 then begin
+        else if
+          key = 'e' && commands_position.x = 1
+          && commands_position.y = 1
+        then begin
           Combat.run_away battle_sim.contents;
           if battle_sim.contents.battle_status = Combat.Flee then begin
             Ui.add_first_foreground (draw_text "You ran away!" 40 true);
@@ -427,17 +450,16 @@ let rec run_tick () =
           end
         end
     | Moves ->
-        if b != combat_button.contents then
+        if key <> 'e' || key = 'a' || key = 'w' || key = 's' then
           Ui.add_first_foreground
-            (draw_moves battle_sim.contents.player_battler.creature b
-               combat_button.contents);
+            (draw_moves battle_sim.contents.player_battler.creature);
 
         if key = 'e' then begin
           Ui.add_first_foreground (clear_text battle_bot);
           let move =
             List.nth
               (get_moves battle_sim.contents.player_battler.creature)
-              combat_button.contents
+              (moves_position.x + (2 * moves_position.y))
           in
           Ui.update_all ();
           combat_mode.contents <- Attack;
@@ -447,14 +469,12 @@ let rec run_tick () =
           Ui.clear_ui Ui.Foreground;
           Ui.add_first_foreground start_combat_hud;
           combat_mode.contents <- Commands;
-          Ui.add_last_background (clear_text battle_bot)
+          Ui.add_last_background (clear_text battle_right)
         end
     | Attack ->
         Ui.add_first_gameplay (clear_text battle_right);
         if enemy_active.contents then combat_mode.contents <- Commands
-        else combat_mode.contents <- End_Battle;
-
-        combat_button.contents <- 0
+        else combat_mode.contents <- End_Battle
     | End_Battle -> ()
   in
 

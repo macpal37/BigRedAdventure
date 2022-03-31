@@ -432,12 +432,19 @@ let draw_gradient w h =
   gradient arr w h;
   draw_image (make_image arr) 0 0
 
-let draw_string_colored x y shadow_offset font_size text custom_color ()
-    =
+let draw_string_colored
+    x
+    y
+    shadow_offset
+    font_size
+    text
+    custom_color
+    shadow_color
+    () =
   let cache_font_size = get_font_size () in
   set_font_size font_size ();
   moveto x y;
-  set_color (rgb 0 0 0);
+  set_color shadow_color;
   draw_string text;
   moveto (x + shadow_offset - 1) (y + shadow_offset);
   set_color custom_color;

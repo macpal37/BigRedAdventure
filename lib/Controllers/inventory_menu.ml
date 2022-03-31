@@ -36,13 +36,13 @@ let draw_list () =
              (sy - (i * 40))
              2 36
              (Util.captilize_all_string (get_name item))
-             white);
+             white text_color);
         let s = string_of_int amount in
         Ui.add_first_gameplay
           (draw_string_colored
              (sx + dif - (16 * String.length s))
              (sy - (i * 40))
-             2 36 (s ^ "x") white);
+             2 36 (s ^ "x") white text_color);
         draw_list_rec (i + 1) t
   in
   let index = draw_list_rec 0 display_queue.contents in
@@ -50,7 +50,7 @@ let draw_list () =
     Ui.add_first_gameplay
       (draw_string_colored sx
          (sy - (index * 40))
-         2 36 "     - - - - - - -     " white)
+         2 36 "     - - - - - - -     " white text_color)
   else ()
 
 let inventory_position = Util.new_point ()
@@ -63,7 +63,7 @@ let draw_bag item_type x y () =
   Ui.add_first_foreground
     (draw_string_colored 428 644 3 60
        (string_of_item_type item_type)
-       (rgb 245 190 50));
+       (rgb 245 190 50) text_color);
 
   draw_list ();
   Ui.add_first_foreground (fun () ->
@@ -79,7 +79,7 @@ let get_selected_item () =
     in
     Some item
 
-let inventory_text_bg = load_sprite "inventory_text_bg" GUI_Folder 3 ()
+let inventory_text_bg = load_sprite "battle_bot" GUI_Folder 3 ()
 
 let refresh () =
   let bag_type =

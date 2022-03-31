@@ -42,6 +42,16 @@ type etype =
   | Fairy
   | Rock
   | Ghost
+  | Dark
+  | Steel
+  | Electric
+  | Poison
+  | Psychic
+  | Ground
+  | Dragon
+  | Bug
+  | Ice
+  | Fighting
   | None
 
 type leveling_rate =
@@ -183,6 +193,16 @@ let string_of_etype etype_var =
   | Fairy -> "Fairy"
   | Rock -> "Rock"
   | Ghost -> "Ghost"
+  | Dark -> "Dark"
+  | Steel -> "Steel"
+  | Electric -> "Electric"
+  | Poison -> "Poison"
+  | Psychic -> "Psychic"
+  | Ground -> "Ground"
+  | Dragon -> "Dragon"
+  | Bug -> "Bug"
+  | Ice -> "Ice"
+  | Fighting -> "Fighting"
   | _ -> "None"
 
 let etype_of_string etype_string =
@@ -194,6 +214,16 @@ let etype_of_string etype_string =
   | "Fairy" -> Fairy
   | "Rock" -> Rock
   | "Ghost" -> Ghost
+  | "Dark" -> Ghost
+  | "Steel" -> Steel
+  | "Electric" -> Electric
+  | "Poison" -> Poison
+  | "Psychic" -> Psychic
+  | "Ground" -> Ground
+  | "Dragon" -> Dragon
+  | "Bug" -> Bug
+  | "Ice" -> Ice
+  | "Fighting" -> Fighting
   | _ -> None
 
 let category_of_string cat_string =
@@ -619,10 +649,20 @@ let set_nickname creature nickname = creature.nickname <- nickname
 let get_color_from_etype etype =
   match etype with
   | Normal -> rgb 196 196 196
-  | Fire -> rgb 235 47 0
-  | Water -> rgb 13 150 255
-  | Grass -> rgb 0 168 3
-  | Fairy -> rgb 255 122 244
+  | Fire -> rgb 239 128 48
+  | Water -> rgb 103 144 240
+  | Grass -> rgb 120 200 79
+  | Fairy -> rgb 238 153 172
   | Ghost -> rgb 102 46 145
-  | Rock -> rgb 108 75 50
+  | Rock -> rgb 184 160 56
+  | Dark -> rgb 112 88 72
+  | Steel -> rgb 184 184 208
+  | Electric -> rgb 248 207 48
+  | Poison -> rgb 160 64 159
+  | Psychic -> rgb 248 87 135
+  | Ground -> rgb 224 192 104
+  | Dragon -> rgb 112 56 248
+  | Bug -> rgb 168 184 31
+  | Ice -> rgb 152 216 216
+  | Fighting -> rgb 192 48 40
   | _ -> rgb 0 0 0

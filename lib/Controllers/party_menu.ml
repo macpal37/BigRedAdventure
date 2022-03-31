@@ -60,17 +60,20 @@ let move_y y () =
 let draw_menu lead_creature () =
   Ui.add_first_background (draw_sprite party_menu_bg 0 0);
   Ui.add_first_foreground
-    (draw_string_colored 40 36 3 50 "Choose a CREATURE" text_color2);
+    (draw_string_colored 40 36 3 50 "Choose a CREATURE" text_color2
+       text_color);
   Ui.add_first_foreground
-    (draw_string_colored 24 605 4 60 "PARTY" (rgb 255 170 40));
+    (draw_string_colored 24 605 2 60 "PARTY" (rgb 255 170 40) white);
   Ui.add_first_gameplay
     (draw_sprite (get_front_sprite lead_creature) 9 318);
   Ui.add_first_gameplay
-    (draw_string_colored 20 246 1 30 (get_nickname lead_creature) white);
+    (draw_string_colored 20 246 1 30
+       (get_nickname lead_creature)
+       white text_color);
   Ui.add_first_gameplay
     (draw_string_colored 20 220 1 20
        ("LVL: " ^ string_of_int (get_level lead_creature))
-       white);
+       white text_color);
   let max, _, aft = get_hp_status lead_creature in
   Ui.add_first_gameplay (draw_health_bar max aft aft 56 192 180 6 true)
 
@@ -84,11 +87,12 @@ let draw_creature_status creature pos () =
        (x + 11) (y + 11));
   Ui.add_first_background (draw_sprite active x y);
   Ui.add_first_gameplay
-    (draw_string_colored xx (yy + 26) 1 30 (get_nickname creature) white);
+    (draw_string_colored xx (yy + 26) 1 30 (get_nickname creature) white
+       text_color);
   Ui.add_first_gameplay
     (draw_string_colored xx yy 1 20
        ("LVL: " ^ string_of_int (get_level creature))
-       white);
+       white text_color);
   let max, _, aft = get_hp_status creature in
   Ui.add_first_gameplay
     (draw_health_bar max aft aft (xx + 130) (yy + 6) 250 6 true)
@@ -134,15 +138,23 @@ let minimenu () =
   Ui.add_first_foreground
     (draw_string_colored (x - 30)
        (y - 5 - (dif * minimenu_position.y))
-       2 50 ">" text_color2);
+       2 50 ">" text_color2 text_color);
   Ui.add_first_foreground
-    (draw_string_colored x (y - (dif * 0)) 2 f "Summary" text_color2);
+    (draw_string_colored x
+       (y - (dif * 0))
+       2 f "Summary" text_color2 text_color);
   Ui.add_first_foreground
-    (draw_string_colored x (y - (dif * 1)) 2 f "Switch" text_color2);
+    (draw_string_colored x
+       (y - (dif * 1))
+       2 f "Switch" text_color2 text_color);
   Ui.add_first_foreground
-    (draw_string_colored x (y - (dif * 2)) 2 f "Item" text_color2);
+    (draw_string_colored x
+       (y - (dif * 2))
+       2 f "Item" text_color2 text_color);
   Ui.add_first_foreground
-    (draw_string_colored x (y - (dif * 3)) 2 f "Back" text_color2);
+    (draw_string_colored x
+       (y - (dif * 3))
+       2 f "Back" text_color2 text_color);
   Ui.add_first_foreground (draw_sprite minimenu1 576 12)
 
 let get_party_index () =
@@ -189,7 +201,8 @@ let rec run_tick () =
       end;
       if key = 'q' then menu_mode.contents <- Exit
   | MiniMenu ->
-      if key = 'w' || key = 's' then minimenu ();
+      if key = 'w' || key = 's' || key = 'a' || key = 'd' then
+        minimenu ();
       if key = 'q' then begin
         minimenu_position.y <- 0;
         menu_mode.contents <- MainMenu;
@@ -255,6 +268,16 @@ let rec run_tick () =
         refresh ();
 
         menu_mode.contents <- MiniMenu
+      end;
+      if key = 'q' then begin
+        menu_mode.contents <- MiniMenu;
+        menu_position.x <- switch_position.x + 0;
+        menu_position.y <- switch_position.y + 0;
+        minimenu_position.x <- 1;
+        switch_position.x <- 0;
+        switch_position.y <- 0;
+        minimenu ();
+        refresh ()
       end
   | ItemMenu -> ()
   | Exit -> ());

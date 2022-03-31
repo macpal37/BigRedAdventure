@@ -116,7 +116,7 @@ let draw_exp_bar max before after xh yh hwidth hheight () =
     (bound max 0 max, bound before 0 after, bound after 0 max)
   in
   let blank = rgb 209 199 156 in
-  let bar_color = rgb 77 195 232 in
+  let bar_color = rgb 255 213 65 in
 
   set_color text_color;
   (* set_line_width 8; draw_rect xh yh hwidth hheight; *)

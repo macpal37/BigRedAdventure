@@ -296,8 +296,7 @@ let handle_stat_changes battler stat stages =
 
 let handle_effects move attacker defender () =
   add_pp attacker.creature move.move_name (-1);
-  Ui.add_last_gameplay (Draw.set_sticky_text true);
-  (match move.effect_id with
+  match move.effect_id with
   | 1 ->
       handle_stat_changes defender Attack (-1);
       Ui.add_last_gameplay (clear_text Draw.battle_bot);
@@ -313,8 +312,7 @@ let handle_effects move attacker defender () =
         (draw_text
            (get_nickname attacker.creature ^ "'s ATK rose")
            40 true)
-  | _ -> ());
-  Ui.add_last_gameplay (Draw.set_sticky_text false)
+  | _ -> ()
 
 (* ==============================================================*)
 (* ================ Stat Changes Handler END=====================*)

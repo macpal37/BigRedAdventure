@@ -45,8 +45,13 @@ Then, follow the instructions here to install X server for Windows:
 
 ## Running the Game
 
-Unzip ms1.zip.
+Unzip ms2.zip.
 Then open the folder ms1 in VSCode.
+Then run:
+```
+dune build
+```
+In your terminal inside the ms2 directory.
 Finally, to run the game, open the terminal and simply type `make play` to begin the game.
 
 # ENJOY :)
