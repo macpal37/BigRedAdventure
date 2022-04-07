@@ -41,12 +41,14 @@ type battle_record = {
   mutable enemy_battler : battle_creature;
   mutable turn_counter : int;
   mutable turn_pos : turn_status;
+  mutable creatures_switched : creature list;
 }
 
 (** The abstract type that represents the standing data of a Pokemon
     battle at a given turn. This type will store the pokemon engaged in
     battle, as well as their evolving victory status.*)
 
+val refresh_battle : (int -> int -> int -> unit -> unit) ref
 val empty_battle : battle_record
 val is_player_first : unit -> bool
 

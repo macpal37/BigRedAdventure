@@ -123,20 +123,36 @@ let refresh () =
        ("LVL: " ^ string_of_int (get_level current_creature.contents))
        white text_color);
   let max, _, aft = get_hp_status current_creature.contents in
-  Ui.add_first_gameplay (draw_health_bar max aft aft 56 192 180 6 true);
+  Ui.add_first_gameplay
+    (draw_health_bar max aft aft 56 192 180 6 true false);
+
+  let curr_exp, min_exp, max_exp = get_exp current_creature.contents in
+  Ui.add_first_gameplay
+    (draw_string_colored 20 140 1 24 "EXP:" white text_color);
+  Ui.add_first_gameplay
+    (draw_exp_bar (max_exp - min_exp) (curr_exp - min_exp)
+       (curr_exp - min_exp) 20 128 210 8);
+  Ui.add_first_gameplay
+    (draw_string_colored 20 104 1 20
+       (string_of_int (curr_exp - min_exp)
+       ^ "/"
+       ^ string_of_int (max_exp - min_exp))
+       white text_color);
+
   let type1, type2 = get_types current_creature.contents in
   let type_str =
     string_of_etype type1
     ^ if type2 = None then "" else "/" ^ string_of_etype type2
   in
+
   Ui.add_first_gameplay
-    (draw_string_colored 20 132 1 24 ("TYPE: " ^ type_str) white
+    (draw_string_colored 20 (132 - 56) 1 24 ("TYPE: " ^ type_str) white
        text_color);
   draw_stats ();
 
   let nature, _, _ = get_nature current_creature.contents in
   Ui.add_first_gameplay
-    (draw_string_colored 20 102 1 24 ("NATURE: " ^ nature) white
+    (draw_string_colored 20 (102 - 56) 1 24 ("NATURE: " ^ nature) white
        text_color);
   draw_stats ();
   (* Ui.add_first_gameplay (draw_string_colored 20 100 1 24 type_str

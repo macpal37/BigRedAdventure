@@ -4,6 +4,8 @@ let width = 800
 let height = 720
 let tick_rate = 0.016
 
+(* let tick_rate = 0.0 *)
+
 type modes =
   | ModeOverworld
   | ModeBattle

@@ -144,7 +144,14 @@ val draw_text_string_pos :
     the given [text] with the given [font_size]on the [x y]. There is no
     text scroll.*)
 
-val damage_render : sprite -> bool -> unit -> unit
+val damage_render :
+  sprite ->
+  int ->
+  int ->
+  bool ->
+  (int -> int -> int -> unit -> unit) ->
+  unit ->
+  unit
 (** [damage_render sprite is_player (_)] performs the damage animation
     of either the enemy or the player depedning on the [is_player]
     boolean *)

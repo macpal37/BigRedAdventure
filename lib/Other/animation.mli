@@ -4,6 +4,16 @@ val draw_exp_bar :
     performs the xp gain animation*)
 
 val draw_health_bar :
-  int -> int -> int -> int -> int -> int -> int -> bool -> unit -> unit
-(** [draw_health_bar max_hp before_curr_hp after_curr_hp x y width height(_)]
+  int ->
+  int ->
+  int ->
+  int ->
+  int ->
+  int ->
+  int ->
+  bool ->
+  bool ->
+  unit ->
+  unit
+(** [draw_health_bar max_hp before_curr_hp after_curr_hp x y width height is_hptext is_animated(_)]
     performs the health bar gain/loss animation. *)

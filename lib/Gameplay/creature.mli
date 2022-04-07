@@ -43,6 +43,8 @@ type stat =
   | Speed
 
 (** Represents a single stat name of a creature*)
+(* type etype = | Neutral | Fire | Water | Air | Earth | Electric | Ice
+   | Metal | Acid | Light | Shadow | Specter | Nature | Cosmic | None *)
 
 type etype =
   | Normal
@@ -84,7 +86,8 @@ type move = {
   etype : etype;
   category : move_catgeory;
   description : string;
-  effect_id : int;
+  effect_ids : int list;
+  effect_chance : int;
 }
 (** Loads and handles all the moves performed during combat*)
 
@@ -110,6 +113,9 @@ val mod_stat : stats -> stat -> float -> int
     by [power]*)
 
 (** {1 String Formatting}*)
+
+val string_of_stat_short : stat -> string
+(** [stat_to_string stat] returns a string representation of the [stat].*)
 
 val string_of_stat : stat -> string
 (** [stat_to_string stat] returns a string representation of the [stat].*)
@@ -145,6 +151,8 @@ val set_current_hp : creature -> int -> unit
 val get_types : creature -> etype * etype
 (** [get_types creature] returns the types of the creature as a tuple of
     strings*)
+
+val get_stat2 : stats -> stat -> int
 
 val get_stats : creature -> stats
 (** [get_type_mod attack_type defender] returns the damage modification
@@ -182,12 +190,18 @@ val get_catch_rate : creature -> float
 val get_level : creature -> int
 (** [get_level creature] returns a [creature]'s current level*)
 
-val get_exp : creature -> int * int * int
-(** [get_exp creature] returns a [creature]'s current exp*)
+val level_up : creature -> unit -> unit
+(** [level_up creature] levels up the creature by one level, modifying
+    its stats.*)
 
-val add_exp : creature -> int -> unit
+val get_exp : creature -> int * int * int
+(** [get_exp creature] returns a tuple that represents the creautre's
+    exp [curr,min,max]*)
+
+val add_exp : creature -> int -> (int * int * int * int) list
 (** [add_exp creature amount] add [amount] to the current exp of
-    [creature]*)
+    [creature]. Returns a report of adding the exp as a ruple
+    [max, before, after, level]*)
 
 val add_pp : creature -> string -> int -> unit
 

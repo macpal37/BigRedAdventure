@@ -263,7 +263,6 @@ let set_text_char_cap cap = text_char_cap.contents <- cap
 
 let draw_text text font_size auto () =
   auto_synchronize true;
-  set_synced_mode true;
   set_font_size font_size ();
   set_text_char_cap 28;
   let wait_time = if auto then auto_text_time else -1 in
@@ -321,7 +320,6 @@ let draw_text text font_size auto () =
   (* clear_text battle_bot (); *)
   set_color text_color;
   scroll_text 0 1 levels;
-  set_synced_mode false;
   auto_synchronize false
 
 let draw_text_string_pos x y font_size char_cap text color () =
@@ -452,25 +450,36 @@ let draw_string_colored
   set_color text_color;
   set_font_size cache_font_size ()
 
-let damage_render sprite player () =
-  set_synced_mode true;
-  let rec damage_render_rec c creature_pixels player () =
-    if c = 0 then draw_creature creature_pixels player ()
+let damage_render
+    player_sprite
+    player_hp
+    enemy_hp
+    player
+    clear_function
+    () =
+  let rec damage_render_rec c () =
+    set_synced_mode false;
+    auto_synchronize false;
+    if c = 0 then
+      (* draw_creature enemy_sprite (player = false) (); *)
+      draw_creature player_sprite player ()
     else begin
-      if c mod 2 = 0 then draw_creature creature_pixels player ()
+      if c mod 2 = 0 then
+        draw_creature player_sprite player
+          () (* draw_creature enemy_sprite (player = false) () *)
       else begin
-        set_color blue;
-
-        set_erase_mode true ();
-        draw_creature creature_pixels player ();
-        set_erase_mode false ()
+        auto_synchronize false;
+        clear_function player_hp enemy_hp (if player then 1 else 0) ();
+        (* draw_creature enemy_sprite (player = false) (); *)
+        auto_synchronize true
       end;
+      auto_synchronize true;
       Input.sleep 0.1 ();
-      damage_render_rec (c - 1) creature_pixels player ()
+      damage_render_rec (c - 1) ()
     end
   in
-  damage_render_rec 7 sprite player ();
-  set_synced_mode false;
+  damage_render_rec 7 ();
+
   set_color text_color
 
 let add_rgb sprite red green blue () =
@@ -505,6 +514,7 @@ let draw_creature_effect sprite player red green blue value () =
     let bb = blue / value in
     add_rgb sprite rr gg bb ();
     draw_creature sprite player ();
+    clear_text battle_bot ();
     Input.sleep 0.025 ();
     if count > 0 then effect (count - 1) else ()
   in
@@ -515,10 +525,12 @@ let lower_stat_effect sprite player () =
   make_grayscale sprite ();
   for _ = 0 to 2 do
     draw_creature_effect sprite player (-100) (-100) 0 5 ();
-    draw_creature_effect sprite player 80 80 0 5 ()
+    draw_creature_effect sprite player 80 80 0 5 ();
+    clear_text battle_bot ()
   done;
   reset_rgb sprite ();
   draw_creature sprite player ();
+  clear_text battle_bot ();
   set_synced_mode false
 
 let raise_stat_effect sprite player () =
@@ -526,8 +538,10 @@ let raise_stat_effect sprite player () =
   make_grayscale sprite ();
   for _ = 0 to 2 do
     draw_creature_effect sprite player 0 0 (-200) 5 ();
-    draw_creature_effect sprite player 0 0 200 5 ()
+    draw_creature_effect sprite player 0 0 200 5 ();
+    clear_text battle_bot ()
   done;
   reset_rgb sprite ();
   draw_creature sprite player ();
+  clear_text battle_bot ();
   set_synced_mode false
