@@ -26,7 +26,7 @@ type battle_creature = {
   mutable current_move : move_status;
   mutable stat_changes : stats;
   mutable status_effect : status;
-  mutable inactive : bool;
+  mutable active : bool;
   is_player : bool;
 }
 
@@ -79,7 +79,7 @@ val run_away : battle_record -> unit
 (**Given a battle record, checks if the player is able to run away. If
    so, return battle_record with victory status set as Flee.*)
 
-val capture : battle_record -> unit
+val capture : battle_record -> bool list
 (**Given a battle record, checks if the player is able to catch the
    creature. If so, return battle_record with victory status set as
    Catch*)

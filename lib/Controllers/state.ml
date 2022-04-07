@@ -19,7 +19,7 @@ let map _ = !current_state.map
 let adhoc_init () =
   Player.set_x 4 (player ());
   Player.set_y 4 (player ());
-  let rafu = Creature.create_creature "chumpi" 20 in
+  let rafu = Creature.create_creature "chumpi" 1 in
   let clefairy = Creature.create_creature "rafu" 40 in
 
   Player.add_creature rafu current_state.contents.player;

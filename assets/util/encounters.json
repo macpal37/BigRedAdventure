@@ -8,17 +8,17 @@
           "encounter_rate": 0.33
         },
         {
-          "creatures": "clefairy",
+          "creatures": "chumpi",
           "level_range": "15-20",
           "encounter_rate": 0.33
         },
         {
-          "creatures": "psyduck",
+          "creatures": "stregoom",
           "level_range": "18-20",
           "encounter_rate": 0.33
         },
         {
-          "creatures": "stregoom",
+          "creatures": "psyduck",
           "level_range": "1-100",
           "encounter_rate": 0.01
         }

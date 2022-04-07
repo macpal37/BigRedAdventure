@@ -10,4 +10,5 @@ val animate_faint : sprite -> bool -> unit -> unit
 (** [animate_faint sprite (_)] performs the fainting animation of the
     creature [sprite] *)
 
+val captured_creature : Creature.creature option ref
 val run_tick : unit -> unit

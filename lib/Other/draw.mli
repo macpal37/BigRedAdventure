@@ -144,14 +144,7 @@ val draw_text_string_pos :
     the given [text] with the given [font_size]on the [x y]. There is no
     text scroll.*)
 
-val damage_render :
-  sprite ->
-  int ->
-  int ->
-  bool ->
-  (int -> int -> int -> unit -> unit) ->
-  unit ->
-  unit
+val damage_render : sprite -> bool -> (unit -> unit) -> unit -> unit
 (** [damage_render sprite is_player (_)] performs the damage animation
     of either the enemy or the player depedning on the [is_player]
     boolean *)
@@ -165,14 +158,7 @@ val make_grayscale : sprite -> unit -> unit
 val reset_rgb : sprite -> unit -> unit
 (** (reset_rgb sprite () ) resets the rgb values of the sprite.*)
 
-val draw_creature_effect :
-  sprite -> bool -> int -> int -> int -> int -> unit -> unit
-
-val lower_stat_effect : sprite -> bool -> unit -> unit
-(** Cool Random Effects :)*)
-
-val raise_stat_effect : sprite -> bool -> unit -> unit
-(** Cool Random Effects :)*)
+val add_rgb : sprite -> int -> int -> int -> unit -> unit
 
 val create_sprite :
   int list -> Graphics.color list -> int -> int -> int -> sprite

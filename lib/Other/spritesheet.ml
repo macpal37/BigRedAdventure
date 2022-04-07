@@ -63,7 +63,7 @@ let init_spritesheet filepath sprite_width sprite_height dpi =
   {
     sprites = List.rev sprites;
     rows = h;
-    columns = w;
+    columns = w + 1;
     sheet_width = image.width + 1;
     sheet_height = image.height + 1;
   }

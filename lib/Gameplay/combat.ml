@@ -32,7 +32,7 @@ type battle_creature = {
   mutable current_move : move_status;
   mutable stat_changes : stats;
   mutable status_effect : status;
-  mutable inactive : bool;
+  mutable active : bool;
   is_player : bool;
 }
 
@@ -69,7 +69,7 @@ let empty_battle =
         stat_changes = empty_stats;
         status_effect = Healthy;
         is_player = true;
-        inactive = false;
+        active = false;
       };
     enemy_battler =
       {
@@ -78,7 +78,7 @@ let empty_battle =
         stat_changes = empty_stats;
         status_effect = Healthy;
         is_player = false;
-        inactive = false;
+        active = false;
       };
     turn_counter = 0;
     turn_pos = Choosing;
@@ -92,7 +92,7 @@ let generate_battler creature player =
     stat_changes = empty_stats;
     status_effect = get_status creature;
     is_player = player;
-    inactive = false;
+    active = true;
   }
 
 (*might create active creatures and inactive creature for each?*)
@@ -224,11 +224,9 @@ let updated_enemy_creatures brecord =
   | [] -> raise Empty
 
 let player_faster brecord =
-  let enemy_speed =
-    (get_stats (List.nth brecord.enemy_creatures 0)).speed
-  in
+  let enemy_speed = (get_stats brecord.enemy_battler.creature).speed in
   let player_speed =
-    (get_stats (List.nth brecord.player_creatures 0)).speed
+    (get_stats brecord.player_battler.creature).speed
   in
   if player_speed > enemy_speed then true
   else if player_speed < enemy_speed then false
@@ -259,16 +257,24 @@ let handle_stat_changes battler stat stages =
   if battler.is_player then
     if stages < 0 then
       Ui.add_last_gameplay
-        (Draw.lower_stat_effect (get_back_sprite battler.creature) true)
+        (Animation.lower_stat_effect
+           (get_back_sprite battler.creature)
+           true)
     else
       Ui.add_last_gameplay
-        (Draw.raise_stat_effect (get_back_sprite battler.creature) true)
+        (Animation.raise_stat_effect
+           (get_back_sprite battler.creature)
+           true)
   else if stages < 0 then
     Ui.add_last_gameplay
-      (Draw.lower_stat_effect (get_front_sprite battler.creature) false)
+      (Animation.lower_stat_effect
+         (get_front_sprite battler.creature)
+         false)
   else
     Ui.add_last_gameplay
-      (Draw.raise_stat_effect (get_front_sprite battler.creature) false);
+      (Animation.raise_stat_effect
+         (get_front_sprite battler.creature)
+         false);
 
   match stat with
   | HP -> ()
@@ -369,8 +375,8 @@ let exec_turn attacker defender brecord =
     | None _ -> 0.0
     | Move m ->
         if m <> empty_move then begin
-          (* Ui.add_last_gameplay (fun () -> Graphics.auto_synchronize
-             true); *)
+          Ui.add_last_gameplay (fun () ->
+              Graphics.auto_synchronize false);
           Ui.add_last_gameplay
             (draw_text
                (get_nickname attacker.creature ^ " used " ^ m.move_name)
@@ -383,16 +389,20 @@ let exec_turn attacker defender brecord =
                 Ui.add_last_gameplay
                   (Draw.damage_render
                      (get_front_sprite defender.creature)
-                     (get_current_hp attacker.creature)
-                     (get_current_hp defender.creature)
-                     false refresh_battle.contents)
+                     false
+                     (refresh_battle.contents
+                        (get_current_hp attacker.creature)
+                        (get_current_hp defender.creature)
+                        0))
               else
                 Ui.add_last_gameplay
                   (Draw.damage_render
                      (get_back_sprite defender.creature)
-                     (get_current_hp defender.creature)
-                     (get_current_hp attacker.creature)
-                     true refresh_battle.contents);
+                     true
+                     (refresh_battle.contents
+                        (get_current_hp defender.creature)
+                        (get_current_hp attacker.creature)
+                        1));
 
               let damage, is_crit, mult =
                 damage_calc m attacker defender
@@ -447,6 +457,13 @@ let execute_turn brecord =
         exec_turn brecord.enemy_battler brecord.player_battler brecord
     | Move _ ->
         exec_turn brecord.player_battler brecord.enemy_battler brecord
+
+let check_active_status brecord =
+  if get_current_hp brecord.player_battler.creature <= 0 then
+    brecord.player_battler.active <- false;
+  if get_current_hp brecord.enemy_battler.creature <= 0 then
+    brecord.enemy_battler.active <- false
+
 (*BATTLE SIM HELPERS END so many damn*)
 
 let battle_sim_fh brecord =
@@ -464,7 +481,8 @@ let battle_sim_fh brecord =
     brecord.enemy_battler.current_move <-
       None (get_status brecord.enemy_battler.creature);
     brecord.turn_pos <- Halfway
-  end
+  end;
+  check_active_status brecord
 
 let battle_sim_sh brecord =
   if brecord.battle_status <> Victory then begin
@@ -476,7 +494,8 @@ let battle_sim_sh brecord =
     brecord.enemy_battler.current_move <-
       None (get_status brecord.enemy_battler.creature);
     brecord.turn_pos <- Finished
-  end
+  end;
+  check_active_status brecord
 
 (*IGNORE THESE FOR NOW, WILL POLISH IMPLEMENTATION LATER*)
 
@@ -505,7 +524,7 @@ let status_bonus st =
    a (c -. 1.) *)
 
 let capture brecord =
-  if brecord.battle_type = Trainer then ()
+  if brecord.battle_type = Trainer then [ false; false; false; false ]
     (*Marco print a message about not being able to capture in a trainer
       battle here :D *)
   else
@@ -535,17 +554,26 @@ let capture brecord =
         float_of_int (Random.int 65535),
         float_of_int (Random.int 65535) )
     in
-    print_endline ("Shake Prob: " ^ string_of_float shake_probability);
-    print_endline ("Shake1: " ^ string_of_float shake1);
-    print_endline ("Shake2: " ^ string_of_float shake2);
-    print_endline ("Shake3: " ^ string_of_float shake3);
-    print_endline ("Shake4: " ^ string_of_float shake4);
+    let catch_results =
+      [
+        shake_probability > shake1;
+        shake_probability > shake2;
+        shake_probability > shake3;
+        shake_probability > shake4;
+      ]
+    in
+    for i = 0 to 3 do
+      print_endline
+        ("Shake" ^ string_of_int i ^ ": "
+        ^ string_of_bool (List.nth catch_results i))
+    done;
+
     if
-      shake_probability > shake1
-      && shake_probability > shake2
-      && shake_probability > shake3
-      && shake_probability > shake4
-    then brecord.battle_status <- Catch
+      List.fold_left
+        (fun a b -> if b then a else false)
+        true catch_results
+    then brecord.battle_status <- Catch;
+    catch_results
 (* else if brecord.catch_attempts >= 3 then brecord.battle_status <-
    Flee else brecord.escape_attempts <- brecord.escape_attempts + 1 *)
 
@@ -555,9 +583,20 @@ let capture brecord =
 
 let switching_pending = ref Option.None
 
-let switch_player brecord creature new_party =
+let switch_player brecord creature _ =
+  Ui.add_first_gameplay
+    (Animation.switch_out
+       (get_back_sprite brecord.player_battler.creature)
+       (get_back_sprite creature)
+       true
+       (get_nickname brecord.player_battler.creature)
+       (get_nickname creature)
+       (refresh_battle.contents
+          (get_current_hp creature)
+          (get_current_hp brecord.enemy_battler.creature)
+          1));
   if List.mem creature brecord.creatures_switched = false then
     brecord.creatures_switched <- creature :: brecord.creatures_switched;
   let new_battler = generate_battler creature true in
-  brecord.player_creatures <- new_party;
+  (* brecord.player_creatures <- new_party; *)
   brecord.player_battler <- new_battler

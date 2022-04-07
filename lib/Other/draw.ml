@@ -96,15 +96,13 @@ let change_dpi sprite dpi =
   }
 
 let sync_draw draw () =
-  usync false ();
+  sync false ();
   draw ();
-  usync true ()
+  sync true ()
 
 let clear_screen () =
-  (* auto_synchronize false; *)
   set_color (rgb 255 255 255);
-  sync_draw (fun () -> fill_rect 0 0 width height) ()
-(* auto_synchronize true *)
+  fill_rect 0 0 width height
 
 let draw_pixel size x y () =
   fill_rect (x - (size / 2)) (y - (size / 2)) size size
@@ -450,13 +448,7 @@ let draw_string_colored
   set_color text_color;
   set_font_size cache_font_size ()
 
-let damage_render
-    player_sprite
-    player_hp
-    enemy_hp
-    player
-    clear_function
-    () =
+let damage_render player_sprite player clear_function () =
   let rec damage_render_rec c () =
     set_synced_mode false;
     auto_synchronize false;
@@ -464,13 +456,11 @@ let damage_render
       (* draw_creature enemy_sprite (player = false) (); *)
       draw_creature player_sprite player ()
     else begin
-      if c mod 2 = 0 then
-        draw_creature player_sprite player
-          () (* draw_creature enemy_sprite (player = false) () *)
+      if c mod 2 = 0 then draw_creature player_sprite player ()
       else begin
         auto_synchronize false;
-        clear_function player_hp enemy_hp (if player then 1 else 0) ();
-        (* draw_creature enemy_sprite (player = false) (); *)
+        clear_function ();
+
         auto_synchronize true
       end;
       auto_synchronize true;
@@ -506,42 +496,3 @@ let make_grayscale sprite () =
       sprite.color_palette
 
 let reset_rgb sprite () = sprite.color_palette <- sprite.base_palette
-
-let draw_creature_effect sprite player red green blue value () =
-  let rec effect count =
-    let rr = red / value in
-    let gg = green / value in
-    let bb = blue / value in
-    add_rgb sprite rr gg bb ();
-    draw_creature sprite player ();
-    clear_text battle_bot ();
-    Input.sleep 0.025 ();
-    if count > 0 then effect (count - 1) else ()
-  in
-  effect value
-
-let lower_stat_effect sprite player () =
-  set_synced_mode true;
-  make_grayscale sprite ();
-  for _ = 0 to 2 do
-    draw_creature_effect sprite player (-100) (-100) 0 5 ();
-    draw_creature_effect sprite player 80 80 0 5 ();
-    clear_text battle_bot ()
-  done;
-  reset_rgb sprite ();
-  draw_creature sprite player ();
-  clear_text battle_bot ();
-  set_synced_mode false
-
-let raise_stat_effect sprite player () =
-  set_synced_mode true;
-  make_grayscale sprite ();
-  for _ = 0 to 2 do
-    draw_creature_effect sprite player 0 0 (-200) 5 ();
-    draw_creature_effect sprite player 0 0 200 5 ();
-    clear_text battle_bot ()
-  done;
-  reset_rgb sprite ();
-  draw_creature sprite player ();
-  clear_text battle_bot ();
-  set_synced_mode false

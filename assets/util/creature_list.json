@@ -323,8 +323,8 @@
     "catch_rate": 235,
     "base_exp": 60,
     "level_rate": "Medium",
-    "type1": "Fairy",
-    "type2": "Rock",
+    "type1": "Rock",
+    "type2": "None",
     "base_stats": {
       "hp": 62,
       "attack": 60,
