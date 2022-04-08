@@ -543,7 +543,7 @@ let get_stat creature stat =
 let get_ivs creature = creature.iv_stats
 let get_evs creature = creature.ev_stats
 let get_ev_gain creature = creature.ev_gain
-let get_exp_gain creature = creature.level * creature.base_exp
+let get_exp_gain creature = creature.level * creature.base_exp / 7
 let get_current_hp creature = creature.current_hp
 let get_specias creature = creature.species
 

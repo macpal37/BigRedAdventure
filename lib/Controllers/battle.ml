@@ -28,7 +28,7 @@ let battle_bot = load_sprite "battle_bot" GUI_Folder 3 ()
 let battle_right = load_sprite "battle_top" GUI_Folder 3 ()
 let moves_window = load_sprite "moves_window" GUI_Folder 3 ()
 let combat_hud = load_sprite "opponent_hud" GUI_Folder 3 ()
-let player_hud = load_sprite "player_hud2" GUI_Folder 3 ()
+let player_hud = load_sprite "player_hud" GUI_Folder 3 ()
 let battle_bg1 = load_sprite "battle-bg1" GUI_Folder 3 ()
 let level_up_screen = load_sprite "level_up" GUI_Folder 3 ()
 
@@ -427,14 +427,20 @@ let handle_item item () =
   | Item.Misc -> print_endline "What?"
   | Item.Medicine -> ()
   | Item.Ball ->
-      print_endline "Trying to catch hmmm.";
+      let ball_type = Item.get_id item mod 50 in
+      let modifier =
+        match ball_type with
+        | 1 -> 1.5
+        | 2 -> 2.0
+        | _ -> 1.0
+      in
 
-      let catch_results = Combat.capture battle_sim.contents in
+      let catch_results = Combat.capture battle_sim.contents modifier in
       Ui.update_all ();
       Ui.add_last_gameplay
         (Animation.capture_animation pokeball_spritesheet
            (get_front_sprite battle_sim.contents.enemy_battler.creature)
-           catch_results 0
+           catch_results ball_type
            (Combat.refresh_battle.contents
               (get_current_hp
                  battle_sim.contents.player_battler.creature)

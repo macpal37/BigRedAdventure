@@ -5,7 +5,7 @@ open Animation
 
 (* let max_creatures = 5 let max_creatures = ref 0 *)
 let party_menu_bg = load_sprite "party_menu" GUI_Folder 3 ()
-let active = load_sprite "active_party_creature3" GUI_Folder 3 ()
+let active = load_sprite "active_party_creature" GUI_Folder 3 ()
 let minimenu1 = load_sprite "party_minimenu" GUI_Folder 3 ()
 let menu_position = Util.new_point ()
 let switch_position = Util.new_point ()

@@ -239,6 +239,16 @@ let play_animation anim x y delay clear_function () =
     Input.sleep delay ()
   done
 
+let toss_ball_animation anim delay clear_function () =
+  for i = 0 to 21 do
+    let x = 114 + (20 * i) in
+    let y = ((x - 375) * (x - 375) / -250) + 500 in
+
+    sync_draw clear_function ();
+    sync_draw (draw_sprite (Array.get anim (i mod 3)) x y) ();
+    Input.sleep delay ()
+  done
+
 let capture_animation
     spritesheet
     creature
@@ -248,7 +258,10 @@ let capture_animation
     () =
   let c = spritesheet.columns in
   print_endline ("Columns: " ^ string_of_int c);
-  let x, y = (510 + 24, 430 - 24) in
+  let x, y = (510 + 30, 430 - 34) in
+  let toss_anim =
+    Array.init 3 (fun i -> get_sprite spritesheet ((i * c) + pokeball))
+  in
   let capture_anim =
     Array.init 12 (fun i ->
         get_sprite spritesheet (((i + 3) * c) + pokeball))
@@ -267,7 +280,9 @@ let capture_animation
     Array.init 6 (fun i ->
         get_sprite spritesheet (((i + 27) * c) + pokeball))
   in
-  play_animation capture_anim x y 0.05 (clear_function 2) ();
+  toss_ball_animation toss_anim 0.015 (clear_function 2) ();
+
+  play_animation capture_anim x y 0.03 (clear_function 2) ();
 
   let time = 0.075 in
   set_synced_mode true;
@@ -286,17 +301,19 @@ let capture_animation
   let time = 0.05 in
   reset_rgb creature ();
   let rec handle_shakes = function
-    | [] -> play_animation success_anim x y time (clear_function 0) ()
+    | [] -> play_animation success_anim x y 0.02 (clear_function 0) ()
     | h :: t ->
         if h then begin
           if List.length t <= 3 then
-            play_animation shake_anim x y time (clear_function 0) ();
+            play_animation shake_anim (x + 4) y 0.03 (clear_function 0)
+              ();
 
           Input.sleep (time *. 2.) ();
           handle_shakes t
         end
         else begin
-          play_animation fail_anim x y time (clear_function 0) ();
+          Input.sleep (time *. 2.) ();
+          play_animation fail_anim x y 0.03 (clear_function 0) ();
           sync_draw (clear_function 2) ()
         end
   in

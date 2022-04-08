@@ -523,7 +523,7 @@ let status_bonus st =
 (* let rec pow a b = match b with | 0. -> 1.0 | 1. -> a | c -> a *. pow
    a (c -. 1.) *)
 
-let capture brecord =
+let capture brecord modifier =
   if brecord.battle_type = Trainer then [ false; false; false; false ]
     (*Marco print a message about not being able to capture in a trainer
       battle here :D *)
@@ -537,7 +537,7 @@ let capture brecord =
     let e_rate = get_catch_rate brecord.enemy_battler.creature in
     let catch_rate1 =
       ((3.0 *. e_maxhp) -. (2.0 *. e_currhp))
-      *. e_rate *. 1.0
+      *. e_rate *. modifier
       *. status_bonus (get_status brecord.enemy_battler.creature)
     in
     let catch_rate = catch_rate1 /. (3.0 *. e_maxhp) in

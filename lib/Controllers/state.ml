@@ -19,7 +19,7 @@ let map _ = !current_state.map
 let adhoc_init () =
   Player.set_x 4 (player ());
   Player.set_y 4 (player ());
-  let rafu = Creature.create_creature "chumpi" 1 in
+  let rafu = Creature.create_creature "chumpi" 20 in
   let clefairy = Creature.create_creature "rafu" 40 in
 
   Player.add_creature rafu current_state.contents.player;
@@ -35,9 +35,15 @@ let adhoc_init () =
   add_item inventory (create_item "super repel");
   add_item inventory (create_item "max repel");
   for _ = 1 to 20 do
-    add_item inventory (create_item "pokeball")
+    add_item inventory (create_item "poke ball")
   done;
 
+  for _ = 1 to 20 do
+    add_item inventory (create_item "great ball")
+  done;
+  for _ = 1 to 20 do
+    add_item inventory (create_item "ultra ball")
+  done;
   add_item inventory (create_item "potion");
   add_item inventory (create_item "potion");
   add_item inventory (create_item "potion");

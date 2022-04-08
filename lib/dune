@@ -25,6 +25,7 @@
   ; =====Other=====
   animation
   animator
+  assets
   spritesheet
   draw
   author
