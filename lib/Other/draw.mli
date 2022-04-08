@@ -50,7 +50,6 @@ val get_dimension : sprite -> int * int
 (** [get_dimension sprite] returns the width and height of a sprite as a
     tuple.*)
 
-val set_sticky_text : bool -> unit -> unit
 val set_erase_mode : bool -> unit -> unit
 val set_synced_mode : bool -> unit
 val set_font_size : int -> unit -> unit
@@ -127,11 +126,12 @@ val draw_sprite_crop :
     draws an image from the given [sprite] representation at [x] and [y]
     with cropped based on the bounds defined*)
 
-val draw_text : string -> int -> bool -> unit -> unit
-(** [draw_text text font_size auto_scroll (_)] draws the given [text]
-    with the given [font_size]on the bottom of the screen and simulates
-    text scrolling. If [auto_scroll] is on, then it will scroll
-    automatically after a delay*)
+val draw_text : string -> int -> bool -> bool -> unit -> unit
+(** [draw_text text font_size auto_scroll sticky(_)] draws the given
+    [text] with the given [font_size]on the bottom of the screen and
+    simulates text scrolling. If [auto_scroll] is on, then it will
+    scroll automatically after a delay. If [sticky] is on, then the text
+    will remain there until new text replaces it.*)
 
 val draw_text_string : string -> unit -> unit
 (** [draw_text_string text font_size (_)] draws the given [text] with

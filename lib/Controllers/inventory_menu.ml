@@ -8,9 +8,6 @@ let display_queue = ref []
 let max_list_size = 10
 let max_items = ref 0
 let inventory_menu = load_sprite "inventory_menu" GUI_Folder 3 ()
-
-(* let item_list_bg = load_sprite "item_bag_list" GUI_Folder 3 () *)
-(* let inventory_text_bg = load_sprite "battle_bot" GUI_Folder 3 () *)
 let selected_item = ref None
 
 type menu_mode =
@@ -59,7 +56,6 @@ let draw_list () =
 let inventory_position = Util.new_point ()
 
 let draw_bag item_type () =
-  (* let w, h = Draw.get_dimension item_list_bg in *)
   Ui.add_first_background (Draw.draw_sprite inventory_menu 0 0);
   Ui.add_first_foreground
     (draw_string_colored 428 644 3 60
@@ -67,10 +63,11 @@ let draw_bag item_type () =
        (rgb 245 190 50) text_color);
 
   draw_list ();
-  Ui.add_first_foreground (fun () ->
-      set_color red;
-      set_line_width 6;
-      draw_rect 415 (575 - (40 * inventory_position.y)) 370 40)
+  if max_items.contents > 0 then
+    Ui.add_first_foreground (fun () ->
+        set_color red;
+        set_line_width 6;
+        draw_rect 415 (563 - (40 * inventory_position.y)) 370 40)
 
 let get_selected_item () =
   if List.length display_queue.contents = 0 then None
@@ -94,15 +91,19 @@ let refresh () =
   max_items.contents <- List.length (list_items bag);
   get_items_from_bag bag;
   draw_bag bag_type ();
+  print_endline ("Y: " ^ string_of_int inventory_position.y);
   inventory_position.y <-
-    Util.bound inventory_position.y 0 max_items.contents;
+    Util.bound inventory_position.y 0 (max_items.contents - 1);
+
+  print_endline ("Y: " ^ string_of_int inventory_position.y);
+
   if List.length display_queue.contents > 0 then
     let item, _ =
       List.nth display_queue.contents inventory_position.y
     in
 
     Ui.add_first_foreground
-      (draw_text_string_pos 35 142 30 40 (get_description item) white)
+      (draw_text_string_pos 35 142 40 30 (get_description item) white)
 (* else Ui.add_first_foreground (clear_text inventory_text_bg); *)
 
 let rec run_tick () =
@@ -136,10 +137,9 @@ let rec run_tick () =
       if key = 'e' then begin
         minimenu_position.y <- 0;
         let item = get_selected_item () in
-        (match item with
-        | Some i -> consume_item (Player.inventory (State.player ())) i
-        | None -> ());
 
+        (* (match item with | Some i -> consume_item (Player.inventory
+           (State.player ())) i | None -> ()); *)
         selected_item.contents <- item
       end;
       if key = 'q' then mode.contents <- Minimenu

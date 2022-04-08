@@ -43,6 +43,7 @@ val add_item : inventory -> Item.item -> unit
 
 val consume_item : inventory -> Item.item -> unit
 
-(** [consume_item inventory item] removes 1 copy of [item]] from its respective bag.
-    This call mutates the [inventory]. Raises [Insufficient r]
-    if the number of copies [r] of [item] is less than [c]*)
+(** [consume_item inventory item] removes 1 copy of [item] from its
+    respective bag. This call mutates the [inventory]. Raises
+    [Insufficient r] if the number of copies [r] of [item] is less than
+    [c]*)

@@ -51,6 +51,7 @@ type battle_record = {
 }
 
 let refresh_battle = ref (fun _ _ _ () -> ())
+let health_bar = ref (fun _ _ _ _ _ () -> ())
 let player_first = ref false
 let is_player_first () = player_first.contents
 
@@ -243,12 +244,12 @@ let stat_bound stat_val name stat_name =
          (name ^ "'s "
          ^ string_of_stat stat_name
          ^ " can't go any higher.")
-         40 true);
+         40 true false);
     false
   end
   else if stat_val < -6 then begin
     Ui.add_last_gameplay
-      (draw_text (name ^ "'s ATK can't go any lower.") 40 true);
+      (draw_text (name ^ "'s ATK can't go any lower.") 40 true false);
     false
   end
   else true
@@ -348,7 +349,7 @@ let handle_effects move attacker defender () =
                (draw_text
                   (get_nickname target.creature
                   ^ "'s " ^ string_of_stat stat ^ " " ^ state)
-                  40 true);
+                  40 true true);
              handle_stat_changes target stat stages
          | _ -> ());
         handle_effects_rec t
@@ -380,7 +381,7 @@ let exec_turn attacker defender brecord =
           Ui.add_last_gameplay
             (draw_text
                (get_nickname attacker.creature ^ " used " ^ m.move_name)
-               40 true);
+               40 true false);
 
           let dmg =
             if m.power > 0 then begin
@@ -404,30 +405,40 @@ let exec_turn attacker defender brecord =
                         (get_current_hp attacker.creature)
                         1));
 
-              let damage, is_crit, mult =
+              let damage, crit, mult =
                 damage_calc m attacker defender
               in
-              if mult <> 1.0 || is_crit then begin
-                Ui.add_last_gameplay (Draw.set_sticky_text true);
+
+              if mult <> 1.0 then
                 if mult < 1. then
                   Ui.add_last_gameplay
-                    (draw_text "It was not very effective!" 40 true)
+                    (draw_text "It was not very effective!" 40 true true)
                 else if mult > 1. then
                   Ui.add_last_gameplay
-                    (draw_text "It was super-effective!" 40 true)
+                    (draw_text "It was super-effective!" 40 true true)
                 else if mult = 0.0 then
                   Ui.add_last_gameplay
                     (draw_text
                        ("It does not affect "
                        ^ get_nickname defender.creature
                        ^ ".")
-                       40 true);
-                if is_crit then
-                  Ui.add_last_gameplay
-                    (draw_text "Critical Hit!" 40 true);
-                Ui.add_last_gameplay (Draw.set_sticky_text false)
-              end;
-
+                       40 true true);
+              Ui.add_last_gameplay
+                (health_bar.contents
+                   (get_stat attacker.creature HP)
+                   (get_current_hp attacker.creature)
+                   (get_current_hp attacker.creature)
+                   attacker.is_player true);
+              Ui.add_last_gameplay
+                (health_bar.contents
+                   (get_stat defender.creature HP)
+                   (get_current_hp defender.creature)
+                   (get_current_hp defender.creature
+                   - int_of_float damage)
+                   defender.is_player true);
+              if crit then
+                Ui.add_last_gameplay
+                  (draw_text "Critical Hit!" 40 true false);
               damage
             end
             else 0.0

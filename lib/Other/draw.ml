@@ -61,7 +61,6 @@ let create_sprite pixels palette width height dpi =
     dpi;
   }
 
-let is_sticky = ref false
 let erase_mode = ref false
 let synced_mode = ref true
 
@@ -83,7 +82,6 @@ let set_font_size size () =
 
 let get_dimension sprite = (sprite.width, sprite.height)
 let get_font_size () = !font_size
-let set_sticky_text flag () = is_sticky.contents <- flag
 let set_erase_mode flag () = erase_mode.contents <- flag
 let set_synced_mode flag = synced_mode.contents <- flag
 
@@ -227,7 +225,12 @@ let draw_sprite sprite x y () =
   usync true ()
 
 let draw_creature sprite player () =
-  if player then draw_sprite sprite 50 166 ()
+  if player then begin
+    let text_box = Graphics.get_image 3 0 797 216 in
+
+    draw_sprite sprite 50 166 ();
+    draw_image text_box 3 0
+  end
   else
     draw_sprite sprite
       (width - sprite.width - 50)
@@ -244,7 +247,7 @@ let remove_space text =
   else text
 
 let rec wait timer () =
-  if is_sticky.contents = true || timer = 0 then ()
+  if timer = 0 then ()
   else if Graphics.key_pressed () then begin
     if Graphics.read_key () = 'e' then ()
   end
@@ -259,14 +262,16 @@ let text_char_cap = ref 28
 let auto_text_time = 175000
 let set_text_char_cap cap = text_char_cap.contents <- cap
 
-let draw_text text font_size auto () =
+let draw_text text font_size auto sticky () =
   auto_synchronize true;
   set_font_size font_size ();
   set_text_char_cap 28;
   let wait_time = if auto then auto_text_time else -1 in
+  let wait_time = if sticky then 0 else wait_time in
   let char_cap = text_char_cap.contents in
 
-  clear_text battle_bot ();
+  sync_draw (clear_text battle_bot) ();
+
   set_color text_color;
   let start_x = 35 in
   let start_y = 132 in
@@ -309,13 +314,14 @@ let draw_text text font_size auto () =
         draw_chars char_list;
         if start == max then begin
           wait wait_time ();
-          if is_sticky.contents = false then clear_text battle_bot ();
+          if sticky then sync_draw (clear_text battle_bot) ();
+
           set_color text_color;
           scroll_text 0 max t
         end
         else scroll_text (start + 1) max t
   in
-  (* clear_text battle_bot (); *)
+
   set_color text_color;
   scroll_text 0 1 levels;
   auto_synchronize false
@@ -374,9 +380,7 @@ let draw_text_string text () =
   let len = String.length text in
   let levels = len / char_cap in
   let rec scroll_text text start max =
-    if start mod 3 = 0 then
-      if start <> 0 && is_sticky.contents = false then
-        set_color text_color;
+    if start mod 3 = 0 then if start <> 0 then set_color text_color;
     if start <> max + 1 then begin
       let text = remove_space text in
       let short_text =
@@ -469,7 +473,7 @@ let damage_render player_sprite player clear_function () =
     end
   in
   damage_render_rec 7 ();
-
+  auto_synchronize false;
   set_color text_color
 
 let add_rgb sprite red green blue () =

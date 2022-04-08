@@ -147,11 +147,7 @@ let draw_exp_bar max before after xh yh hwidth hheight () =
    render_bar_progress before_bar after_bar);
 
   set_color text_color;
-  if before <> after then begin
-    set_sticky_text false ();
-    (* Draw.wait (-1) (); *)
-    auto_synchronize false
-  end
+  if before <> after then auto_synchronize false
 
 let draw_creature_effect sprite player red green blue value () =
   let rec effect count =
@@ -160,7 +156,6 @@ let draw_creature_effect sprite player red green blue value () =
     let bb = blue / value in
     add_rgb sprite rr gg bb ();
     draw_creature sprite player ();
-    clear_text battle_bot ();
     Input.sleep 0.025 ();
     if count > 0 then effect (count - 1) else ()
   in
@@ -190,7 +185,7 @@ let switch_out
   Draw.sync_draw clear_function ();
   Input.sleep time ();
 
-  draw_text ("Come back " ^ name_in ^ "!") 40 true ();
+  draw_text ("Come back " ^ name_in ^ "!") 40 true false ();
   let small3 = Draw.change_dpi switching_in 1 in
   add_rgb small3 255 255 255 ();
   draw_creature small3 player ();
@@ -202,21 +197,20 @@ let switch_out
   Input.sleep time ();
   Draw.sync_draw clear_function ();
   draw_creature switching_in player ();
-  draw_text ("Go " ^ name_out ^ "!") 40 true ();
+  draw_text ("Go " ^ name_out ^ "!") 40 true false ();
   reset_rgb switching_out ();
   reset_rgb switching_in ()
 
 let lower_stat_effect sprite player () =
   set_synced_mode true;
   make_grayscale sprite ();
+
   for _ = 0 to 2 do
     draw_creature_effect sprite player (-100) (-100) 0 5 ();
-    draw_creature_effect sprite player 80 80 0 5 ();
-    clear_text battle_bot ()
+    draw_creature_effect sprite player 80 80 0 5 ()
   done;
   reset_rgb sprite ();
   draw_creature sprite player ();
-  clear_text battle_bot ();
   set_synced_mode false
 
 let raise_stat_effect sprite player () =
@@ -263,8 +257,9 @@ let capture_animation
     Array.init 3 (fun i -> get_sprite spritesheet ((i * c) + pokeball))
   in
   let capture_anim =
-    Array.init 12 (fun i ->
-        get_sprite spritesheet (((i + 3) * c) + pokeball))
+    Array.init 13 (fun i ->
+        if i < 12 then get_sprite spritesheet (((i + 3) * c) + pokeball)
+        else get_sprite spritesheet ((18 * c) + pokeball))
   in
   let shake_anim =
     Array.init 8 (fun i ->
@@ -290,11 +285,11 @@ let capture_animation
   set_synced_mode false;
   Draw.sync_draw (clear_function 0) ();
   let small1 = Draw.change_dpi creature 2 in
-  draw_sprite small1 x (y + 40) ();
+  draw_sprite small1 (x + 20) (y + 40) ();
   Input.sleep time ();
   Draw.sync_draw (clear_function 0) ();
   let small2 = Draw.change_dpi creature 1 in
-  draw_sprite small2 (x + 40) (y + 80) ();
+  draw_sprite small2 (x + 50) (y + 60) ();
   Input.sleep time ();
   Draw.sync_draw (clear_function 0) ();
   Input.sleep time ();
@@ -313,7 +308,7 @@ let capture_animation
         end
         else begin
           Input.sleep (time *. 2.) ();
-          play_animation fail_anim x y 0.03 (clear_function 0) ();
+          play_animation fail_anim x y 0.02 (clear_function 0) ();
           sync_draw (clear_function 2) ()
         end
   in

@@ -49,6 +49,7 @@ type battle_record = {
     battle, as well as their evolving victory status.*)
 
 val refresh_battle : (int -> int -> int -> unit -> unit) ref
+val health_bar : (int -> int -> int -> bool -> bool -> unit -> unit) ref
 val empty_battle : battle_record
 val is_player_first : unit -> bool
 

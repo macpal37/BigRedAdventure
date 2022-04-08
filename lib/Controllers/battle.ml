@@ -24,7 +24,7 @@ let captured_creature = ref Option.None
 (***************     Loading Some Assets     *********************)
 (*****************************************************************)
 
-let battle_bot = load_sprite "battle_bot" GUI_Folder 3 ()
+(* let battle_bot = load_sprite "battle_bot" GUI_Folder 3 () *)
 let battle_right = load_sprite "battle_top" GUI_Folder 3 ()
 let moves_window = load_sprite "moves_window" GUI_Folder 3 ()
 let combat_hud = load_sprite "opponent_hud" GUI_Folder 3 ()
@@ -96,7 +96,6 @@ let draw_health_bar_combat max before after player animate () =
   let xh, yh =
     if player then (width - hwidth - 31 - 10, 296) else (130, 615)
   in
-
   draw_health_bar max before after xh yh hwidth hheight player animate
     ()
 
@@ -283,12 +282,11 @@ let handle_exp player_creature enemy_creature () =
   let exp_event target player =
     let curr_level = get_level target in
     let exp_list = add_exp target exp_gain in
-    (* Ui.add_last_foreground (set_sticky_text true); *)
     Ui.add_last_foreground
       (draw_text
          (get_nickname target ^ " gained " ^ string_of_int exp_gain
         ^ " EXP. Points!")
-         40 true);
+         40 true false);
     let rec level_up_handler level = function
       | [] -> ()
       | h :: t ->
@@ -302,7 +300,7 @@ let handle_exp player_creature enemy_creature () =
               (draw_text
                  (get_nickname target ^ " grew to level "
                 ^ string_of_int lvl ^ "!")
-                 40 true);
+                 40 true false);
             Ui.add_last_foreground (draw_level_up target)
           end;
           level_up_handler lvl t
@@ -348,7 +346,7 @@ let rec faint base c sprite player () =
       (0, sprite_width)
       (sprite_height - (sprite_height / c), sprite_height)
       ();
-    clear_text battle_bot ();
+    clear_text Draw.battle_bot ();
     auto_synchronize true;
     Input.sleep 0.075 ();
     faint base (c + 1) sprite player ()
@@ -372,41 +370,15 @@ let handle_combat move =
         battle_sim.contents.enemy_battler.creature )
     in
 
-    let p_maxhp, e_maxhp =
-      ((get_stats player).max_hp, (get_stats enemy).max_hp)
-    in
-
-    let player_b, enemy_b =
-      (get_current_hp player, get_current_hp enemy)
-    in
     (***=============First Half =============***)
     Combat.battle_sim_fh battle_sim.contents;
-    let player_a1, enemy_a1 =
-      (get_current_hp player, get_current_hp enemy)
-    in
-    Ui.add_last_gameplay
-      (draw_health_bar_combat p_maxhp player_b player_a1 true true);
-    Ui.add_last_gameplay
-      (draw_health_bar_combat e_maxhp enemy_b enemy_a1 false true);
     Ui.update_all ();
     (***=============Second Half =============***)
     Combat.battle_sim_sh battle_sim.contents;
-    (* if battle_sim.contents.battle_status <> Combat.Victory *)
-    let player_a2, enemy_a2 =
-      (get_current_hp player, get_current_hp enemy)
-    in
-    if battle_sim.contents.battle_status <> Combat.Victory then begin
-      Ui.add_last_gameplay
-        (draw_health_bar_combat p_maxhp player_a1 player_a2 true true);
-      Ui.add_last_foreground
-        (draw_health_bar_combat e_maxhp enemy_a1 enemy_a2 false true)
-    end;
     Ui.update_all ();
     (***============= Resolution =============***)
     if battle_sim.contents.enemy_battler.active = false then (
       combat_mode.contents <- End_Battle;
-
-      (* Ui.add_last_gameplay (set_sticky_text true); *)
       Ui.add_last_gameplay
         (animate_faint (get_front_sprite enemy) false);
       battle_sim.contents.enemy_battler.active <- false;
@@ -424,8 +396,8 @@ let pokeball_spritesheet =
 
 let handle_item item () =
   match Item.get_type item with
-  | Item.Misc -> print_endline "What?"
-  | Item.Medicine -> ()
+  | Item.Misc -> false
+  | Item.Medicine -> true
   | Item.Ball ->
       let ball_type = Item.get_id item mod 50 in
       let modifier =
@@ -453,7 +425,7 @@ let handle_item item () =
              ("You captured "
              ^ get_nickname battle_sim.contents.enemy_battler.creature
              ^ "!")
-             40 true);
+             40 true false);
         handle_exp battle_sim.contents.player_battler.creature
           battle_sim.contents.enemy_battler.creature ();
         battle_sim.contents.enemy_battler.active <- false;
@@ -465,11 +437,13 @@ let handle_item item () =
         combat_mode.contents <- End_Battle
       end
       else begin
-        Ui.add_last_foreground (draw_text "Aw... So close!" 40 true);
+        Ui.add_last_foreground
+          (draw_text "Aw... So close!" 40 true false);
         print_endline "Failure"
       end;
-      Ui.update_all ()
-  | Item.Key -> ()
+      Ui.update_all ();
+      true
+  | Item.Key -> false
 
 let refresh_battle () =
   Ui.add_last_background (draw_sprite battle_bg1 0 0);
@@ -532,7 +506,7 @@ let clear_battle p_hp e_hp state () =
           false ()
   | _ -> ());
 
-  (clear_text battle_bot) ()
+  (clear_text Draw.battle_bot) ()
 
 let move_x x () =
   match combat_mode.contents with
@@ -589,10 +563,10 @@ let rec run_tick () =
           && commands_position.y = 1
         then begin
           Inventory_menu.init ();
-
+          Ui.add_first_gameplay (clear_text Draw.battle_bot);
           match Inventory_menu.selected_item.contents with
           | Some i ->
-              handle_item i ();
+              let valid_item = handle_item i () in
               Ui.update_all ();
               Ui.add_first_background
                 (Combat.refresh_battle.contents
@@ -601,8 +575,12 @@ let rec run_tick () =
                    (get_current_hp
                       battle_sim.contents.enemy_battler.creature)
                    2);
-
-              handle_combat Creature.empty_move
+              if valid_item then begin
+                Inventory.consume_item
+                  (Player.inventory (State.player ()))
+                  i;
+                handle_combat Creature.empty_move
+              end
           | None ->
               refresh_battle ();
               Ui.update_all ()
@@ -614,9 +592,7 @@ let rec run_tick () =
           Party_menu.init true ();
           match Combat.switching_pending.contents with
           | Some c ->
-              (* Ui.add_first_foreground (draw_text "Come back!" 40
-                 true); *)
-              Ui.add_first_foreground (clear_text battle_bot);
+              Ui.add_first_foreground (clear_text Draw.battle_bot);
 
               Combat.switch_player battle_sim.contents c
                 (Player.party (State.player ()));
@@ -635,13 +611,14 @@ let rec run_tick () =
         then begin
           Combat.run_away battle_sim.contents;
           if battle_sim.contents.battle_status = Combat.Flee then begin
-            Ui.add_first_foreground (draw_text "You ran away!" 40 true);
+            Ui.add_first_foreground
+              (draw_text "You ran away!" 40 true true);
 
             combat_mode.contents <- End_Battle
           end
           else begin
             Ui.add_first_foreground
-              (draw_text "You could not run away!" 40 true);
+              (draw_text "You could not run away!" 40 true false);
             Ui.update_all ();
 
             handle_combat Creature.empty_move
@@ -653,7 +630,7 @@ let rec run_tick () =
             (draw_moves battle_sim.contents.player_battler.creature);
 
         if key = 'e' then begin
-          Ui.add_first_foreground (clear_text battle_bot);
+          Ui.add_first_foreground (clear_text Draw.battle_bot);
           let move =
             List.nth
               (get_moves battle_sim.contents.player_battler.creature)
@@ -674,14 +651,18 @@ let rec run_tick () =
           combat_mode.contents <- Commands
         else combat_mode.contents <- End_Battle
     | End_Battle ->
-        let new_party =
-          match captured_creature.contents with
-          | Some c -> battle_sim.contents.player_creatures @ [ c ]
-          | None -> battle_sim.contents.player_creatures
-        in
-        Player.set_party new_party (State.player ());
+        Player.set_party battle_sim.contents.player_creatures
+          (State.player ());
+        (* let new_party = *)
+        (match captured_creature.contents with
+        | Some c ->
+            Event_menu.init_capture c ();
+            Player.add_creature c (State.player ())
+        | None -> ());
+
+        (* in *)
         combat_mode.contents <- Exit;
-        wait (175000 * 2) ()
+        wait 175000 ()
     | Exit -> ()
   in
 
@@ -695,6 +676,7 @@ let start_battle c =
   (* enemy_active.contents <- true; *)
   captured_creature.contents <- None;
   Combat.refresh_battle.contents <- clear_battle;
+  Combat.health_bar.contents <- draw_health_bar_combat;
   Ui.add_last_background clear_screen;
   combat_mode.contents <- Commands;
 

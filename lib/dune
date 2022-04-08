@@ -2,20 +2,21 @@
 
 (library
  (name CreatureGame)
- (libraries yojson ANSITerminal graphics imagelib.unix)
+ (public_name CreatureGame)
+ (libraries yojson ANSITerminal graphics imagelib.unix stdlib)
  (modules
   ; =====Controllers=====
   battle
   controller
   inventory_menu
   creature_menu
+  event_menu
   party_menu
   menu
   state
   overworld
   state
   ; =====GAMEPLAY=====
-  camera
   combat
   creature
   item
