@@ -27,9 +27,8 @@ type status =
   | Sleep of int
   | Freeze of int
   | Poison of int
-  | Confusion of int
-  | Paralyze of int
-  | Burn of int
+  | Paralyze
+  | Burn
   | Fainted
 
 (** Represents the status of a creature*)
@@ -163,7 +162,12 @@ val get_stat : creature -> stat -> int
 val get_ivs : creature -> stats
 val get_evs : creature -> stats
 val get_ev_gain : creature -> stat * int
+val add_ev_gain : creature -> stat * int -> unit
 val get_exp_gain : creature -> int
+
+exception NoEffect
+
+val add_hp : creature -> int -> unit
 
 val get_type_mod : etype -> creature -> float
 (** [get_type_mod attack_type defender] returns the damage modification
@@ -176,8 +180,15 @@ val get_stab_mod : creature -> etype -> float
     [etype] is one of the creature's type and returns a float of the
     damage modification*)
 
-val set_status : creature -> status -> unit
-(** Mutably sets the status of a creature*)
+val apply_status : creature -> status -> unit
+(** [apply_status creature status] Applies a status effect onto a
+    creture. Raises No_Effect exception if the [creature] does not have
+    the [Healthy] status.*)
+
+val remove_status : creature -> status -> unit
+(** [remove creature status] Removes a status effect frok a creture.
+    Raises No_Effect exception if the [creature] already has the
+    [Healthy] status.*)
 
 val get_moves : creature -> move list
 (** [get_moves creature] returns all of the moves of the [creature] by

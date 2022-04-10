@@ -91,11 +91,8 @@ let refresh () =
   max_items.contents <- List.length (list_items bag);
   get_items_from_bag bag;
   draw_bag bag_type ();
-  print_endline ("Y: " ^ string_of_int inventory_position.y);
   inventory_position.y <-
     Util.bound inventory_position.y 0 (max_items.contents - 1);
-
-  print_endline ("Y: " ^ string_of_int inventory_position.y);
 
   if List.length display_queue.contents > 0 then
     let item, _ =

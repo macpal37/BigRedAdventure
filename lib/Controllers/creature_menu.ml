@@ -8,6 +8,7 @@ let menu_position = Util.new_point ()
 let party_position = Util.new_point ()
 let current_creature = ref (create_creature "clefairy" 100)
 let switch_position = Util.new_point ()
+let faint = load_sprite "faint" GUI_Folder 3 ()
 
 let move_x x () =
   if switch_position.x = -1 then begin
@@ -24,6 +25,12 @@ let move_y y () =
   end
   else if switch_position.y + y >= 0 && switch_position.y + y <= 1 then
     switch_position.y <- switch_position.y + y
+
+let draw_status status () =
+  let x, y = (56 - 20, 192 - 30) in
+  match status with
+  | Fainted -> draw_sprite faint x y ()
+  | _ -> ()
 
 let draw_stats () =
   let x, y, dif, x2 = (290, 623, 35, 556) in
@@ -125,7 +132,8 @@ let refresh () =
   let max, _, aft = get_hp_status current_creature.contents in
   Ui.add_first_gameplay
     (draw_health_bar max aft aft 56 192 180 6 true false);
-
+  Ui.add_first_gameplay
+    (draw_status (get_status current_creature.contents));
   let curr_exp, min_exp, max_exp = get_exp current_creature.contents in
   Ui.add_first_gameplay
     (draw_string_colored 20 140 1 24 "EXP:" white text_color);

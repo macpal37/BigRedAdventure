@@ -1,9 +1,16 @@
-val run_tick : unit -> unit
-val init : bool -> unit -> unit
-
 type menu =
   | MainMenu
   | MiniMenu
   | SwitchMode
-  | ItemMenu
   | Exit
+
+type combat_mode =
+  | OverworldMode
+  | BattleSwitch
+  | InventoryMode
+  | FaintedSwitch
+
+val run_tick : unit -> unit
+val init : combat_mode -> unit -> unit
+val set_current_item : Item.item -> unit
+val get_current_item : Item.item option

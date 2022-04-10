@@ -314,7 +314,7 @@ let draw_text text font_size auto sticky () =
         draw_chars char_list;
         if start == max then begin
           wait wait_time ();
-          if sticky then sync_draw (clear_text battle_bot) ();
+          if sticky = false then sync_draw (clear_text battle_bot) ();
 
           set_color text_color;
           scroll_text 0 max t

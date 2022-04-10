@@ -21,6 +21,11 @@ let renderer =
       background = [ tail ];
     }
 
+let clear_all () =
+  renderer.contents.background <- [];
+  renderer.contents.gameplay <- [];
+  renderer.contents.foreground <- []
+
 let clear_ui layer =
   match layer with
   | Background -> renderer.contents.background <- []

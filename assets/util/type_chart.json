@@ -249,5 +249,10 @@
       "Steel"
     ],
     "Immune": []
+  },
+  "None": {
+    "Supereffective": [],
+    "Resists": [],
+    "Immune": []
   }
 }

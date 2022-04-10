@@ -29,9 +29,8 @@ type status =
   | Sleep of int
   | Freeze of int
   | Poison of int
-  | Confusion of int
-  | Paralyze of int
-  | Burn of int
+  | Paralyze
+  | Burn
   | Fainted
 
 type etype =
@@ -133,17 +132,15 @@ let get_front_sprite creature = creature.front_sprite
 let set_front_sprite creature sprite = creature.front_sprite <- sprite
 let get_back_sprite creature = creature.back_sprite
 let set_back_sprite creature sprite = creature.back_sprite <- sprite
-let set_status crtr stat = crtr.current_status <- stat
 
 let string_of_status stat_var =
   match stat_var with
   | Sleep _ -> "Sleep"
   | Poison _ -> "Posion"
-  | Burn _ -> "Burn"
+  | Burn -> "Burn"
   | Freeze _ -> "Freeze"
-  | Paralyze _ -> "Paralyze"
+  | Paralyze -> "Paralyze"
   | Healthy -> "Healthy"
-  | Confusion _ -> "Confusion"
   | Fainted -> "Fainted"
 
 let get_moves creature = creature.moves
@@ -542,7 +539,50 @@ let get_stat creature stat =
 
 let get_ivs creature = creature.iv_stats
 let get_evs creature = creature.ev_stats
-let get_ev_gain creature = creature.ev_gain
+
+let get_ev_gain creature =
+  let a, b = creature.ev_gain in
+  (a, b * 2)
+
+exception NoEffect
+
+let add_hp creature amount =
+  if
+    creature.current_hp <> creature.current_stats.max_hp
+    && creature.current_status <> Fainted
+  then
+    creature.current_hp <-
+      Util.bound
+        (creature.current_hp + amount)
+        0 creature.current_stats.max_hp
+  else raise NoEffect
+
+let apply_status c s =
+  if s <> Fainted then
+    if c.current_status = Healthy then c.current_status <- s
+    else raise NoEffect
+  else c.current_status <- s
+
+let remove_status c s =
+  if c.current_status <> Healthy && c.current_status = s then
+    c.current_status <- Healthy
+  else raise NoEffect
+
+let add_ev_gain creature (stat, amount) =
+  match stat with
+  | Attack ->
+      creature.ev_stats.attack <- creature.ev_stats.attack + amount
+  | Defense ->
+      creature.ev_stats.defense <- creature.ev_stats.defense + amount
+  | Sp_Attack ->
+      creature.ev_stats.sp_attack <-
+        creature.ev_stats.sp_attack + amount
+  | Sp_Defense ->
+      creature.ev_stats.sp_defense <-
+        creature.ev_stats.sp_defense + amount
+  | Speed -> creature.ev_stats.speed <- creature.ev_stats.speed + amount
+  | _ -> ()
+
 let get_exp_gain creature = (creature.level * creature.base_exp / 5) + 1
 let get_current_hp creature = creature.current_hp
 let get_specias creature = creature.species

@@ -24,10 +24,10 @@
     "effect_chance": 10
   },
   "Growl": {
-    "power": 0,
+    "power": 100,
     "accuracy": 100,
     "pp": 40,
-    "category": "Status",
+    "category": "Physical",
     "type": "Normal",
     "description": "Growls cutely to reduce the foe's Attack.",
     "effect_ids": [

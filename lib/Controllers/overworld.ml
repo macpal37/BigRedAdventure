@@ -124,7 +124,7 @@ let rec attempt_move dx dy orie =
         encounter_anim ();
         let c = Map.encounter_creature e in
         match c with
-        | Some c -> Battle.start_battle c
+        | Some c -> Battle.start_wild_battle c
         | None -> failwith "no creature encountered"));
   Input.poll ();
   match Input.key_option () with
@@ -148,7 +148,7 @@ let run_tick _ =
   | Some 'a' -> attempt_move (-1) 0 Player.W
   | Some 's' -> attempt_move 0 (-1) Player.S
   | Some 'd' -> attempt_move 1 0 Player.E
-  | Some 'e' -> Party_menu.init false ()
+  | Some 'e' -> Party_menu.init OverworldMode ()
   | Some 'q' -> ()
   | Some k -> ignore k
   | None -> ());

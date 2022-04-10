@@ -9,6 +9,7 @@ val add_first_foreground : (unit -> unit) -> unit
 val add_first_gameplay : (unit -> unit) -> unit
 val add_first_background : (unit -> unit) -> unit
 val clear_ui : layer -> unit
+val clear_all : unit -> unit
 val add_last_foreground : (unit -> unit) -> unit
 val add_last_gameplay : (unit -> unit) -> unit
 val add_last_background : (unit -> unit) -> unit

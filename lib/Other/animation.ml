@@ -169,6 +169,7 @@ let switch_out
     name_out
     clear_function
     () =
+  clear_text battle_bot ();
   Draw.sync_draw clear_function ();
   let time = 0.075 in
   set_synced_mode true;
@@ -277,7 +278,7 @@ let capture_animation
   in
   toss_ball_animation toss_anim 0.015 (clear_function 2) ();
 
-  play_animation capture_anim x y 0.03 (clear_function 2) ();
+  play_animation capture_anim x (y + 4) 0.03 (clear_function 2) ();
 
   let time = 0.075 in
   set_synced_mode true;

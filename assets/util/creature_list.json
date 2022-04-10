@@ -194,11 +194,11 @@
       },
       {
         "move": "Crystal Barrage",
-        "level": 13
+        "level": 9
       },
       {
         "move": "Mystical Power",
-        "level": 20
+        "level": 15
       }
     ]
   },
@@ -313,15 +313,15 @@
       },
       {
         "move": "Mystical Power",
-        "level": 35
+        "level": 10
       }
     ]
   },
   "chumpi": {
     "name": "Chumpi",
     "poke_id": 15,
-    "catch_rate": 235,
-    "base_exp": 60,
+    "catch_rate": 110,
+    "base_exp": 67,
     "level_rate": "Medium",
     "type1": "Rock",
     "type2": "None",
@@ -355,7 +355,7 @@
       },
       {
         "move": "Bite",
-        "level": 20
+        "level": 18
       }
     ]
   }

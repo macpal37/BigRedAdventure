@@ -26,17 +26,17 @@
       [
         {
           "creatures": "clefairy",
-          "level_range": "10-15",
+          "level_range": "30-55",
           "encounter_rate": 0.33
         },
         {
           "creatures": "chumpi",
-          "level_range": "10-15",
+          "level_range": "10-55",
           "encounter_rate": 0.34
         },
         {
           "creatures": "stregoom",
-          "level_range": "8-12",
+          "level_range": "8-52",
           "encounter_rate": 0.33
         }
       ]
