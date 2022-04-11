@@ -29,9 +29,8 @@ type status =
   | Sleep of int
   | Freeze of int
   | Poison of int
-  | Confusion of int
-  | Paralyze of int
-  | Burn of int
+  | Paralyze
+  | Burn
   | Fainted
 
 type etype =
@@ -42,7 +41,19 @@ type etype =
   | Fairy
   | Rock
   | Ghost
+  | Dark
+  | Steel
+  | Electric
+  | Poison
+  | Psychic
+  | Ground
+  | Dragon
+  | Bug
+  | Ice
+  | Fighting
   | None
+(* type etype = | Neutral | Fire | Water | Air | Earth | Electric | Ice
+   | Metal | Acid | Light | Shadow | Specter | Nature | Cosmic | None *)
 
 type leveling_rate =
   | Fast
@@ -73,7 +84,8 @@ type move = {
   etype : etype;
   category : move_catgeory;
   description : string;
-  effect_id : int;
+  effect_ids : int list;
+  effect_chance : int;
 }
 
 let empty_move =
@@ -86,7 +98,8 @@ let empty_move =
     etype = None;
     category = Status;
     description = "";
-    effect_id = 0;
+    effect_ids = [ -1 ];
+    effect_chance = 0;
   }
 
 type creature = {
@@ -112,23 +125,22 @@ type creature = {
   mutable moves : move list;
   mutable front_sprite : Draw.sprite;
   mutable back_sprite : Draw.sprite;
+  shiny : bool;
 }
 
 let get_front_sprite creature = creature.front_sprite
 let set_front_sprite creature sprite = creature.front_sprite <- sprite
 let get_back_sprite creature = creature.back_sprite
 let set_back_sprite creature sprite = creature.back_sprite <- sprite
-let set_status crtr stat = crtr.current_status <- stat
 
 let string_of_status stat_var =
   match stat_var with
   | Sleep _ -> "Sleep"
   | Poison _ -> "Posion"
-  | Burn _ -> "Burn"
+  | Burn -> "Burn"
   | Freeze _ -> "Freeze"
-  | Paralyze _ -> "Paralyze"
+  | Paralyze -> "Paralyze"
   | Healthy -> "Healthy"
-  | Confusion _ -> "Confusion"
   | Fainted -> "Fainted"
 
 let get_moves creature = creature.moves
@@ -154,6 +166,15 @@ let add_pp creature move_name amount =
   move.curr_pp <- total_pp
 
 let get_status creature = creature.current_status
+
+let string_of_stat_short stat_var =
+  match stat_var with
+  | HP -> "HP"
+  | Attack -> "ATK"
+  | Defense -> "DEF"
+  | Sp_Attack -> "S.ATK"
+  | Sp_Defense -> "S.DEF"
+  | Speed -> "SPD"
 
 let string_of_stat stat_var =
   match stat_var with
@@ -183,6 +204,16 @@ let string_of_etype etype_var =
   | Fairy -> "Fairy"
   | Rock -> "Rock"
   | Ghost -> "Ghost"
+  | Dark -> "Dark"
+  | Steel -> "Steel"
+  | Electric -> "Electric"
+  | Poison -> "Poison"
+  | Psychic -> "Psychic"
+  | Ground -> "Ground"
+  | Dragon -> "Dragon"
+  | Bug -> "Bug"
+  | Ice -> "Ice"
+  | Fighting -> "Fighting"
   | _ -> "None"
 
 let etype_of_string etype_string =
@@ -194,7 +225,31 @@ let etype_of_string etype_string =
   | "Fairy" -> Fairy
   | "Rock" -> Rock
   | "Ghost" -> Ghost
+  | "Dark" -> Dark
+  | "Steel" -> Steel
+  | "Electric" -> Electric
+  | "Poison" -> Poison
+  | "Psychic" -> Psychic
+  | "Ground" -> Ground
+  | "Dragon" -> Dragon
+  | "Bug" -> Bug
+  | "Ice" -> Ice
+  | "Fighting" -> Fighting
   | _ -> None
+
+(* let string_of_etype etype_var = match etype_var with | Neutral ->
+   "Neutral" | Fire -> "Fire" | Water -> "Water" | Air -> "Air" | Nature
+   -> "Nature" | Light -> "Light" | Earth -> "Earth" | Specter ->
+   "Specter" | Shadow -> "Shadow" | Metal -> "Metal" | Electric ->
+   "Electric" | Acid -> "Acid" | Cosmic -> "Cosmic" | Ice -> "Ice" | _
+   -> "None" *)
+
+(* let etype_of_string etype_string = match etype_string with |
+   "Neutral" -> Neutral | "Fire" -> Fire | "Water" -> Water | "Nature"
+   -> Nature | "Light" -> Light | "Earth" -> Earth | "Specter" ->
+   Specter | "Shadow" -> Shadow | "Metal" -> Metal | "Electric" ->
+   Electric | "Acid" -> Acid | "Cosmic" -> Cosmic | "Ice" -> Ice | _ ->
+   None *)
 
 let category_of_string cat_string =
   match cat_string with
@@ -245,7 +300,9 @@ let parse_move name json =
     category =
       category_of_string (json |> member "category" |> to_string);
     description = json |> member "description" |> to_string;
-    effect_id = json |> member "effect_ids" |> to_int;
+    effect_ids =
+      json |> member "effect_ids" |> to_list |> List.map to_int;
+    effect_chance = json |> member "effect_chance" |> to_int;
   }
 
 (**=============== Moves ============**)
@@ -400,7 +457,11 @@ let exp_calc level rate =
 
 let curr_hp_cache = ref 0
 
-let creature_from_json json level =
+let create_creature name level =
+  let json =
+    Yojson.Basic.from_file "assets/util/creature_list.json"
+    |> member name
+  in
   Random.self_init ();
   let name = json |> member "name" |> to_string in
   let bstats = stats_of_json (json |> member "base_stats") in
@@ -414,6 +475,11 @@ let creature_from_json json level =
     json |> member "learnset" |> to_list |> List.map parse_learn_set
   in
   let shiny_chance = Random.int 100 = 0 in
+  let sprite_sheet =
+    Spritesheet.init_spritesheet
+      ("assets/creature_sprites/" ^ name ^ ".png")
+      80 80 3
+  in
   curr_hp_cache.contents <- curr_stats.max_hp;
   {
     nickname = name;
@@ -439,33 +505,28 @@ let creature_from_json json level =
     learnset;
     moves = generate_moves learnset level;
     front_sprite =
-      (if name = "#" then Draw.empty_sprite
-      else if shiny_chance = false then
-        Draw.load_creature (String.lowercase_ascii name ^ "_front") ()
-      else
-        Draw.load_creature
-          (String.lowercase_ascii name ^ "_front_shiny")
-          ());
-    (* Draw.load_creature ("jollitriks" ^ "_front") ()); *)
+      Spritesheet.get_sprite sprite_sheet
+        (if shiny_chance then 1 else 0);
     back_sprite =
-      (if name = "#" then Draw.empty_sprite
-      else if shiny_chance = false then
-        Draw.load_creature (String.lowercase_ascii name ^ "_back") ()
-      else
-        Draw.load_creature
-          (String.lowercase_ascii name ^ "_back_shiny")
-          ());
+      Spritesheet.get_sprite sprite_sheet
+        (if shiny_chance then 3 else 2);
+    shiny = shiny_chance;
   }
-
-let create_creature name level =
-  let json = Yojson.Basic.from_file "assets/util/creature_list.json" in
-  creature_from_json (json |> member name) level
 
 let get_nature creature =
   (creature.nature.name, creature.nature.buff, creature.nature.nerf)
 
 let get_types creature = creature.etypes
 let get_stats creature = creature.current_stats
+
+let get_stat2 stats stat =
+  match stat with
+  | HP -> stats.max_hp
+  | Attack -> stats.attack
+  | Defense -> stats.defense
+  | Sp_Attack -> stats.sp_attack
+  | Sp_Defense -> stats.sp_defense
+  | Speed -> stats.speed
 
 let get_stat creature stat =
   match stat with
@@ -478,8 +539,51 @@ let get_stat creature stat =
 
 let get_ivs creature = creature.iv_stats
 let get_evs creature = creature.ev_stats
-let get_ev_gain creature = creature.ev_gain
-let get_exp_gain creature = creature.level * creature.base_exp / 7
+
+let get_ev_gain creature =
+  let a, b = creature.ev_gain in
+  (a, b * 2)
+
+exception NoEffect
+
+let add_hp creature amount =
+  if
+    creature.current_hp <> creature.current_stats.max_hp
+    && creature.current_status <> Fainted
+  then
+    creature.current_hp <-
+      Util.bound
+        (creature.current_hp + amount)
+        0 creature.current_stats.max_hp
+  else raise NoEffect
+
+let apply_status c s =
+  if s <> Fainted then
+    if c.current_status = Healthy then c.current_status <- s
+    else raise NoEffect
+  else c.current_status <- s
+
+let remove_status c s =
+  if c.current_status <> Healthy && c.current_status = s then
+    c.current_status <- Healthy
+  else raise NoEffect
+
+let add_ev_gain creature (stat, amount) =
+  match stat with
+  | Attack ->
+      creature.ev_stats.attack <- creature.ev_stats.attack + amount
+  | Defense ->
+      creature.ev_stats.defense <- creature.ev_stats.defense + amount
+  | Sp_Attack ->
+      creature.ev_stats.sp_attack <-
+        creature.ev_stats.sp_attack + amount
+  | Sp_Defense ->
+      creature.ev_stats.sp_defense <-
+        creature.ev_stats.sp_defense + amount
+  | Speed -> creature.ev_stats.speed <- creature.ev_stats.speed + amount
+  | _ -> ()
+
+let get_exp_gain creature = (creature.level * creature.base_exp / 5) + 1
 let get_current_hp creature = creature.current_hp
 let get_specias creature = creature.species
 
@@ -526,7 +630,6 @@ let get_stab_mod creature etype =
 (** [get_level creature] returns a [creature]'s current level*)
 let get_level creature = creature.level
 
-(** [get_exp creature] returns a [creature]'s current exp*)
 let get_exp creature =
   ( creature.exp,
     exp_calc creature.level creature.leveling_rate,
@@ -545,7 +648,7 @@ let print_level_up creature () =
   print_endline
     ("HP:\t"
     ^ string_of_int old_stats.max_hp
-    ^ "\t--> "
+    ^ "\t-->\n   "
     ^ string_of_int new_stats.max_hp
     ^ "\t+"
     ^ string_of_int (new_stats.max_hp - old_stats.max_hp));
@@ -587,29 +690,52 @@ let print_level_up creature () =
   print_endline
     "======================================================="
 
+let level_up creature () =
+  let before_hp = creature.current_stats.max_hp in
+  print_level_up creature ();
+  creature.level <- creature.level + 1;
+  creature.current_stats <-
+    calculate_stats creature.level creature.base_stats creature.iv_stats
+      creature.ev_stats creature.nature;
+  creature.current_hp <-
+    creature.current_hp + (creature.current_stats.max_hp - before_hp)
+
 (** [add_exp creature amount] add [amount] to the current exp of
     [creature]*)
 let add_exp creature amount =
   let cap_exp = exp_calc (creature.level + 1) creature.leveling_rate in
   let exp_dif = cap_exp - creature.exp in
 
-  let rec levelup_check amount dif =
+  let rec levelup_check amount dif lst lvl =
     if amount > dif then begin
-      print_level_up creature ();
-      creature.level <- creature.level + 1;
+      let c, min, max =
+        ( creature.exp,
+          exp_calc lvl creature.leveling_rate,
+          exp_calc (lvl + 1) creature.leveling_rate )
+      in
+
+      let lvl = lvl + 1 in
+      (* print_endline ("LEVEL: " ^ string_of_int lvl); *)
       creature.exp <- creature.exp + dif;
-      creature.current_stats <-
-        calculate_stats creature.level creature.base_stats
-          creature.iv_stats creature.ev_stats creature.nature;
+
+      (* level_up creature (); *)
       let new_dif =
-        exp_calc (creature.level + 1) creature.leveling_rate
-        - creature.exp
+        exp_calc (lvl + 1) creature.leveling_rate - creature.exp
       in
       levelup_check (amount - dif) new_dif
+        ((max - min, c - min, max - min, lvl) :: lst)
+        lvl
     end
-    else creature.exp <- creature.exp + amount
+    else
+      let c, min, max =
+        ( creature.exp,
+          exp_calc lvl creature.leveling_rate,
+          exp_calc (lvl + 1) creature.leveling_rate )
+      in
+      creature.exp <- creature.exp + amount;
+      (max - min, c - min, c - min + amount, lvl) :: lst
   in
-  levelup_check amount exp_dif
+  levelup_check amount exp_dif [] creature.level
 
 (** [get_nickname creature] returns a [creature]'s nickname*)
 let get_nickname creature = creature.nickname
@@ -619,10 +745,28 @@ let set_nickname creature nickname = creature.nickname <- nickname
 let get_color_from_etype etype =
   match etype with
   | Normal -> rgb 196 196 196
-  | Fire -> rgb 235 47 0
-  | Water -> rgb 13 150 255
-  | Grass -> rgb 0 168 3
-  | Fairy -> rgb 255 122 244
+  | Fire -> rgb 239 128 48
+  | Water -> rgb 103 144 240
+  | Grass -> rgb 120 200 79
+  | Fairy -> rgb 238 153 172
   | Ghost -> rgb 102 46 145
-  | Rock -> rgb 108 75 50
+  | Rock -> rgb 184 160 56
+  | Dark -> rgb 112 88 72
+  | Steel -> rgb 184 184 208
+  | Electric -> rgb 248 207 48
+  | Poison -> rgb 160 64 159
+  | Psychic -> rgb 248 87 135
+  | Ground -> rgb 224 192 104
+  | Dragon -> rgb 112 56 248
+  | Bug -> rgb 168 184 31
+  | Ice -> rgb 152 216 216
+  | Fighting -> rgb 192 48 40
   | _ -> rgb 0 0 0
+
+(* let get_color_from_etype etype = match etype with | Neutral -> rgb
+   196 196 196 | Fire -> rgb 239 128 48 | Water -> rgb 103 144 240 |
+   Nature -> rgb 120 200 79 | Light -> rgb 238 153 172 | Specter -> rgb
+   102 46 145 | Earth -> rgb 184 160 56 | Shadow -> rgb 112 88 72 |
+   Metal -> rgb 184 184 208 | Electric -> rgb 248 207 48 | Acid -> rgb
+   160 64 159 | Air -> rgb 224 192 104 | Cosmic -> rgb 112 56 248 | Ice
+   -> rgb 152 216 216 | _ -> rgb 0 0 0 *)

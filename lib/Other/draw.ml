@@ -61,7 +61,6 @@ let create_sprite pixels palette width height dpi =
     dpi;
   }
 
-let is_sticky = ref false
 let erase_mode = ref false
 let synced_mode = ref true
 
@@ -83,7 +82,6 @@ let set_font_size size () =
 
 let get_dimension sprite = (sprite.width, sprite.height)
 let get_font_size () = !font_size
-let set_sticky_text flag () = is_sticky.contents <- flag
 let set_erase_mode flag () = erase_mode.contents <- flag
 let set_synced_mode flag = synced_mode.contents <- flag
 
@@ -96,15 +94,13 @@ let change_dpi sprite dpi =
   }
 
 let sync_draw draw () =
-  usync false ();
+  sync false ();
   draw ();
-  usync true ()
+  sync true ()
 
 let clear_screen () =
-  (* auto_synchronize false; *)
   set_color (rgb 255 255 255);
-  sync_draw (fun () -> fill_rect 0 0 width height) ()
-(* auto_synchronize true *)
+  fill_rect 0 0 width height
 
 let draw_pixel size x y () =
   fill_rect (x - (size / 2)) (y - (size / 2)) size size
@@ -229,7 +225,12 @@ let draw_sprite sprite x y () =
   usync true ()
 
 let draw_creature sprite player () =
-  if player then draw_sprite sprite 50 166 ()
+  if player then begin
+    let text_box = Graphics.get_image 3 0 797 216 in
+
+    draw_sprite sprite 50 166 ();
+    draw_image text_box 3 0
+  end
   else
     draw_sprite sprite
       (width - sprite.width - 50)
@@ -246,7 +247,7 @@ let remove_space text =
   else text
 
 let rec wait timer () =
-  if is_sticky.contents = true || timer = 0 then ()
+  if timer = 0 then ()
   else if Graphics.key_pressed () then begin
     if Graphics.read_key () = 'e' then ()
   end
@@ -261,15 +262,16 @@ let text_char_cap = ref 28
 let auto_text_time = 175000
 let set_text_char_cap cap = text_char_cap.contents <- cap
 
-let draw_text text font_size auto () =
+let draw_text text font_size auto sticky () =
   auto_synchronize true;
-  set_synced_mode true;
   set_font_size font_size ();
   set_text_char_cap 28;
   let wait_time = if auto then auto_text_time else -1 in
+  let wait_time = if sticky then 0 else wait_time in
   let char_cap = text_char_cap.contents in
 
-  clear_text battle_bot ();
+  sync_draw (clear_text battle_bot) ();
+
   set_color text_color;
   let start_x = 35 in
   let start_y = 132 in
@@ -312,16 +314,16 @@ let draw_text text font_size auto () =
         draw_chars char_list;
         if start == max then begin
           wait wait_time ();
-          if is_sticky.contents = false then clear_text battle_bot ();
+          if sticky = false then sync_draw (clear_text battle_bot) ();
+
           set_color text_color;
           scroll_text 0 max t
         end
         else scroll_text (start + 1) max t
   in
-  (* clear_text battle_bot (); *)
+
   set_color text_color;
   scroll_text 0 1 levels;
-  set_synced_mode false;
   auto_synchronize false
 
 let draw_text_string_pos x y font_size char_cap text color () =
@@ -378,9 +380,7 @@ let draw_text_string text () =
   let len = String.length text in
   let levels = len / char_cap in
   let rec scroll_text text start max =
-    if start mod 3 = 0 then
-      if start <> 0 && is_sticky.contents = false then
-        set_color text_color;
+    if start mod 3 = 0 then if start <> 0 then set_color text_color;
     if start <> max + 1 then begin
       let text = remove_space text in
       let short_text =
@@ -432,12 +432,19 @@ let draw_gradient w h =
   gradient arr w h;
   draw_image (make_image arr) 0 0
 
-let draw_string_colored x y shadow_offset font_size text custom_color ()
-    =
+let draw_string_colored
+    x
+    y
+    shadow_offset
+    font_size
+    text
+    custom_color
+    shadow_color
+    () =
   let cache_font_size = get_font_size () in
   set_font_size font_size ();
   moveto x y;
-  set_color (rgb 0 0 0);
+  set_color shadow_color;
   draw_string text;
   moveto (x + shadow_offset - 1) (y + shadow_offset);
   set_color custom_color;
@@ -445,25 +452,28 @@ let draw_string_colored x y shadow_offset font_size text custom_color ()
   set_color text_color;
   set_font_size cache_font_size ()
 
-let damage_render sprite player () =
-  set_synced_mode true;
-  let rec damage_render_rec c creature_pixels player () =
-    if c = 0 then draw_creature creature_pixels player ()
+let damage_render player_sprite player clear_function () =
+  let rec damage_render_rec c () =
+    set_synced_mode false;
+    auto_synchronize false;
+    if c = 0 then
+      (* draw_creature enemy_sprite (player = false) (); *)
+      draw_creature player_sprite player ()
     else begin
-      if c mod 2 = 0 then draw_creature creature_pixels player ()
+      if c mod 2 = 0 then draw_creature player_sprite player ()
       else begin
-        set_color blue;
+        auto_synchronize false;
+        clear_function ();
 
-        set_erase_mode true ();
-        draw_creature creature_pixels player ();
-        set_erase_mode false ()
+        auto_synchronize true
       end;
+      auto_synchronize true;
       Input.sleep 0.1 ();
-      damage_render_rec (c - 1) creature_pixels player ()
+      damage_render_rec (c - 1) ()
     end
   in
-  damage_render_rec 7 sprite player ();
-  set_synced_mode false;
+  damage_render_rec 7 ();
+  auto_synchronize false;
   set_color text_color
 
 let add_rgb sprite red green blue () =
@@ -490,37 +500,3 @@ let make_grayscale sprite () =
       sprite.color_palette
 
 let reset_rgb sprite () = sprite.color_palette <- sprite.base_palette
-
-let draw_creature_effect sprite player red green blue value () =
-  let rec effect count =
-    let rr = red / value in
-    let gg = green / value in
-    let bb = blue / value in
-    add_rgb sprite rr gg bb ();
-    draw_creature sprite player ();
-    Input.sleep 0.025 ();
-    if count > 0 then effect (count - 1) else ()
-  in
-  effect value
-
-let lower_stat_effect sprite player () =
-  set_synced_mode true;
-  make_grayscale sprite ();
-  for _ = 0 to 2 do
-    draw_creature_effect sprite player (-100) (-100) 0 5 ();
-    draw_creature_effect sprite player 80 80 0 5 ()
-  done;
-  reset_rgb sprite ();
-  draw_creature sprite player ();
-  set_synced_mode false
-
-let raise_stat_effect sprite player () =
-  set_synced_mode true;
-  make_grayscale sprite ();
-  for _ = 0 to 2 do
-    draw_creature_effect sprite player 0 0 (-200) 5 ();
-    draw_creature_effect sprite player 0 0 200 5 ()
-  done;
-  reset_rgb sprite ();
-  draw_creature sprite player ();
-  set_synced_mode false

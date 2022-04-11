@@ -4,6 +4,8 @@ let width = 800
 let height = 720
 let tick_rate = 0.016
 
+(* let tick_rate = 0.0 *)
+
 type modes =
   | ModeOverworld
   | ModeBattle
@@ -57,9 +59,10 @@ let main _ =
   State.adhoc_init ();
   Draw.set_synced_mode false;
   let mode = ModeOverworld in
-  (*Battle.start_battle ();*)
-  (* Party_menu.init (); *)
-  moveto 100 200;
+
+  (* Battle.start_battle (Creature.create_creature "rafu" 10); *)
+
+  (* moveto 100 200; *)
   set_font "-*-fixed-bold-r-semicondensed--40-*-*-*-*-*-iso8859-1";
   setup ();
   try event_loop mode

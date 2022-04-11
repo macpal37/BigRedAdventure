@@ -47,11 +47,23 @@
     "description": "Revives a fainted creature to full hp.",
     "cost": 1500
   },
-  "pokeball": {
+  "poke ball": {
     "id": 50,
     "type": "Ball",
-    "description": "An item for catching Creatures.",
+    "description": "A device for catching wild Creatures. It is thrown like a ball at the target.",
     "cost": 200
+  },
+  "great ball": {
+    "id": 51,
+    "type": "Ball",
+    "description": "A high-performance Ball that provides a higher catch rate than a standard pokeball.",
+    "cost": 600
+  },
+  "ultra ball": {
+    "id": 52,
+    "type": "Ball",
+    "description": "An ultra-performance Ball that provides a higher catch rate than a Great Ball.",
+    "cost": 1200
   },
   "repel": {
     "id": 100,

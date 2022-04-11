@@ -50,7 +50,6 @@ val get_dimension : sprite -> int * int
 (** [get_dimension sprite] returns the width and height of a sprite as a
     tuple.*)
 
-val set_sticky_text : bool -> unit -> unit
 val set_erase_mode : bool -> unit -> unit
 val set_synced_mode : bool -> unit
 val set_font_size : int -> unit -> unit
@@ -88,8 +87,16 @@ val clear_text : sprite -> unit -> unit
 (** [clear_text clear_sprite] Clears the text with the givn sprite. *)
 
 val draw_string_colored :
-  int -> int -> int -> int -> string -> Graphics.color -> unit -> unit
-(** [draw_string_colored x y shadow_offset font_size text text_color]
+  int ->
+  int ->
+  int ->
+  int ->
+  string ->
+  Graphics.color ->
+  Graphics.color ->
+  unit ->
+  unit
+(** [draw_string_colored x y shadow_offset font_size text text_color shadow_color]
     Draws the [text] at [x,y] of the screen with the given [text_color].
     [shadow_offset] represents the offset disstance of the shodow to the
     text, when drawn. *)
@@ -119,11 +126,12 @@ val draw_sprite_crop :
     draws an image from the given [sprite] representation at [x] and [y]
     with cropped based on the bounds defined*)
 
-val draw_text : string -> int -> bool -> unit -> unit
-(** [draw_text text font_size auto_scroll (_)] draws the given [text]
-    with the given [font_size]on the bottom of the screen and simulates
-    text scrolling. If [auto_scroll] is on, then it will scroll
-    automatically after a delay*)
+val draw_text : string -> int -> bool -> bool -> unit -> unit
+(** [draw_text text font_size auto_scroll sticky(_)] draws the given
+    [text] with the given [font_size]on the bottom of the screen and
+    simulates text scrolling. If [auto_scroll] is on, then it will
+    scroll automatically after a delay. If [sticky] is on, then the text
+    will remain there until new text replaces it.*)
 
 val draw_text_string : string -> unit -> unit
 (** [draw_text_string text font_size (_)] draws the given [text] with
@@ -136,7 +144,7 @@ val draw_text_string_pos :
     the given [text] with the given [font_size]on the [x y]. There is no
     text scroll.*)
 
-val damage_render : sprite -> bool -> unit -> unit
+val damage_render : sprite -> bool -> (unit -> unit) -> unit -> unit
 (** [damage_render sprite is_player (_)] performs the damage animation
     of either the enemy or the player depedning on the [is_player]
     boolean *)
@@ -150,14 +158,7 @@ val make_grayscale : sprite -> unit -> unit
 val reset_rgb : sprite -> unit -> unit
 (** (reset_rgb sprite () ) resets the rgb values of the sprite.*)
 
-val draw_creature_effect :
-  sprite -> bool -> int -> int -> int -> int -> unit -> unit
-
-val lower_stat_effect : sprite -> bool -> unit -> unit
-(** Cool Random Effects :)*)
-
-val raise_stat_effect : sprite -> bool -> unit -> unit
-(** Cool Random Effects :)*)
+val add_rgb : sprite -> int -> int -> int -> unit -> unit
 
 val create_sprite :
   int list -> Graphics.color list -> int -> int -> int -> sprite

@@ -27,9 +27,8 @@ type status =
   | Sleep of int
   | Freeze of int
   | Poison of int
-  | Confusion of int
-  | Paralyze of int
-  | Burn of int
+  | Paralyze
+  | Burn
   | Fainted
 
 (** Represents the status of a creature*)
@@ -43,6 +42,8 @@ type stat =
   | Speed
 
 (** Represents a single stat name of a creature*)
+(* type etype = | Neutral | Fire | Water | Air | Earth | Electric | Ice
+   | Metal | Acid | Light | Shadow | Specter | Nature | Cosmic | None *)
 
 type etype =
   | Normal
@@ -52,6 +53,16 @@ type etype =
   | Fairy
   | Rock
   | Ghost
+  | Dark
+  | Steel
+  | Electric
+  | Poison
+  | Psychic
+  | Ground
+  | Dragon
+  | Bug
+  | Ice
+  | Fighting
   | None
 
 (** Represents the elemental type of a creature*)
@@ -74,7 +85,8 @@ type move = {
   etype : etype;
   category : move_catgeory;
   description : string;
-  effect_id : int;
+  effect_ids : int list;
+  effect_chance : int;
 }
 (** Loads and handles all the moves performed during combat*)
 
@@ -100,6 +112,9 @@ val mod_stat : stats -> stat -> float -> int
     by [power]*)
 
 (** {1 String Formatting}*)
+
+val string_of_stat_short : stat -> string
+(** [stat_to_string stat] returns a string representation of the [stat].*)
 
 val string_of_stat : stat -> string
 (** [stat_to_string stat] returns a string representation of the [stat].*)
@@ -136,6 +151,8 @@ val get_types : creature -> etype * etype
 (** [get_types creature] returns the types of the creature as a tuple of
     strings*)
 
+val get_stat2 : stats -> stat -> int
+
 val get_stats : creature -> stats
 (** [get_type_mod attack_type defender] returns the damage modification
     caused by type resistances, weaknesses or immunities from the
@@ -145,7 +162,12 @@ val get_stat : creature -> stat -> int
 val get_ivs : creature -> stats
 val get_evs : creature -> stats
 val get_ev_gain : creature -> stat * int
+val add_ev_gain : creature -> stat * int -> unit
 val get_exp_gain : creature -> int
+
+exception NoEffect
+
+val add_hp : creature -> int -> unit
 
 val get_type_mod : etype -> creature -> float
 (** [get_type_mod attack_type defender] returns the damage modification
@@ -158,8 +180,15 @@ val get_stab_mod : creature -> etype -> float
     [etype] is one of the creature's type and returns a float of the
     damage modification*)
 
-val set_status : creature -> status -> unit
-(** Mutably sets the status of a creature*)
+val apply_status : creature -> status -> unit
+(** [apply_status creature status] Applies a status effect onto a
+    creture. Raises No_Effect exception if the [creature] does not have
+    the [Healthy] status.*)
+
+val remove_status : creature -> status -> unit
+(** [remove creature status] Removes a status effect frok a creture.
+    Raises No_Effect exception if the [creature] already has the
+    [Healthy] status.*)
 
 val get_moves : creature -> move list
 (** [get_moves creature] returns all of the moves of the [creature] by
@@ -172,12 +201,18 @@ val get_catch_rate : creature -> float
 val get_level : creature -> int
 (** [get_level creature] returns a [creature]'s current level*)
 
-val get_exp : creature -> int * int * int
-(** [get_exp creature] returns a [creature]'s current exp*)
+val level_up : creature -> unit -> unit
+(** [level_up creature] levels up the creature by one level, modifying
+    its stats.*)
 
-val add_exp : creature -> int -> unit
+val get_exp : creature -> int * int * int
+(** [get_exp creature] returns a tuple that represents the creautre's
+    exp [curr,min,max]*)
+
+val add_exp : creature -> int -> (int * int * int * int) list
 (** [add_exp creature amount] add [amount] to the current exp of
-    [creature]*)
+    [creature]. Returns a report of adding the exp as a ruple
+    [max, before, after, level]*)
 
 val add_pp : creature -> string -> int -> unit
 

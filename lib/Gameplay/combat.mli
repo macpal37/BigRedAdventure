@@ -26,7 +26,7 @@ type battle_creature = {
   mutable current_move : move_status;
   mutable stat_changes : stats;
   mutable status_effect : status;
-  mutable inactive : bool;
+  mutable active : bool;
   is_player : bool;
 }
 
@@ -41,12 +41,15 @@ type battle_record = {
   mutable enemy_battler : battle_creature;
   mutable turn_counter : int;
   mutable turn_pos : turn_status;
+  mutable creatures_switched : creature list;
 }
 
 (** The abstract type that represents the standing data of a Pokemon
     battle at a given turn. This type will store the pokemon engaged in
     battle, as well as their evolving victory status.*)
 
+val refresh_battle : (int -> int -> int -> unit -> unit) ref
+val health_bar : (int -> int -> int -> bool -> bool -> unit -> unit) ref
 val empty_battle : battle_record
 val is_player_first : unit -> bool
 
@@ -77,7 +80,7 @@ val run_away : battle_record -> unit
 (**Given a battle record, checks if the player is able to run away. If
    so, return battle_record with victory status set as Flee.*)
 
-val capture : battle_record -> unit
+val capture : battle_record -> float -> bool list
 (**Given a battle record, checks if the player is able to catch the
    creature. If so, return battle_record with victory status set as
    Catch*)

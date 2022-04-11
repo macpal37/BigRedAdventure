@@ -6,28 +6,82 @@
     "category": "Physical",
     "type": "Normal",
     "description": "Charges the target with a full-body tackle.",
-    "effect_ids": 0,
+    "effect_ids": [
+      17
+    ],
+    "effect_chance": 10
+  },
+  "Scratch": {
+    "power": 40,
+    "accuracy": 100,
+    "pp": 35,
+    "category": "Physical",
+    "type": "Normal",
+    "description": "The user scrtaches the foe with claws.",
+    "effect_ids": [
+      15
+    ],
     "effect_chance": 10
   },
   "Growl": {
+    "power": 100,
+    "accuracy": 100,
+    "pp": 40,
+    "category": "Physical",
+    "type": "Normal",
+    "description": "Growls cutely to reduce the foe's Attack.",
+    "effect_ids": [
+      0
+    ],
+    "effect_chance": 100
+  },
+  "Leer": {
     "power": 0,
     "accuracy": 100,
     "pp": 40,
     "category": "Status",
     "type": "Normal",
-    "description": "Growls cutely to reduce the foe's Attack.",
-    "effect_ids": 1,
-    "effect_chance": 10
+    "description": "The foe is given an intimidating leer with sharp eyes. The target's Defense stat is reduced.",
+    "effect_ids": [
+      1
+    ],
+    "effect_chance": 100
+  },
+  "Rock Throw": {
+    "power": 160,
+    "accuracy": 100,
+    "pp": 15,
+    "category": "Physical",
+    "type": "Rock",
+    "description": "The user throws a stone or projectile to attack an opponent. ",
+    "effect_ids": [
+      0
+    ],
+    "effect_chance": 0
+  },
+  "Bite": {
+    "power": 60,
+    "accuracy": 100,
+    "pp": 20,
+    "category": "Physical",
+    "type": "Dark",
+    "description": "The foe is bitten with viciously sharp fangs. It may lower defense",
+    "effect_ids": [
+      1
+    ],
+    "effect_chance": 50
   },
   "Disarming Voice": {
     "power": 50,
-    "accuracy": -1,
+    "accuracy": 100,
     "pp": 20,
     "category": "Special",
     "type": "Fairy",
-    "description": "Letting out a charming cry, the user does emotional damage to opposing Pokemon. This attack never misses.",
-    "effect_ids": 0,
-    "effect_chance": 10
+    "description": "Letting out a charming cry, the user does emotional damage to opposing Pokemon. This may lower attack.",
+    "effect_ids": [
+      0
+    ],
+    "effect_chance": 50
   },
   "Flamethrower": {
     "power": 90,
@@ -36,8 +90,10 @@
     "category": "Special",
     "type": "Fire",
     "description": "The foe is scorched with an intense blast of fire. The target may also be left with a burn.",
-    "effect_ids": 0,
-    "effect_chance": 10
+    "effect_ids": [
+      0
+    ],
+    "effect_chance": 0
   },
   "Mystical Power": {
     "power": 60,
@@ -46,8 +102,10 @@
     "category": "Special",
     "type": "Fairy",
     "description": "The user blasts the foe with a ray of mystical power.",
-    "effect_ids": 0,
-    "effect_chance": 10
+    "effect_ids": [
+      0
+    ],
+    "effect_chance": 0
   },
   "Crystal Barrage": {
     "power": 50,
@@ -56,18 +114,22 @@
     "category": "Special",
     "type": "Rock",
     "description": "The foe is blasted with numerous crystal shards. This may cause confuse the target.",
-    "effect_ids": 0,
-    "effect_chance": 10
+    "effect_ids": [
+      0
+    ],
+    "effect_chance": 0
   },
   "Air Slash": {
     "power": 75,
     "accuracy": 95,
     "pp": 15,
     "category": "Special",
-    "type": "Air",
+    "type": "Flying",
     "description": "The user attacks with a blade of air that slices even the sky. It may also make the target flinch.",
-    "effect_ids": 0,
-    "effect_chance": 10
+    "effect_ids": [
+      0
+    ],
+    "effect_chance": 0
   },
   "Water Gun": {
     "power": 40,
@@ -76,7 +138,9 @@
     "category": "Special",
     "type": "Water",
     "description": "The foe is blasted with a forceful shot of water.",
-    "effect_ids": 0,
+    "effect_ids": [
+      0
+    ],
     "effect_chance": 0
   }
 }

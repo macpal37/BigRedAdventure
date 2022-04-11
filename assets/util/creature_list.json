@@ -1,6 +1,6 @@
 {
   "missingno": {
-    "name": "#",
+    "name": "rafu",
     "poke_id": -1,
     "catch_rate": -1,
     "base_exp": -1,
@@ -194,11 +194,11 @@
       },
       {
         "move": "Crystal Barrage",
-        "level": 13
+        "level": 9
       },
       {
         "move": "Mystical Power",
-        "level": 20
+        "level": 15
       }
     ]
   },
@@ -208,8 +208,8 @@
     "catch_rate": 45,
     "base_exp": 206,
     "level_rate": "Slow",
-    "type1": "Cosmic",
-    "type2": "Air",
+    "type1": "Dragon",
+    "type2": "Flying",
     "base_stats": {
       "hp": 105,
       "attack": 150,
@@ -313,7 +313,49 @@
       },
       {
         "move": "Mystical Power",
-        "level": 35
+        "level": 10
+      }
+    ]
+  },
+  "chumpi": {
+    "name": "Chumpi",
+    "poke_id": 15,
+    "catch_rate": 110,
+    "base_exp": 67,
+    "level_rate": "Medium",
+    "type1": "Rock",
+    "type2": "None",
+    "base_stats": {
+      "hp": 62,
+      "attack": 60,
+      "defense": 63,
+      "sp_attack": 35,
+      "sp_defense": 40,
+      "speed": 40
+    },
+    "ev_stat": "defense",
+    "ev_amount": 1,
+    "evolution": {
+      "name": "None",
+      "poke_id": 0,
+      "level_up": -1
+    },
+    "learnset": [
+      {
+        "move": "Scratch",
+        "level": 1
+      },
+      {
+        "move": "Leer",
+        "level": 3
+      },
+      {
+        "move": "Rock Throw",
+        "level": 13
+      },
+      {
+        "move": "Bite",
+        "level": 18
       }
     ]
   }

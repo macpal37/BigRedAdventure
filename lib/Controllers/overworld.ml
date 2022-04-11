@@ -107,24 +107,33 @@ let move_scroll dx dy =
     Input.sleep 0.016 ()
   done
 
-let attempt_move dx dy orie =
+let rec attempt_move dx dy orie =
+  (* (if orie <> Player.orie (State.player ()) then *)
   Player.set_orie orie (State.player ());
-
+  (* else *)
   let new_x, new_y = (State.player_x () + dx, State.player_y () + dy) in
-  match Map.get_type (State.map ()) (new_x, new_y) with
+  (match Map.get_type (State.map ()) (new_x, new_y) with
   | Path ->
       move_scroll dx dy;
       Player.set_coord new_x new_y (State.player ())
   | Obstacle -> ()
   | Grass e ->
+      move_scroll dx dy;
+      Player.set_coord new_x new_y (State.player ());
       if Random.float 1. < 0.2 then (
         encounter_anim ();
         let c = Map.encounter_creature e in
         match c with
-        | Some c -> Battle.start_battle c
-        | None -> failwith "no creature encountered")
-      else move_scroll dx dy;
-      Player.set_coord new_x new_y (State.player ())
+        | Some c -> Battle.start_wild_battle c
+        | None -> failwith "no creature encountered"));
+  Input.poll ();
+  match Input.key_option () with
+  | Some 'w' -> attempt_move 0 1 Player.N
+  | Some 'a' -> attempt_move (-1) 0 Player.W
+  | Some 's' -> attempt_move 0 (-1) Player.S
+  | Some 'd' -> attempt_move 1 0 Player.E
+  | Some k -> ignore k
+  | None -> ()
 
 let ui_refresh _ =
   Ui.clear_ui Ui.Background;
@@ -139,10 +148,9 @@ let run_tick _ =
   | Some 'a' -> attempt_move (-1) 0 Player.W
   | Some 's' -> attempt_move 0 (-1) Player.S
   | Some 'd' -> attempt_move 1 0 Player.E
-  | Some 'e' -> Party_menu.init false ()
-  (* Battle.start_battle (Creature.create_creature "rafu" (Random.int 10
-     + 35)) *)
+  | Some 'e' -> Party_menu.init OverworldMode ()
   | Some 'q' -> ()
   | Some k -> ignore k
   | None -> ());
   ui_refresh ()
+(* Input.sleep 0.016 () *)

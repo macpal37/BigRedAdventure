@@ -19,29 +19,30 @@ let map _ = !current_state.map
 let adhoc_init () =
   Player.set_x 4 (player ());
   Player.set_y 4 (player ());
-  let rafu = Creature.create_creature "rafu" 20 in
-  let clefairy = Creature.create_creature "clefairy" 35 in
-  (* let rafu2 = Creature.create_creature "psyduck" 30 in let rafu3 =
-     Creature.create_creature "clefairy" 30 in let rafu4 =
-     Creature.create_creature "rafu" 30 in *)
+  let chumpi = Creature.create_creature "chumpi" 20 in
+  let rafu = Creature.create_creature "rafu" 40 in
+  Creature.set_current_hp chumpi 10;
+  Player.add_creature chumpi current_state.contents.player;
   Player.add_creature rafu current_state.contents.player;
-  Player.add_creature clefairy current_state.contents.player;
-  (* Player.add_creature rafu2 current_state.contents.player;
-     Player.add_creature rafu3 current_state.contents.player;
-     Player.add_creature rafu4 current_state.contents.player; *)
-  Creature.set_nickname rafu "Llama Baby";
-  Creature.set_nickname rafu "Lucky";
-  (* Creature.set_nickname rafu2 "Ron"; Creature.set_nickname rafu3
-     "Lucky"; Creature.set_nickname rafu4 "Chubby Bunny"; *)
+
+  Creature.set_nickname chumpi "Lucky";
+  Creature.set_nickname rafu "Ya Boi";
+
   let inventory = Player.inventory current_state.contents.player in
 
   add_item inventory (create_item "repel");
   add_item inventory (create_item "super repel");
   add_item inventory (create_item "max repel");
   for _ = 1 to 20 do
-    add_item inventory (create_item "pokeball")
+    add_item inventory (create_item "poke ball")
   done;
 
+  for _ = 1 to 20 do
+    add_item inventory (create_item "great ball")
+  done;
+  for _ = 1 to 20 do
+    add_item inventory (create_item "ultra ball")
+  done;
   add_item inventory (create_item "potion");
   add_item inventory (create_item "potion");
   add_item inventory (create_item "potion");

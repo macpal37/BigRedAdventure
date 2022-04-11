@@ -7,7 +7,7 @@ open Graphics
 let display_queue = ref []
 let max_list_size = 10
 let max_items = ref 0
-let item_list_bg = load_sprite "item_bag_list" GUI_Folder 3 ()
+let inventory_menu = load_sprite "inventory_menu" GUI_Folder 3 ()
 let selected_item = ref None
 
 type menu_mode =
@@ -26,7 +26,7 @@ let get_items_from_bag (bag : bag) =
   display_queue.contents <- get_items_rec max_list_size queue_items
 
 let draw_list () =
-  let sx, sy, dif = (405, 575, 356) in
+  let sx, sy, dif = (405, 563, 356) in
   let rec draw_list_rec i = function
     | [] -> i
     | h :: t ->
@@ -36,13 +36,13 @@ let draw_list () =
              (sy - (i * 40))
              2 36
              (Util.captilize_all_string (get_name item))
-             white);
+             white text_color);
         let s = string_of_int amount in
         Ui.add_first_gameplay
           (draw_string_colored
              (sx + dif - (16 * String.length s))
              (sy - (i * 40))
-             2 36 (s ^ "x") white);
+             2 36 (s ^ "x") white text_color);
         draw_list_rec (i + 1) t
   in
   let index = draw_list_rec 0 display_queue.contents in
@@ -50,26 +50,24 @@ let draw_list () =
     Ui.add_first_gameplay
       (draw_string_colored sx
          (sy - (index * 40))
-         2 36 "     - - - - - - -     " white)
+         2 36 "     - - - - - - -     " white text_color)
   else ()
 
 let inventory_position = Util.new_point ()
 
-let draw_bag item_type x y () =
-  let w, h = Draw.get_dimension item_list_bg in
-
-  Ui.add_first_background
-    (Draw.draw_sprite item_list_bg (Draw.width - w) (Draw.height - h));
+let draw_bag item_type () =
+  Ui.add_first_background (Draw.draw_sprite inventory_menu 0 0);
   Ui.add_first_foreground
     (draw_string_colored 428 644 3 60
        (string_of_item_type item_type)
-       (rgb 245 190 50));
+       (rgb 245 190 50) text_color);
 
   draw_list ();
-  Ui.add_first_foreground (fun () ->
-      set_color red;
-      set_line_width 6;
-      draw_rect x (y - (40 * inventory_position.y)) 370 40)
+  if max_items.contents > 0 then
+    Ui.add_first_foreground (fun () ->
+        set_color red;
+        set_line_width 6;
+        draw_rect 415 (563 - (40 * inventory_position.y)) 370 40)
 
 let get_selected_item () =
   if List.length display_queue.contents = 0 then None
@@ -78,8 +76,6 @@ let get_selected_item () =
       List.nth display_queue.contents inventory_position.y
     in
     Some item
-
-let inventory_text_bg = load_sprite "inventory_text_bg" GUI_Folder 3 ()
 
 let refresh () =
   let bag_type =
@@ -94,14 +90,18 @@ let refresh () =
   let bag = get_bag (Player.inventory (State.player ())) bag_type in
   max_items.contents <- List.length (list_items bag);
   get_items_from_bag bag;
+  draw_bag bag_type ();
+  inventory_position.y <-
+    Util.bound inventory_position.y 0 (max_items.contents - 1);
+
   if List.length display_queue.contents > 0 then
     let item, _ =
       List.nth display_queue.contents inventory_position.y
     in
-    Ui.add_first_foreground (draw_text_string (get_description item))
-  else Ui.add_first_foreground (clear_text inventory_text_bg);
 
-  draw_bag bag_type 415 575 ()
+    Ui.add_first_foreground
+      (draw_text_string_pos 35 142 40 30 (get_description item) white)
+(* else Ui.add_first_foreground (clear_text inventory_text_bg); *)
 
 let rec run_tick () =
   Input.poll ();
@@ -134,10 +134,9 @@ let rec run_tick () =
       if key = 'e' then begin
         minimenu_position.y <- 0;
         let item = get_selected_item () in
-        (match item with
-        | Some i -> consume_item (Player.inventory (State.player ())) i
-        | None -> ());
 
+        (* (match item with | Some i -> consume_item (Player.inventory
+           (State.player ())) i | None -> ()); *)
         selected_item.contents <- item
       end;
       if key = 'q' then mode.contents <- Minimenu
@@ -159,7 +158,5 @@ let init () =
   Draw.set_synced_mode false;
   mode.contents <- Selecting;
   selected_item.contents <- None;
-  set_text_bg inventory_text_bg empty_sprite;
   refresh ();
-  Ui.add_first_background clear_screen;
   run_tick ()
