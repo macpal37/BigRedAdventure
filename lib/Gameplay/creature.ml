@@ -480,7 +480,7 @@ let create_creature name level =
       ("assets/creature_sprites/" ^ name ^ ".png")
       80 80 3
   in
-  curr_hp_cache.contents <- curr_stats.max_hp;
+  curr_hp_cache := curr_stats.max_hp;
   {
     nickname = name;
     species = name;
@@ -588,13 +588,11 @@ let get_current_hp creature = creature.current_hp
 let get_specias creature = creature.species
 
 let set_current_hp creature amount =
-  curr_hp_cache.contents <- creature.current_hp;
+  curr_hp_cache := creature.current_hp;
   creature.current_hp <- amount
 
 let get_hp_status creature =
-  ( creature.current_stats.max_hp,
-    curr_hp_cache.contents,
-    creature.current_hp )
+  (creature.current_stats.max_hp, !curr_hp_cache, creature.current_hp)
 
 let get_catch_rate creature = float_of_int creature.catch_rate
 

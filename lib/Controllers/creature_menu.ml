@@ -34,7 +34,7 @@ let draw_status status () =
 
 let draw_stats () =
   let x, y, dif, x2 = (290, 623, 35, 556) in
-  let _, buff, nerf = get_nature current_creature.contents in
+  let _, buff, nerf = get_nature !current_creature in
   let buff_color = rgb 180 32 42 in
   let nerf_color = rgb 121 58 128 in
   let normal = white in
@@ -54,7 +54,7 @@ let draw_stats () =
       (draw_string_colored x2
          (y - (dif * (i + 1)))
          1 30
-         (string_of_int (get_stat current_creature.contents s))
+         (string_of_int (get_stat !current_creature s))
          color text_color)
   done
 
@@ -77,7 +77,7 @@ let draw_selector w h () =
   end
 
 let draw_moves () =
-  let moves = get_moves current_creature.contents in
+  let moves = get_moves !current_creature in
   let size = List.length moves in
   (* let box_w, box_h = (249, 90) in let box_x, box_y = (20, 200 -
      box_h) in *)
@@ -120,21 +120,20 @@ let refresh () =
     (draw_string_colored 24 605 1 60 "SUMMARY" (rgb 255 170 40) white);
   Ui.add_last_background (draw_sprite creature_menu_bg 0 0);
   Ui.add_first_gameplay
-    (draw_sprite (get_front_sprite current_creature.contents) 9 318);
+    (draw_sprite (get_front_sprite !current_creature) 9 318);
   Ui.add_first_gameplay
     (draw_string_colored 20 246 1 30
-       (get_nickname current_creature.contents)
+       (get_nickname !current_creature)
        white text_color);
   Ui.add_first_gameplay
     (draw_string_colored 20 220 1 20
-       ("LVL: " ^ string_of_int (get_level current_creature.contents))
+       ("LVL: " ^ string_of_int (get_level !current_creature))
        white text_color);
-  let max, _, aft = get_hp_status current_creature.contents in
+  let max, _, aft = get_hp_status !current_creature in
   Ui.add_first_gameplay
     (draw_health_bar max aft aft 56 192 180 6 true false);
-  Ui.add_first_gameplay
-    (draw_status (get_status current_creature.contents));
-  let curr_exp, min_exp, max_exp = get_exp current_creature.contents in
+  Ui.add_first_gameplay (draw_status (get_status !current_creature));
+  let curr_exp, min_exp, max_exp = get_exp !current_creature in
   Ui.add_first_gameplay
     (draw_string_colored 20 140 1 24 "EXP:" white text_color);
   Ui.add_first_gameplay
@@ -147,7 +146,7 @@ let refresh () =
        ^ string_of_int (max_exp - min_exp))
        white text_color);
 
-  let type1, type2 = get_types current_creature.contents in
+  let type1, type2 = get_types !current_creature in
   let type_str =
     string_of_etype type1
     ^ if type2 = None then "" else "/" ^ string_of_etype type2
@@ -158,7 +157,7 @@ let refresh () =
        text_color);
   draw_stats ();
 
-  let nature, _, _ = get_nature current_creature.contents in
+  let nature, _, _ = get_nature !current_creature in
   Ui.add_first_gameplay
     (draw_string_colored 20 (102 - 56) 1 24 ("NATURE: " ^ nature) white
        text_color);
@@ -171,14 +170,14 @@ let refresh () =
     (draw_string_colored 398 636 2 36 "Stats" white text_color);
   Ui.add_first_foreground
     (draw_text_string_pos 290 120 30 32
-       (get_move_description_i current_creature.contents
+       (get_move_description_i !current_creature
           (menu_position.x + (2 * menu_position.y)))
        text_color2);
   draw_moves ()
 
 let set_creature i =
   party_position.x <- i;
-  current_creature.contents <- Player.party_i (State.player ()) i
+  current_creature := Player.party_i (State.player ()) i
 
 let next_creature i =
   let size = List.length (Player.party (State.player ())) in
@@ -189,12 +188,12 @@ let next_creature i =
 
 let switch_move () =
   let a, b =
-    ( get_move_i current_creature.contents
+    ( get_move_i !current_creature
         (menu_position.x + (2 * menu_position.y)),
-      get_move_i current_creature.contents
+      get_move_i !current_creature
         (switch_position.x + (2 * switch_position.y)) )
   in
-  let moves = get_moves current_creature.contents in
+  let moves = get_moves !current_creature in
   let rec switch_move new_lst = function
     | [] -> new_lst
     | h :: t ->
@@ -203,7 +202,7 @@ let switch_move () =
         else switch_move (new_lst @ [ h ]) t
   in
   let new_moves = switch_move [] moves in
-  set_moves current_creature.contents new_moves
+  set_moves !current_creature new_moves
 
 let rec run_tick () =
   Input.poll ();

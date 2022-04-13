@@ -51,7 +51,6 @@ type battle_record = {
 val refresh_battle : (int -> int -> int -> unit -> unit) ref
 val health_bar : (int -> int -> int -> bool -> bool -> unit -> unit) ref
 val empty_battle : battle_record
-val is_player_first : unit -> bool
 
 val wild_init : creature list -> creature list -> battle_record
 (**Initializes a battle record for a wild creature encounter.*)

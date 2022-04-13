@@ -23,7 +23,7 @@ let get_items_from_bag (bag : bag) =
     | [] -> []
     | h :: t -> if num = 0 then [] else h :: get_items_rec (num - 1) t
   in
-  display_queue.contents <- get_items_rec max_list_size queue_items
+  display_queue := get_items_rec max_list_size queue_items
 
 let draw_list () =
   let sx, sy, dif = (405, 563, 356) in
@@ -45,7 +45,7 @@ let draw_list () =
              2 36 (s ^ "x") white text_color);
         draw_list_rec (i + 1) t
   in
-  let index = draw_list_rec 0 display_queue.contents in
+  let index = draw_list_rec 0 !display_queue in
   if index < max_list_size - 1 then
     Ui.add_first_gameplay
       (draw_string_colored sx
@@ -63,18 +63,16 @@ let draw_bag item_type () =
        (rgb 245 190 50) text_color);
 
   draw_list ();
-  if max_items.contents > 0 then
+  if !max_items > 0 then
     Ui.add_first_foreground (fun () ->
         set_color red;
         set_line_width 6;
         draw_rect 415 (563 - (40 * inventory_position.y)) 370 40)
 
 let get_selected_item () =
-  if List.length display_queue.contents = 0 then None
+  if List.length !display_queue = 0 then None
   else
-    let item, _ =
-      List.nth display_queue.contents inventory_position.y
-    in
+    let item, _ = List.nth !display_queue inventory_position.y in
     Some item
 
 let refresh () =
@@ -88,16 +86,14 @@ let refresh () =
   in
 
   let bag = get_bag (Player.inventory (State.player ())) bag_type in
-  max_items.contents <- List.length (list_items bag);
+  max_items := List.length (list_items bag);
   get_items_from_bag bag;
   draw_bag bag_type ();
   inventory_position.y <-
-    Util.bound inventory_position.y 0 (max_items.contents - 1);
+    Util.bound inventory_position.y 0 (!max_items - 1);
 
-  if List.length display_queue.contents > 0 then
-    let item, _ =
-      List.nth display_queue.contents inventory_position.y
-    in
+  if List.length !display_queue > 0 then
+    let item, _ = List.nth !display_queue inventory_position.y in
 
     Ui.add_first_foreground
       (draw_text_string_pos 35 142 40 30 (get_description item) white)
@@ -110,12 +106,12 @@ let rec run_tick () =
     | Some c -> c
     | None -> '#'
   in
-  (match mode.contents with
+  (match !mode with
   | Selecting ->
       let x, y = (inventory_position.x, inventory_position.y) in
-      if key = 's' && y >= 0 && y < max_items.contents - 1 then
+      if key = 's' && y >= 0 && y < !max_items - 1 then
         inventory_position.y <- y + 1;
-      if key = 'w' && y < max_items.contents && y > 0 then
+      if key = 'w' && y < !max_items && y > 0 then
         inventory_position.y <- y - 1;
       if key = 'd' then inventory_position.x <- x + 1;
       if key = 'a' then inventory_position.x <- x - 1;
@@ -137,26 +133,26 @@ let rec run_tick () =
 
         (* (match item with | Some i -> consume_item (Player.inventory
            (State.player ())) i | None -> ()); *)
-        selected_item.contents <- item
+        selected_item := item
       end;
-      if key = 'q' then mode.contents <- Minimenu
+      if key = 'q' then mode := Minimenu
   | Minimenu ->
       if key = 'e' then begin
         minimenu_position.y <- 0;
-        selected_item.contents <- get_selected_item ()
+        selected_item := get_selected_item ()
       end;
       if key = 'q' then begin
         minimenu_position.y <- 0;
-        mode.contents <- Selecting
+        mode := Selecting
       end);
 
   Ui.update_all ();
   Unix.sleepf 0.016;
-  if key <> 'q' && selected_item.contents = None then run_tick ()
+  if key <> 'q' && !selected_item = None then run_tick ()
 
 let init () =
   Draw.set_synced_mode false;
-  mode.contents <- Selecting;
-  selected_item.contents <- None;
+  mode := Selecting;
+  selected_item := None;
   refresh ();
   run_tick ()

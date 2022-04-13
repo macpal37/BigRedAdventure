@@ -6,7 +6,7 @@
 type sprite
 (** The abstract type that represents a sprite. It stores the width and
     height of the sprite, all the pixels of the sprites, and the color
-    palettes used to color the sprite.contents *)
+    palettes used to color the sprite *)
 
 type folder =
   | Creature_Folder
@@ -41,10 +41,6 @@ val set_text_bg : sprite -> sprite -> unit
     starting at the bottom left corner of the screen. [bg_right] start
     drawing thebackground at the bottm midde of the screen. These
     sprites are drawn when [clear_text()] is called *)
-
-val set_text_char_cap : int -> unit
-(** [set_text_char_cap char_cap] Sets the maximum number of characters
-    that can be drawn on the screen.*)
 
 val get_dimension : sprite -> int * int
 (** [get_dimension sprite] returns the width and height of a sprite as a

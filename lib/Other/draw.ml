@@ -68,22 +68,22 @@ let synced_mode = ref true
 let width = 800
 let height = 720
 let sync flag () = auto_synchronize flag
-let usync flag () = if synced_mode.contents then auto_synchronize flag
+let usync flag () = if !synced_mode then auto_synchronize flag
 
 let set_text_bg bg1 bg2 =
-  text_bg1.contents <- bg1;
-  text_bg2.contents <- bg2
+  text_bg1 := bg1;
+  text_bg2 := bg2
 
 let set_font_size size () =
-  font_size.contents <- size;
+  font_size := size;
   set_font
     ("-*-fixed-bold-r-semicondensed--" ^ string_of_int size
    ^ "-*-*-*-*-*-iso8859-1")
 
 let get_dimension sprite = (sprite.width, sprite.height)
 let get_font_size () = !font_size
-let set_erase_mode flag () = erase_mode.contents <- flag
-let set_synced_mode flag = synced_mode.contents <- flag
+let set_erase_mode flag () = erase_mode := flag
+let set_synced_mode flag = synced_mode := flag
 
 let change_dpi sprite dpi =
   {
@@ -111,7 +111,7 @@ let draw_from_pixels sprite x y min_w min_h max_w max_h () =
     | [] -> set_color text_color
     | h :: t ->
         if h <> 0 && tx >= min_w && ty >= min_h then begin
-          if erase_mode.contents then set_color (point_color 0 0)
+          if !erase_mode then set_color (point_color 0 0)
           else set_color (List.nth sprite.color_palette (h - 1));
 
           draw_pixel sprite.dpi (x + tx) (y + ty) ()
@@ -258,17 +258,14 @@ let clear_text clear_sprite () =
   draw_sprite clear_sprite 3 0 ();
   usync true ()
 
-let text_char_cap = ref 28
+let text_char_cap = 28
 let auto_text_time = 175000
-let set_text_char_cap cap = text_char_cap.contents <- cap
 
 let draw_text text font_size auto sticky () =
   auto_synchronize true;
   set_font_size font_size ();
-  set_text_char_cap 28;
   let wait_time = if auto then auto_text_time else -1 in
   let wait_time = if sticky then 0 else wait_time in
-  let char_cap = text_char_cap.contents in
 
   sync_draw (clear_text battle_bot) ();
 
@@ -281,7 +278,8 @@ let draw_text text font_size auto sticky () =
     | [] -> lst @ [ w ]
     | h :: t ->
         let new_w = w ^ " " ^ h in
-        if String.length new_w < char_cap then calc_levels new_w lst t
+        if String.length new_w < text_char_cap then
+          calc_levels new_w lst t
         else calc_levels h (lst @ [ w ]) t
   in
   let levels =
@@ -368,28 +366,26 @@ let draw_text_string_pos x y font_size char_cap text color () =
   scroll_text 0 levels
 
 let draw_text_string text () =
-  let cap = !text_char_cap in
-  set_text_char_cap 28;
   set_font_size 40 ();
-  let char_cap = text_char_cap.contents in
   clear_text battle_bot ();
   set_color text_color;
   let start_x = 35 in
   let start_y = 142 in
   moveto start_x start_y;
   let len = String.length text in
-  let levels = len / char_cap in
+  let levels = len / text_char_cap in
   let rec scroll_text text start max =
     if start mod 3 = 0 then if start <> 0 then set_color text_color;
     if start <> max + 1 then begin
       let text = remove_space text in
       let short_text =
-        if String.length text > char_cap then String.sub text 0 char_cap
+        if String.length text > text_char_cap then
+          String.sub text 0 text_char_cap
         else text
       in
       let rest_text =
-        if String.length text > char_cap then
-          String.sub text char_cap
+        if String.length text > text_char_cap then
+          String.sub text text_char_cap
             (String.length text - String.length short_text)
         else ""
       in
@@ -414,8 +410,7 @@ let draw_text_string text () =
       scroll_text rest_text (start + 1) max
     end
   in
-  scroll_text text 0 levels;
-  set_text_char_cap cap
+  scroll_text text 0 levels
 
 (* create a gradient of colors from black at 0,0 to white at w-1,h-1 *)
 let gradient arr w h =

@@ -19,16 +19,16 @@ let map _ = !current_state.map
 let adhoc_init () =
   Player.set_x 4 (player ());
   Player.set_y 4 (player ());
-  let chumpi = Creature.create_creature "chumpi" 20 in
-  let rafu = Creature.create_creature "rafu" 40 in
-  Creature.set_current_hp chumpi 10;
-  Player.add_creature chumpi current_state.contents.player;
-  Player.add_creature rafu current_state.contents.player;
+  let chumpi = Creature.create_creature "chumpi" 10 in
+  let rafu = Creature.create_creature "rafu" 10 in
+  Creature.set_current_hp chumpi 20;
+  Player.add_creature chumpi !current_state.player;
+  Player.add_creature rafu !current_state.player;
 
   Creature.set_nickname chumpi "Lucky";
   Creature.set_nickname rafu "Ya Boi";
 
-  let inventory = Player.inventory current_state.contents.player in
+  let inventory = Player.inventory !current_state.player in
 
   add_item inventory (create_item "repel");
   add_item inventory (create_item "super repel");

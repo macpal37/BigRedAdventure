@@ -53,7 +53,6 @@ type battle_record = {
 let refresh_battle = ref (fun _ _ _ () -> ())
 let health_bar = ref (fun _ _ _ _ _ () -> ())
 let player_first = ref false
-let is_player_first () = player_first.contents
 
 let empty_battle =
   {
@@ -396,7 +395,7 @@ let exec_turn attacker defender brecord =
                     (Draw.damage_render
                        (get_front_sprite defender.creature)
                        false
-                       (refresh_battle.contents
+                       (!refresh_battle
                           (get_current_hp attacker.creature)
                           (get_current_hp defender.creature)
                           0))
@@ -405,7 +404,7 @@ let exec_turn attacker defender brecord =
                     (Draw.damage_render
                        (get_back_sprite defender.creature)
                        true
-                       (refresh_battle.contents
+                       (!refresh_battle
                           (get_current_hp defender.creature)
                           (get_current_hp attacker.creature)
                           1));
@@ -430,13 +429,13 @@ let exec_turn attacker defender brecord =
                          ^ ".")
                          40 true true);
                 Ui.add_last_gameplay
-                  (health_bar.contents
+                  (!health_bar
                      (get_stat attacker.creature HP)
                      (get_current_hp attacker.creature)
                      (get_current_hp attacker.creature)
                      attacker.is_player true);
                 Ui.add_last_gameplay
-                  (health_bar.contents
+                  (!health_bar
                      (get_stat defender.creature HP)
                      (get_current_hp defender.creature)
                      (get_current_hp defender.creature
@@ -478,7 +477,7 @@ let exec_turn attacker defender brecord =
 
 let execute_turn brecord =
   if brecord.turn_pos = Pending then
-    if player_first.contents then
+    if !player_first then
       exec_turn brecord.player_battler brecord.enemy_battler brecord
     else exec_turn brecord.enemy_battler brecord.player_battler brecord
   else
@@ -502,7 +501,7 @@ let check_active_status brecord =
 
 let battle_sim_fh brecord =
   let res = player_faster brecord in
-  player_first.contents <- res;
+  player_first := res;
   brecord.turn_pos <- Pending;
 
   execute_turn brecord;
@@ -626,7 +625,7 @@ let switch_player brecord creature _ =
        true
        (get_nickname brecord.player_battler.creature)
        (get_nickname creature)
-       (refresh_battle.contents
+       (!refresh_battle
           (get_current_hp creature)
           (get_current_hp brecord.enemy_battler.creature)
           1));
