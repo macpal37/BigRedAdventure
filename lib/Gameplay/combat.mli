@@ -11,10 +11,6 @@ type btype =
   | Trainer
   | Wild
 
-type move_status =
-  | None of status
-  | Move of move
-
 type turn_status =
   | Choosing
   | Pending
@@ -23,7 +19,7 @@ type turn_status =
 
 type battle_creature = {
   mutable creature : creature;
-  mutable current_move : move_status;
+  mutable current_move : move option;
   mutable stat_changes : stats;
   mutable status_effect : status;
   mutable active : bool;
@@ -58,7 +54,7 @@ val wild_init : creature list -> creature list -> battle_record
 val trainer_init : creature list -> creature list -> battle_record
 (**Initializes a battle record for a trainer encounter.*)
 
-val turn_builder : battle_record -> move -> unit
+val turn_builder : battle_record -> move option -> unit
 (**Given a brecord and a move chosen for the player creature to execute,
    turn_builder will return a battle record with player move, enemy
    move, and turn_position ready for a battle phase. Raises:

@@ -12,6 +12,10 @@ type creature
 
 (** {1 Concrete types}*)
 
+exception NoEffect
+exception MalformedJson
+exception NoCreature
+
 type stats = {
   mutable max_hp : int;
   mutable attack : int;
@@ -63,7 +67,7 @@ type etype =
   | Bug
   | Ice
   | Fighting
-  | None
+  | NoType
 
 (** Represents the elemental type of a creature*)
 
@@ -90,14 +94,12 @@ type move = {
 }
 (** Loads and handles all the moves performed during combat*)
 
-val empty_move : move
-(** Represents an empty move.*)
-
 val empty_stats : stats
 (** Represents an emtpy set of stats*)
 
-val get_move : string -> move
-(** [get_move move_name] returns the the move*)
+val create_move : string -> move
+(** [get_create_movemove move_name] generates a move given by the
+    [move_name] from the move_list.json.*)
 
 (** {1 Creature Creation}*)
 
@@ -164,9 +166,6 @@ val get_evs : creature -> stats
 val get_ev_gain : creature -> stat * int
 val add_ev_gain : creature -> stat * int -> unit
 val get_exp_gain : creature -> int
-
-exception NoEffect
-
 val add_hp : creature -> int -> unit
 
 val get_type_mod : etype -> creature -> float
@@ -190,7 +189,7 @@ val remove_status : creature -> status -> unit
     Raises No_Effect exception if the [creature] already has the
     [Healthy] status.*)
 
-val get_moves : creature -> move list
+val get_moves : creature -> move option array
 (** [get_moves creature] returns all of the moves of the [creature] by
     name. Used in conjuction with Move.execute_move. *)
 
@@ -229,6 +228,4 @@ val set_back_sprite : creature -> Draw.sprite -> unit
 val get_hp_status : creature -> int * int * int
 val get_specias : creature -> string
 val get_color_from_etype : etype -> Graphics.color
-val get_move_description_i : creature -> int -> string
-val get_move_i : creature -> int -> move
-val set_moves : creature -> move list -> unit
+val get_move_i : creature -> int -> move option

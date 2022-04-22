@@ -16,10 +16,12 @@ let rec find x lst =
 
 let little_sprite (image : Image.image) x y w h =
   let rec pixel_map i j sprite =
-    if i < w then
+    if i < w then (
       let new_i, new_j = if j = 0 then (i + 1, w - 1) else (i, j - 1) in
 
       let pixels, palette = sprite in
+      print_endline ("J :" ^ string_of_int j);
+      print_endline ("I :" ^ string_of_int i);
       let color, alpha =
         Image.read_rgba image (j + x) (i + y)
           (fun r g b a () -> (rgb r g b, a))
@@ -34,15 +36,18 @@ let little_sprite (image : Image.image) x y w h =
       if alpha > 0 then
         let index = find color new_pallette in
         pixel_map new_i new_j ((index + 1) :: pixels, new_pallette)
-      else pixel_map new_i new_j (0 :: pixels, new_pallette)
+      else pixel_map new_i new_j (0 :: pixels, new_pallette))
     else sprite
   in
   pixel_map 0 (h - 1) ([], [])
 
 let init_spritesheet filepath sprite_width sprite_height dpi =
   let image = ImageLib_unix.openfile filepath in
+  print_endline ("WIDTH :" ^ string_of_int image.width);
+  print_endline ("HEIGHT :" ^ string_of_int image.height);
   let w = (image.width / sprite_width) - 1 in
   let h = image.height / sprite_height in
+
   let rec split_sprites i j lst =
     if j < h then
       let pixels, palette =
@@ -60,6 +65,7 @@ let init_spritesheet filepath sprite_width sprite_height dpi =
   in
 
   let sprites = split_sprites 0 0 [] in
+
   {
     sprites = List.rev sprites;
     rows = h;

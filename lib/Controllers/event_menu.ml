@@ -1,12 +1,14 @@
 open Draw
 open Creature
 open Graphics
+open Util
+open DrawText
 
 let event_menu = load_sprite "event_menu" GUI_Folder 3 ()
 let decision_menu = load_sprite "decision_menu" GUI_Folder 3 ()
 let nameholder = load_sprite "nameholder" GUI_Folder 3 ()
 let minimenu_position = Util.new_point ()
-let target_creature = ref Option.None
+let target_creature = null ()
 let nickname = ref ""
 
 type menu =

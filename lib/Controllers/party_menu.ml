@@ -2,6 +2,8 @@ open Draw
 open Graphics
 open Creature
 open Animation
+open Util
+open DrawText
 
 (* let max_creatures = 5 let max_creatures = ref 0 *)
 let party_menu_bg = load_sprite "party_menu" GUI_Folder 3 ()
@@ -11,7 +13,7 @@ let faint = load_sprite "faint" GUI_Folder 3 ()
 let menu_position = Util.new_point ()
 let switch_position = Util.new_point ()
 let minimenu_position = Util.new_point ()
-let current_item = ref Option.None
+let current_item = null ()
 let set_current_item i = current_item := Some i
 let get_current_item = !current_item
 
@@ -171,7 +173,7 @@ let use_item creature item =
         Creature.remove_status creature Fainted;
         Creature.add_hp creature (get_stat creature HP)
     | _ -> print_endline "NICE ITEM BRO :)");
-    current_item := Option.None;
+    current_item := None;
     menu_mode := Exit
   with NoEffect ->
     refresh ();

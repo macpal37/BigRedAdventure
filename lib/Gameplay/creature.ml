@@ -2,6 +2,10 @@ open Yojson.Basic.Util
 open Util
 open Graphics
 
+exception NoEffect
+exception MalformedJson
+exception NoCreature
+
 type stats = {
   mutable max_hp : int;
   mutable attack : int;
@@ -51,7 +55,7 @@ type etype =
   | Bug
   | Ice
   | Fighting
-  | None
+  | NoType
 (* type etype = | Neutral | Fire | Water | Air | Earth | Electric | Ice
    | Metal | Acid | Light | Shadow | Specter | Nature | Cosmic | None *)
 
@@ -88,20 +92,6 @@ type move = {
   effect_chance : int;
 }
 
-let empty_move =
-  {
-    move_name = " ";
-    power = 0;
-    accuracy = 0.0;
-    curr_pp = 0;
-    max_pp = 0;
-    etype = None;
-    category = Status;
-    description = "";
-    effect_ids = [ -1 ];
-    effect_chance = 0;
-  }
-
 type creature = {
   mutable nickname : string;
   species : string;
@@ -122,7 +112,7 @@ type creature = {
   base_exp : int;
   mutable friendship : int;
   learnset : learnset_moves list;
-  mutable moves : move list;
+  moves : move option array;
   mutable front_sprite : Draw.sprite;
   mutable back_sprite : Draw.sprite;
   shiny : bool;
@@ -144,26 +134,23 @@ let string_of_status stat_var =
   | Fainted -> "Fainted"
 
 let get_moves creature = creature.moves
-let set_moves creature moves = creature.moves <- moves
 
 let get_move_i creature i =
-  let size = List.length creature.moves in
-  if size <= i then List.nth creature.moves (size - 1)
-  else if i < 0 then List.nth creature.moves 0
-  else List.nth creature.moves i
+  let size = Array.length creature.moves in
+  if i >= size || i < 0 then None else creature.moves.(i)
 
-let get_move_description_i creature i =
-  if List.length creature.moves <= i || i < 0 then ""
-  else (List.nth creature.moves i).description
+(* let replace_move creature i move = creature.moves.(i) <- move *)
 
 let add_pp creature move_name amount =
-  let move =
-    List.nth
-      (List.filter (fun x -> x.move_name = move_name) creature.moves)
-      0
-  in
-  let total_pp = bound (move.curr_pp + amount) 0 move.max_pp in
-  move.curr_pp <- total_pp
+  Array.iter
+    (fun move ->
+      match move with
+      | Some m ->
+          if m.move_name = move_name then
+            let total_pp = bound (m.curr_pp + amount) 0 m.max_pp in
+            m.curr_pp <- total_pp
+      | None -> ())
+    creature.moves
 
 let get_status creature = creature.current_status
 
@@ -235,7 +222,7 @@ let etype_of_string etype_string =
   | "Bug" -> Bug
   | "Ice" -> Ice
   | "Fighting" -> Fighting
-  | _ -> None
+  | _ -> NoType
 
 (* let string_of_etype etype_var = match etype_var with | Neutral ->
    "Neutral" | Fire -> "Fire" | Water -> "Water" | Air -> "Air" | Nature
@@ -306,7 +293,7 @@ let parse_move name json =
   }
 
 (**=============== Moves ============**)
-let get_move name =
+let create_move name =
   let move_json = Yojson.Basic.from_file "assets/util/move_list.json" in
   parse_move name (move_json |> member name)
 
@@ -314,14 +301,14 @@ let generate_moves learnset level =
   let possible_moves =
     List.rev (List.filter (fun a -> a.level_learned <= level) learnset)
   in
-  let rec get_four_moves moves count =
-    match moves with
-    | [] -> []
-    | h :: t ->
-        if count < 4 then get_move h.move :: get_four_moves t (count + 1)
-        else []
-  in
-  List.rev (get_four_moves possible_moves 0)
+  let moves = Array.make 4 None in
+  for i = 1 to 4 do
+    if i <= List.length possible_moves then
+      moves.(List.length possible_moves - i) <-
+        Some (create_move (List.nth possible_moves (i - 1)).move)
+  done;
+
+  moves
 
 let mod_stat stats stat_name pow =
   let d a b c =
@@ -462,6 +449,7 @@ let create_creature name level =
     Yojson.Basic.from_file "assets/util/creature_list.json"
     |> member name
   in
+
   Random.self_init ();
   let name = json |> member "name" |> to_string in
   let bstats = stats_of_json (json |> member "base_stats") in
@@ -543,8 +531,6 @@ let get_evs creature = creature.ev_stats
 let get_ev_gain creature =
   let a, b = creature.ev_gain in
   (a, b * 2)
-
-exception NoEffect
 
 let add_hp creature amount =
   if

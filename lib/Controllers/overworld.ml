@@ -85,15 +85,16 @@ let encounter_anim _ =
   Input.sleep 0.1 ()
 
 let move_scroll dx dy =
-  for i = 1 to 14 do
+  let speed = 15 in
+  for i = 1 to speed - 1 do
     Graphics.auto_synchronize false;
     draw_tiles
       ((Player.x (State.player ()) * tile_size)
       - ((800 - tile_size) / 2)
-      + (i * dx * tile_size / 15))
+      + (i * dx * tile_size / speed))
       ((Player.y (State.player ()) * tile_size)
       - ((720 - tile_size) / 2)
-      + (i * dy * tile_size / 15));
+      + (i * dy * tile_size / speed));
     (match Player.orie (State.player ()) with
     | Player.N ->
         Draw.draw_sprite (player_sprite_n_walk (i / 5 mod 3)) 368 328 ()

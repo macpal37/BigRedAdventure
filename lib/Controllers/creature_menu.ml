@@ -2,6 +2,7 @@ open Draw
 open Graphics
 open Creature
 open Animation
+open DrawText
 
 let creature_menu_bg = load_sprite "creature_menu" GUI_Folder 3 ()
 let menu_position = Util.new_point ()
@@ -78,7 +79,7 @@ let draw_selector w h () =
 
 let draw_moves () =
   let moves = get_moves !current_creature in
-  let size = List.length moves in
+  let size = Array.length moves in
   (* let box_w, box_h = (249, 90) in let box_x, box_y = (20, 200 -
      box_h) in *)
   let text_x, text_y = (289, 326) in
@@ -87,27 +88,28 @@ let draw_moves () =
   let rec draw_all_moves i j length =
     if length <= 0 then ()
     else
-      let move = List.nth moves (i + (j * 2)) in
-      let x, y = (text_x + (box_w * i), text_y - (box_h * j)) in
-      Ui.add_first_foreground
-        (draw_string_colored x y 2 28 move.move_name
-           (get_color_from_etype move.etype)
-           text_color);
+      let move = get_move_i !current_creature (i + (j * 2)) in
+      (match move with
+      | None -> ()
+      | Some m ->
+          let x, y = (text_x + (box_w * i), text_y - (box_h * j)) in
+          Ui.add_first_foreground
+            (draw_string_colored x y 2 28 m.move_name
+               (get_color_from_etype m.etype)
+               text_color);
 
-      Ui.add_first_foreground
-        (draw_string_colored x (y - 30) 1 24
-           (string_of_etype move.etype)
-           (get_color_from_etype move.etype)
-           text_color);
+          Ui.add_first_foreground
+            (draw_string_colored x (y - 30) 1 24
+               (string_of_etype m.etype)
+               (get_color_from_etype m.etype)
+               text_color);
 
-      set_color text_color;
-      Ui.add_first_foreground
-        (draw_string_colored (x + 120) (y - 30) 1 24
-           ("PP:"
-           ^ string_of_int move.curr_pp
-           ^ "/"
-           ^ string_of_int move.max_pp)
-           white text_color);
+          set_color text_color;
+          Ui.add_first_foreground
+            (draw_string_colored (x + 120) (y - 30) 1 24
+               ("PP:" ^ string_of_int m.curr_pp ^ "/"
+              ^ string_of_int m.max_pp)
+               white text_color));
 
       if i = 1 then draw_all_moves 0 (j + 1) (length - 1)
       else draw_all_moves (i + 1) j (length - 1)
@@ -149,7 +151,7 @@ let refresh () =
   let type1, type2 = get_types !current_creature in
   let type_str =
     string_of_etype type1
-    ^ if type2 = None then "" else "/" ^ string_of_etype type2
+    ^ if type2 = NoType then "" else "/" ^ string_of_etype type2
   in
 
   Ui.add_first_gameplay
@@ -168,11 +170,14 @@ let refresh () =
     (draw_string_colored 482 383 2 36 "Moves" white text_color);
   Ui.add_first_foreground
     (draw_string_colored 398 636 2 36 "Stats" white text_color);
-  Ui.add_first_foreground
-    (draw_text_string_pos 290 120 30 32
-       (get_move_description_i !current_creature
-          (menu_position.x + (2 * menu_position.y)))
-       text_color2);
+  (match
+     get_move_i !current_creature
+       (menu_position.x + (2 * menu_position.y))
+   with
+  | None -> ()
+  | Some m ->
+      Ui.add_first_foreground
+        (draw_text_string_pos 290 120 30 32 m.description text_color2));
   draw_moves ()
 
 let set_creature i =
@@ -187,22 +192,28 @@ let next_creature i =
   refresh ()
 
 let switch_move () =
+  let i1, i2 =
+    ( menu_position.x + (2 * menu_position.y),
+      switch_position.x + (2 * switch_position.y) )
+  in
   let a, b =
-    ( get_move_i !current_creature
-        (menu_position.x + (2 * menu_position.y)),
-      get_move_i !current_creature
-        (switch_position.x + (2 * switch_position.y)) )
+    (get_move_i !current_creature i1, get_move_i !current_creature i2)
   in
-  let moves = get_moves !current_creature in
-  let rec switch_move new_lst = function
-    | [] -> new_lst
-    | h :: t ->
-        if a = h then switch_move (new_lst @ [ b ]) t
-        else if b = h then switch_move (new_lst @ [ a ]) t
-        else switch_move (new_lst @ [ h ]) t
-  in
-  let new_moves = switch_move [] moves in
-  set_moves !current_creature new_moves
+  match a with
+  | None -> ()
+  | _ -> (
+      match b with
+      | None -> ()
+      | _ ->
+          (get_moves !current_creature).(i1) <- b;
+          (get_moves !current_creature).(i2) <- a)
+
+(* let moves = get_moves !current_creature in let rec switch_move
+   new_lst = function | [] -> new_lst | h :: t -> if a = h then
+   switch_move (new_lst @ [ b ]) t else if b = h then switch_move
+   (new_lst @ [ a ]) t else switch_move (new_lst @ [ h ]) t in let
+   new_moves = switch_move [] moves in set_moves !current_creature
+   new_moves *)
 
 let rec run_tick () =
   Input.poll ();

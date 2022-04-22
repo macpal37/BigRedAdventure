@@ -4,6 +4,21 @@
     separating these functions into a separate module, we eliminate the
     need to copy them to each module that needs them. *)
 
+exception Out_of_Index
+(** Raised whenever an index outside of range of an array or list is
+    being accessed. *)
+
+exception Segfault
+
+type 'a pointer = 'a option ref
+
+val null : unit -> 'a pointer
+val malloc : 'a -> 'a pointer
+val deref : 'a pointer -> 'a
+val assign : 'a pointer -> 'a -> unit
+val ( ~! ) : 'a pointer -> 'a
+val ( *= ) : 'a pointer -> 'a -> unit
+
 type point = {
   mutable x : int;
   mutable y : int;

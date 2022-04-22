@@ -1,3 +1,20 @@
+exception Out_of_Index
+exception Segfault
+
+type 'a pointer = 'a option ref
+
+let null () : 'a pointer = ref None
+let malloc (x : 'a) : 'a pointer = ref (Some x)
+
+let deref (ptr : 'a pointer) : 'a =
+  match !ptr with
+  | None -> raise Segfault
+  | Some r -> r
+
+let assign (ptr : 'a pointer) x = ptr := Some x
+let ( ~! ) = deref
+let ( *= ) = assign
+
 let bound num min max =
   if num >= max + 1 then max else if num <= min then min else num
 

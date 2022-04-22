@@ -1,8 +1,11 @@
 open Draw
+
+open Util
 (** The executor of the battle
 
     This module orchestrates the gameplay in battle*)
 
+val battle_sim : Combat.battle_record pointer
 val start_wild_battle : Creature.creature -> unit
 val update_health : Creature.creature -> int -> unit -> unit
 

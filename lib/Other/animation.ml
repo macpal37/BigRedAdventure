@@ -2,6 +2,7 @@ open Draw
 open Graphics
 open Util
 open Spritesheet
+open DrawText
 
 let d a b c =
   let x = a * b in

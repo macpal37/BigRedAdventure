@@ -1,5 +1,6 @@
 open Creature
-open Draw
+open DrawText
+open Util
 
 exception Empty
 (*exception OutOfPokemon exception IncorrectTurnPos*)
@@ -16,10 +17,6 @@ type btype =
   | Trainer
   | Wild
 
-type move_status =
-  | None of status
-  | Move of move
-
 type turn_status =
   | Choosing
   | Pending
@@ -29,7 +26,7 @@ type turn_status =
 
 type battle_creature = {
   mutable creature : creature;
-  mutable current_move : move_status;
+  mutable current_move : move option;
   mutable stat_changes : stats;
   mutable status_effect : status;
   mutable active : bool;
@@ -65,7 +62,7 @@ let empty_battle =
     player_battler =
       {
         creature = create_creature "missingno" 1;
-        current_move = None Fainted;
+        current_move = None;
         stat_changes = empty_stats;
         status_effect = Healthy;
         is_player = true;
@@ -74,7 +71,7 @@ let empty_battle =
     enemy_battler =
       {
         creature = create_creature "missingno" 1;
-        current_move = None Fainted;
+        current_move = None;
         stat_changes = empty_stats;
         status_effect = Healthy;
         is_player = false;
@@ -88,7 +85,7 @@ let empty_battle =
 let generate_battler creature player =
   {
     creature;
-    current_move = None (get_status creature);
+    current_move = None;
     stat_changes = empty_stats;
     status_effect = get_status creature;
     is_player = player;
@@ -134,20 +131,18 @@ let trainer_init plist elist =
 
 (*HELPERS FOR TURN_BUILDER*)
 let rand_move brecord =
-  let possible_moves = get_moves (List.nth brecord.enemy_creatures 0) in
-  let random_pos = Random.int (List.length possible_moves - 1) in
-  List.nth possible_moves random_pos
-
-let handle_battler_status battler move =
-  match get_status battler.creature with
-  | Healthy -> battler.current_move <- Move move
-  | _ -> battler.current_move <- None Healthy
+  let rec rand_move_rec () =
+    match get_move_i brecord.enemy_battler.creature (Random.int 4) with
+    | None -> rand_move_rec ()
+    | m -> m
+  in
+  rand_move_rec ()
 
 (*HELPERS FOR TURN_BUILDER END*)
 
 let turn_builder brecord player_move =
-  handle_battler_status brecord.player_battler player_move;
-  handle_battler_status brecord.enemy_battler (rand_move brecord)
+  brecord.player_battler.current_move <- player_move;
+  brecord.enemy_battler.current_move <- rand_move brecord
 
 (*HELPERS FOR BATTLE SIM FNS*)
 let get_crit () =
@@ -376,82 +371,77 @@ let exec_turn attacker defender brecord =
   if attacker.active && defender.active then begin
     let damage_pte =
       match attacker.current_move with
-      | None _ -> 0.0
-      | Move m ->
-          if m <> empty_move then begin
-            Ui.add_last_gameplay (fun () ->
-                Graphics.auto_synchronize false);
-            Ui.add_last_gameplay
-              (draw_text
-                 (get_nickname attacker.creature
-                 ^ " used " ^ m.move_name)
-                 40 true false);
+      | None -> 0.0
+      | Some m ->
+          Ui.add_last_gameplay (fun () ->
+              Graphics.auto_synchronize false);
+          Ui.add_last_gameplay
+            (draw_text
+               (get_nickname attacker.creature ^ " used " ^ m.move_name)
+               40 true false);
 
-            let dmg =
-              if m.power > 0 then begin
-                if attacker.creature = brecord.player_battler.creature
-                then
-                  Ui.add_last_gameplay
-                    (Draw.damage_render
-                       (get_front_sprite defender.creature)
-                       false
-                       (!refresh_battle
-                          (get_current_hp attacker.creature)
-                          (get_current_hp defender.creature)
-                          0))
-                else
-                  Ui.add_last_gameplay
-                    (Draw.damage_render
-                       (get_back_sprite defender.creature)
-                       true
-                       (!refresh_battle
-                          (get_current_hp defender.creature)
-                          (get_current_hp attacker.creature)
-                          1));
-
-                let damage, crit, mult =
-                  damage_calc m attacker defender
-                in
-
-                if mult <> 1.0 then
-                  if mult < 1. then
-                    Ui.add_last_gameplay
-                      (draw_text "It was not very effective!" 40 true
-                         true)
-                  else if mult > 1. then
-                    Ui.add_last_gameplay
-                      (draw_text "It was super-effective!" 40 true true)
-                  else if mult = 0.0 then
-                    Ui.add_last_gameplay
-                      (draw_text
-                         ("It does not affect "
-                         ^ get_nickname defender.creature
-                         ^ ".")
-                         40 true true);
+          let dmg =
+            if m.power > 0 then begin
+              if attacker.creature = brecord.player_battler.creature
+              then
                 Ui.add_last_gameplay
-                  (!health_bar
-                     (get_stat attacker.creature HP)
-                     (get_current_hp attacker.creature)
-                     (get_current_hp attacker.creature)
-                     attacker.is_player true);
+                  (Draw.damage_render
+                     (get_front_sprite defender.creature)
+                     false
+                     (!refresh_battle
+                        (get_current_hp attacker.creature)
+                        (get_current_hp defender.creature)
+                        0))
+              else
                 Ui.add_last_gameplay
-                  (!health_bar
-                     (get_stat defender.creature HP)
-                     (get_current_hp defender.creature)
-                     (get_current_hp defender.creature
-                     - int_of_float damage)
-                     defender.is_player true);
-                if crit then
+                  (Draw.damage_render
+                     (get_back_sprite defender.creature)
+                     true
+                     (!refresh_battle
+                        (get_current_hp defender.creature)
+                        (get_current_hp attacker.creature)
+                        1));
+
+              let damage, crit, mult =
+                damage_calc m attacker defender
+              in
+
+              if mult <> 1.0 then
+                if mult < 1. then
                   Ui.add_last_gameplay
-                    (draw_text "Critical Hit!" 40 true false);
-                damage
-              end
-              else 0.0
-            in
-            handle_effects m attacker defender ();
-            dmg
-          end
-          else 0.0
+                    (draw_text "It was not very effective!" 40 true true)
+                else if mult > 1. then
+                  Ui.add_last_gameplay
+                    (draw_text "It was super-effective!" 40 true true)
+                else if mult = 0.0 then
+                  Ui.add_last_gameplay
+                    (draw_text
+                       ("It does not affect "
+                       ^ get_nickname defender.creature
+                       ^ ".")
+                       40 true true);
+              Ui.add_last_gameplay
+                (!health_bar
+                   (get_stat attacker.creature HP)
+                   (get_current_hp attacker.creature)
+                   (get_current_hp attacker.creature)
+                   attacker.is_player true);
+              Ui.add_last_gameplay
+                (!health_bar
+                   (get_stat defender.creature HP)
+                   (get_current_hp defender.creature)
+                   (get_current_hp defender.creature
+                   - int_of_float damage)
+                   defender.is_player true);
+              if crit then
+                Ui.add_last_gameplay
+                  (draw_text "Critical Hit!" 40 true false);
+              damage
+            end
+            else 0.0
+          in
+          handle_effects m attacker defender ();
+          dmg
     in
 
     set_current_hp defender.creature
@@ -482,9 +472,9 @@ let execute_turn brecord =
     else exec_turn brecord.enemy_battler brecord.player_battler brecord
   else
     match brecord.player_battler.current_move with
-    | None _ ->
+    | None ->
         exec_turn brecord.enemy_battler brecord.player_battler brecord
-    | Move _ ->
+    | Some _ ->
         exec_turn brecord.player_battler brecord.enemy_battler brecord
 
 let check_active_status brecord =
@@ -507,13 +497,11 @@ let battle_sim_fh brecord =
   execute_turn brecord;
 
   if res then begin
-    brecord.player_battler.current_move <-
-      None (get_status brecord.player_battler.creature);
+    brecord.player_battler.current_move <- None;
     brecord.turn_pos <- Halfway
   end
   else begin
-    brecord.enemy_battler.current_move <-
-      None (get_status brecord.enemy_battler.creature);
+    brecord.enemy_battler.current_move <- None;
     brecord.turn_pos <- Halfway
   end;
   check_active_status brecord
@@ -522,11 +510,9 @@ let battle_sim_sh brecord =
   if brecord.battle_status <> Victory then begin
     execute_turn brecord;
 
-    brecord.player_battler.current_move <-
-      None (get_status brecord.player_battler.creature);
+    brecord.player_battler.current_move <- None;
 
-    brecord.enemy_battler.current_move <-
-      None (get_status brecord.enemy_battler.creature);
+    brecord.enemy_battler.current_move <- None;
     brecord.turn_pos <- Finished
   end;
   check_active_status brecord
@@ -615,7 +601,7 @@ let capture brecord modifier =
 (* =============== Switchig Party Members===================*)
 (* ==============================================================*)
 
-let switching_pending = ref Option.None
+let switching_pending = null ()
 
 let switch_player brecord creature _ =
   Ui.add_first_gameplay
