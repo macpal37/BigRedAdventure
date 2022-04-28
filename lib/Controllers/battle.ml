@@ -397,9 +397,8 @@ let handle_combat move =
     end
   end
 
-let pokeball_spritesheet =
-  Spritesheet.init_spritesheet
-    "assets/item_sprites/pokeball_capture.png" 64 64 3
+(* let pokeball_spritesheet = Spritesheet.init_spritesheet
+   "assets/item_sprites/pokeball_capture.png" 64 64 3 *)
 
 let handle_item item () =
   combat_mode := Attack;
@@ -421,15 +420,14 @@ let handle_item item () =
         | _ -> 1.0
       in
 
-      let catch_results = Combat.capture ~!battle_sim modifier in
+      let _ = Combat.capture ~!battle_sim modifier in
       Ui.update_all ();
-      Ui.add_last_gameplay
-        (Animation.capture_animation pokeball_spritesheet
-           (get_front_sprite ~!battle_sim.enemy_battler.creature)
-           catch_results ball_type
-           (!Combat.refresh_battle
-              (get_current_hp ~!battle_sim.player_battler.creature)
-              (get_current_hp ~!battle_sim.enemy_battler.creature)));
+      (* Ui.add_last_gameplay (Animation.capture_animation
+         pokeball_spritesheet (get_front_sprite
+         ~!battle_sim.enemy_battler.creature) catch_results ball_type
+         (!Combat.refresh_battle (get_current_hp
+         ~!battle_sim.player_battler.creature) (get_current_hp
+         ~!battle_sim.enemy_battler.creature))); *)
       Ui.update_all ();
       if ~!battle_sim.battle_status = Catch then begin
         print_endline "Success";

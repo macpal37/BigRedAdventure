@@ -29,6 +29,8 @@ type point = {
 val new_point : unit -> point
 (** [new_point () ] creates a new point initilized at (0,0)*)
 
+val print_int : string -> int -> unit
+
 val bound : int -> int -> int -> int
 (** [bound number min max] bounds the [number] to either the [min] or
     [max] if it goss below or above them respectively.*)

@@ -33,13 +33,6 @@ val text_color2 : Graphics.color
 
 (** {1 Getters and Setters}*)
 
-val set_text_bg : sprite -> sprite -> unit
-(** [set_text_bg bg_left bg_right] Sets the background sprites for the
-    text screen. Takes in two sprites. [bg_left] draws the background
-    starting at the bottom left corner of the screen. [bg_right] start
-    drawing thebackground at the bottm midde of the screen. These
-    sprites are drawn when [clear_text()] is called *)
-
 val get_dimension : sprite -> int * int
 (** [get_dimension sprite] returns the width and height of a sprite as a
     tuple.*)
@@ -119,4 +112,4 @@ val reset_rgb : sprite -> unit -> unit
 val add_rgb : sprite -> int -> int -> int -> unit -> unit
 
 val create_sprite :
-  int list -> Graphics.color list -> int -> int -> int -> sprite
+  int array -> Graphics.color list -> int -> int -> int -> sprite

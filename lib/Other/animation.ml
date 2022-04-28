@@ -23,7 +23,9 @@ let draw_hp_val x y curr max player animate () =
     set_color combat_bg;
     fill_rect (current_x () - 2) (current_y () + 4) 100 24;
     set_color white;
-    draw_string (hp_to_string curr ^ "/" ^ hp_to_string max);
+    DrawText.draw_string
+      (hp_to_string curr ^ "/" ^ hp_to_string max)
+      x y ();
     if animate then auto_synchronize true
   end
 

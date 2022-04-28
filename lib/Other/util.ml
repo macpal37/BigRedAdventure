@@ -14,6 +14,7 @@ let deref (ptr : 'a pointer) : 'a =
 let assign (ptr : 'a pointer) x = ptr := Some x
 let ( ~! ) = deref
 let ( *= ) = assign
+let print_int str i = print_endline (str ^ string_of_int i)
 
 let bound num min max =
   if num >= max + 1 then max else if num <= min then min else num

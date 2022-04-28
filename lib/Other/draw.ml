@@ -1,7 +1,7 @@
 open Graphics
 
 type sprite = {
-  pixels : int list;
+  pixels : int array;
   width : int;
   height : int;
   mutable color_palette : color list;
@@ -21,35 +21,13 @@ let text_color2 = rgb 215 215 255
 
 let empty_sprite =
   {
-    pixels = [];
+    pixels = Array.make 0 0;
     width = 0;
     height = 0;
     color_palette = [];
     base_palette = [];
     dpi = 1;
   }
-
-let text_bg1 =
-  ref
-    {
-      pixels = [];
-      width = 0;
-      height = 0;
-      color_palette = [];
-      base_palette = [];
-      dpi = 1;
-    }
-
-let text_bg2 =
-  ref
-    {
-      pixels = [];
-      width = 0;
-      height = 0;
-      color_palette = [];
-      base_palette = [];
-      dpi = 1;
-    }
 
 let create_sprite pixels palette width height dpi =
   {
@@ -69,10 +47,6 @@ let width = 800
 let height = 720
 let sync flag () = auto_synchronize flag
 let usync flag () = if !synced_mode then auto_synchronize flag
-
-let set_text_bg bg1 bg2 =
-  text_bg1 := bg1;
-  text_bg2 := bg2
 
 let set_font_size size () =
   font_size := size;
@@ -106,24 +80,16 @@ let draw_pixel size x y () =
   fill_rect (x - (size / 2)) (y - (size / 2)) size size
 
 let draw_from_pixels sprite x y min_w min_h max_w max_h () =
-  let rec draw_from_pixels_rec pixels x y tx ty =
-    match pixels with
-    | [] -> set_color text_color
-    | h :: t ->
-        if h <> 0 && tx >= min_w && ty >= min_h then begin
-          if !erase_mode then set_color (point_color 0 0)
-          else set_color (List.nth sprite.color_palette (h - 1));
-
-          draw_pixel sprite.dpi (x + tx) (y + ty) ()
-        end;
-        if ty < max_h then
-          if tx < max_w - sprite.dpi then
-            draw_from_pixels_rec t x y (tx + sprite.dpi) ty
-          else draw_from_pixels_rec t x y 0 (ty + sprite.dpi)
-        else set_color text_color
-  in
-
-  draw_from_pixels_rec sprite.pixels x y 0 0
+  for j = min_h / sprite.dpi to (max_h / sprite.dpi) - 1 do
+    for i = min_w / sprite.dpi to (max_w / sprite.dpi) - 1 do
+      let c = sprite.pixels.(i + (j * (sprite.width / sprite.dpi))) in
+      let tx, ty = (i * sprite.dpi, j * sprite.dpi) in
+      if c <> 0 && tx >= min_w && ty >= min_h then begin
+        set_color (List.nth sprite.color_palette (c - 1));
+        draw_pixel sprite.dpi (x + tx) (y + max_h - ty) ()
+      end
+    done
+  done
 
 let color_to_rgb color =
   let r = (color land 0xFF0000) asr 0x10
@@ -137,32 +103,22 @@ let rec find x lst =
   | h :: t -> if x = h then 0 else 1 + find x t
 
 let image_to_sprite (image : Image.image) =
-  let rec pixel_map i j sprite y =
-    if i < image.height then
-      let new_i, new_j =
-        if j = 0 then (i + 1, image.width - 1) else (i, j - 1)
-      in
-
-      let pixels, palette = sprite in
-
+  let palette = ref [] in
+  let pixels = Array.make (image.width * image.height) 0 in
+  for j = 0 to image.height - 1 do
+    for i = 0 to image.width - 1 do
       let color, alpha =
-        Image.read_rgba image j i (fun r g b a () -> (rgb r g b, a)) ()
+        Image.read_rgba image i j (fun r g b a () -> (rgb r g b, a)) ()
       in
-
-      let new_pallette =
-        if List.mem color palette = false then palette @ [ color ]
-        else palette
-      in
-
-      let y = if alpha > 0 then new_i else y in
-
+      if List.mem color !palette = false then
+        palette := !palette @ [ color ];
       if alpha > 0 then
-        let index = find color new_pallette in
-        pixel_map new_i new_j ((index + 1) :: pixels, new_pallette) y
-      else pixel_map new_i new_j (0 :: pixels, new_pallette) y
-    else sprite
-  in
-  pixel_map 0 (image.width - 1) ([], []) 0
+        let index = find color !palette in
+        pixels.(i + (j * image.width)) <- index + 1
+      else pixels.(i + (j * image.width)) <- 0
+    done
+  done;
+  (pixels, !palette)
 
 (* no function for converting color back to rgb in Graphics *)
 

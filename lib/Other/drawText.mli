@@ -20,6 +20,8 @@ val draw_string_colored :
     [shadow_offset] represents the offset disstance of the shodow to the
     text, when drawn. *)
 
+val draw_string : string -> int -> int -> unit -> unit
+
 val draw_text : string -> int -> bool -> bool -> unit -> unit
 (** [draw_text text font_size auto_scroll sticky(_)] draws the given
     [text] with the given [font_size]on the bottom of the screen and
