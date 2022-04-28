@@ -6,7 +6,7 @@
 type sprite
 (** The abstract type that represents a sprite. It stores the width and
     height of the sprite, all the pixels of the sprites, and the color
-    palettes used to color the sprite.contents *)
+    palettes used to color the sprite *)
 
 type folder =
   | Creature_Folder
@@ -15,8 +15,6 @@ type folder =
   | Item_Folder
       (** Variant that represents what folder to look into to retrieve
           the assets.*)
-
-val battle_bot : sprite
 
 val width : int
 (** Width of the screen*)
@@ -34,17 +32,6 @@ val text_color2 : Graphics.color
 (** Represents the color of the text.*)
 
 (** {1 Getters and Setters}*)
-
-val set_text_bg : sprite -> sprite -> unit
-(** [set_text_bg bg_left bg_right] Sets the background sprites for the
-    text screen. Takes in two sprites. [bg_left] draws the background
-    starting at the bottom left corner of the screen. [bg_right] start
-    drawing thebackground at the bottm midde of the screen. These
-    sprites are drawn when [clear_text()] is called *)
-
-val set_text_char_cap : int -> unit
-(** [set_text_char_cap char_cap] Sets the maximum number of characters
-    that can be drawn on the screen.*)
 
 val get_dimension : sprite -> int * int
 (** [get_dimension sprite] returns the width and height of a sprite as a
@@ -83,24 +70,6 @@ val load_sprite_from_filepath : string -> int -> unit -> sprite
 
 (** {1 Drawing Functions}*)
 
-val clear_text : sprite -> unit -> unit
-(** [clear_text clear_sprite] Clears the text with the givn sprite. *)
-
-val draw_string_colored :
-  int ->
-  int ->
-  int ->
-  int ->
-  string ->
-  Graphics.color ->
-  Graphics.color ->
-  unit ->
-  unit
-(** [draw_string_colored x y shadow_offset font_size text text_color shadow_color]
-    Draws the [text] at [x,y] of the screen with the given [text_color].
-    [shadow_offset] represents the offset disstance of the shodow to the
-    text, when drawn. *)
-
 val draw_pixel : int -> int -> int -> unit -> unit
 (** Draws a pixel of a given (size) to the screen on the (x,y)
     coordinate provided*)
@@ -126,24 +95,6 @@ val draw_sprite_crop :
     draws an image from the given [sprite] representation at [x] and [y]
     with cropped based on the bounds defined*)
 
-val draw_text : string -> int -> bool -> bool -> unit -> unit
-(** [draw_text text font_size auto_scroll sticky(_)] draws the given
-    [text] with the given [font_size]on the bottom of the screen and
-    simulates text scrolling. If [auto_scroll] is on, then it will
-    scroll automatically after a delay. If [sticky] is on, then the text
-    will remain there until new text replaces it.*)
-
-val draw_text_string : string -> unit -> unit
-(** [draw_text_string text font_size (_)] draws the given [text] with
-    the given [font_size]on the bottom of the screen. There is no text
-    scroll.*)
-
-val draw_text_string_pos :
-  int -> int -> int -> int -> string -> Graphics.color -> unit -> unit
-(** [draw_text_string_pos x y font_size char_cap  text color (_)] draws
-    the given [text] with the given [font_size]on the [x y]. There is no
-    text scroll.*)
-
 val damage_render : sprite -> bool -> (unit -> unit) -> unit -> unit
 (** [damage_render sprite is_player (_)] performs the damage animation
     of either the enemy or the player depedning on the [is_player]
@@ -161,4 +112,4 @@ val reset_rgb : sprite -> unit -> unit
 val add_rgb : sprite -> int -> int -> int -> unit -> unit
 
 val create_sprite :
-  int list -> Graphics.color list -> int -> int -> int -> sprite
+  int array -> Graphics.color list -> int -> int -> int -> sprite

@@ -1,7 +1,7 @@
 open Graphics
 
 type sprite = {
-  pixels : int list;
+  pixels : int array;
   width : int;
   height : int;
   mutable color_palette : color list;
@@ -21,35 +21,13 @@ let text_color2 = rgb 215 215 255
 
 let empty_sprite =
   {
-    pixels = [];
+    pixels = Array.make 0 0;
     width = 0;
     height = 0;
     color_palette = [];
     base_palette = [];
     dpi = 1;
   }
-
-let text_bg1 =
-  ref
-    {
-      pixels = [];
-      width = 0;
-      height = 0;
-      color_palette = [];
-      base_palette = [];
-      dpi = 1;
-    }
-
-let text_bg2 =
-  ref
-    {
-      pixels = [];
-      width = 0;
-      height = 0;
-      color_palette = [];
-      base_palette = [];
-      dpi = 1;
-    }
 
 let create_sprite pixels palette width height dpi =
   {
@@ -68,22 +46,18 @@ let synced_mode = ref true
 let width = 800
 let height = 720
 let sync flag () = auto_synchronize flag
-let usync flag () = if synced_mode.contents then auto_synchronize flag
-
-let set_text_bg bg1 bg2 =
-  text_bg1.contents <- bg1;
-  text_bg2.contents <- bg2
+let usync flag () = if !synced_mode then auto_synchronize flag
 
 let set_font_size size () =
-  font_size.contents <- size;
+  font_size := size;
   set_font
     ("-*-fixed-bold-r-semicondensed--" ^ string_of_int size
    ^ "-*-*-*-*-*-iso8859-1")
 
 let get_dimension sprite = (sprite.width, sprite.height)
 let get_font_size () = !font_size
-let set_erase_mode flag () = erase_mode.contents <- flag
-let set_synced_mode flag = synced_mode.contents <- flag
+let set_erase_mode flag () = erase_mode := flag
+let set_synced_mode flag = synced_mode := flag
 
 let change_dpi sprite dpi =
   {
@@ -106,24 +80,16 @@ let draw_pixel size x y () =
   fill_rect (x - (size / 2)) (y - (size / 2)) size size
 
 let draw_from_pixels sprite x y min_w min_h max_w max_h () =
-  let rec draw_from_pixels_rec pixels x y tx ty =
-    match pixels with
-    | [] -> set_color text_color
-    | h :: t ->
-        if h <> 0 && tx >= min_w && ty >= min_h then begin
-          if erase_mode.contents then set_color (point_color 0 0)
-          else set_color (List.nth sprite.color_palette (h - 1));
-
-          draw_pixel sprite.dpi (x + tx) (y + ty) ()
-        end;
-        if ty < max_h then
-          if tx < max_w - sprite.dpi then
-            draw_from_pixels_rec t x y (tx + sprite.dpi) ty
-          else draw_from_pixels_rec t x y 0 (ty + sprite.dpi)
-        else set_color text_color
-  in
-
-  draw_from_pixels_rec sprite.pixels x y 0 0
+  for j = min_h / sprite.dpi to (max_h / sprite.dpi) - 1 do
+    for i = min_w / sprite.dpi to (max_w / sprite.dpi) - 1 do
+      let c = sprite.pixels.(i + (j * (sprite.width / sprite.dpi))) in
+      let tx, ty = (i * sprite.dpi, j * sprite.dpi) in
+      if c <> 0 && tx >= min_w && ty >= min_h then begin
+        set_color (List.nth sprite.color_palette (c - 1));
+        draw_pixel sprite.dpi (x + tx) (y + max_h - ty) ()
+      end
+    done
+  done
 
 let color_to_rgb color =
   let r = (color land 0xFF0000) asr 0x10
@@ -137,32 +103,22 @@ let rec find x lst =
   | h :: t -> if x = h then 0 else 1 + find x t
 
 let image_to_sprite (image : Image.image) =
-  let rec pixel_map i j sprite y =
-    if i < image.height then
-      let new_i, new_j =
-        if j = 0 then (i + 1, image.width - 1) else (i, j - 1)
-      in
-
-      let pixels, palette = sprite in
-
+  let palette = ref [] in
+  let pixels = Array.make (image.width * image.height) 0 in
+  for j = 0 to image.height - 1 do
+    for i = 0 to image.width - 1 do
       let color, alpha =
-        Image.read_rgba image j i (fun r g b a () -> (rgb r g b, a)) ()
+        Image.read_rgba image i j (fun r g b a () -> (rgb r g b, a)) ()
       in
-
-      let new_pallette =
-        if List.mem color palette = false then palette @ [ color ]
-        else palette
-      in
-
-      let y = if alpha > 0 then new_i else y in
-
+      if List.mem color !palette = false then
+        palette := !palette @ [ color ];
       if alpha > 0 then
-        let index = find color new_pallette in
-        pixel_map new_i new_j ((index + 1) :: pixels, new_pallette) y
-      else pixel_map new_i new_j (0 :: pixels, new_pallette) y
-    else sprite
-  in
-  pixel_map 0 (image.width - 1) ([], []) 0
+        let index = find color !palette in
+        pixels.(i + (j * image.width)) <- index + 1
+      else pixels.(i + (j * image.width)) <- 0
+    done
+  done;
+  (pixels, !palette)
 
 (* no function for converting color back to rgb in Graphics *)
 
@@ -189,8 +145,6 @@ let load_sprite name folder dpi () =
   in
   let image = ImageLib_unix.openfile filename in
   load_image image dpi
-
-let battle_bot = load_sprite "battle_bot" GUI_Folder 3 ()
 
 let load_sprite_from_filepath filepath dpi () =
   let image = ImageLib_unix.openfile filepath in
@@ -237,185 +191,12 @@ let draw_creature sprite player () =
       (height - 50 - sprite.height)
       ()
 
-let string_to_char_list s =
-  let rec exp i l = if i < 0 then l else exp (i - 1) (s.[i] :: l) in
-  exp (String.length s - 1) []
-
-let remove_space text =
-  if String.length text > 0 && String.sub text 0 1 = " " then
-    String.sub text 1 (String.length text - 1)
-  else text
-
 let rec wait timer () =
   if timer = 0 then ()
   else if Graphics.key_pressed () then begin
     if Graphics.read_key () = 'e' then ()
   end
   else wait (timer - 1) ()
-
-let clear_text clear_sprite () =
-  usync false ();
-  draw_sprite clear_sprite 3 0 ();
-  usync true ()
-
-let text_char_cap = ref 28
-let auto_text_time = 175000
-let set_text_char_cap cap = text_char_cap.contents <- cap
-
-let draw_text text font_size auto sticky () =
-  auto_synchronize true;
-  set_font_size font_size ();
-  set_text_char_cap 28;
-  let wait_time = if auto then auto_text_time else -1 in
-  let wait_time = if sticky then 0 else wait_time in
-  let char_cap = text_char_cap.contents in
-
-  sync_draw (clear_text battle_bot) ();
-
-  set_color text_color;
-  let start_x = 35 in
-  let start_y = 132 in
-  moveto start_x start_y;
-  let words = String.split_on_char ' ' text in
-  let rec calc_levels w lst = function
-    | [] -> lst @ [ w ]
-    | h :: t ->
-        let new_w = w ^ " " ^ h in
-        if String.length new_w < char_cap then calc_levels new_w lst t
-        else calc_levels h (lst @ [ w ]) t
-  in
-  let levels =
-    match words with
-    | [] -> []
-    | h :: t -> calc_levels h [] t
-  in
-
-  let rec scroll_text start max = function
-    | [] ->
-        if start = 1 then wait wait_time ();
-        set_color text_color
-    | h :: t ->
-        let char_list = string_to_char_list h in
-        let rec draw_chars chars =
-          match chars with
-          | [] -> ()
-          | h :: t ->
-              set_color text_color;
-              draw_char h;
-              rmoveto (-15) 4;
-              set_color white;
-              draw_char h;
-              rmoveto 2 (-4);
-              set_color text_color;
-              Input.sleep 0.025 ();
-              draw_chars t
-        in
-        moveto start_x (start_y - (60 * start));
-        draw_chars char_list;
-        if start == max then begin
-          wait wait_time ();
-          if sticky = false then sync_draw (clear_text battle_bot) ();
-
-          set_color text_color;
-          scroll_text 0 max t
-        end
-        else scroll_text (start + 1) max t
-  in
-
-  set_color text_color;
-  scroll_text 0 1 levels;
-  auto_synchronize false
-
-let draw_text_string_pos x y font_size char_cap text color () =
-  set_font_size font_size ();
-  moveto x y;
-  let words = String.split_on_char ' ' text in
-  let rec calc_levels w lst = function
-    | [] -> lst @ [ w ]
-    | h :: t ->
-        let new_w = w ^ " " ^ h in
-        if String.length new_w < char_cap then calc_levels new_w lst t
-        else calc_levels h (lst @ [ w ]) t
-  in
-  let levels =
-    match words with
-    | [] -> []
-    | h :: t -> calc_levels h [] t
-  in
-
-  let rec scroll_text i = function
-    | [] -> set_color text_color
-    | h :: t ->
-        let char_list = string_to_char_list h in
-        let rec draw_chars chars =
-          match chars with
-          | [] -> ()
-          | h :: t ->
-              set_color text_color;
-              draw_char h;
-              rmoveto (-15) 4;
-              set_color color;
-              draw_char h;
-              rmoveto 2 (-4);
-              set_color text_color;
-              draw_chars t
-        in
-        moveto x (y - ((font_size + 5) * i));
-        draw_chars char_list;
-        scroll_text (i + 1) t
-  in
-  set_color text_color;
-  scroll_text 0 levels
-
-let draw_text_string text () =
-  let cap = !text_char_cap in
-  set_text_char_cap 28;
-  set_font_size 40 ();
-  let char_cap = text_char_cap.contents in
-  clear_text battle_bot ();
-  set_color text_color;
-  let start_x = 35 in
-  let start_y = 142 in
-  moveto start_x start_y;
-  let len = String.length text in
-  let levels = len / char_cap in
-  let rec scroll_text text start max =
-    if start mod 3 = 0 then if start <> 0 then set_color text_color;
-    if start <> max + 1 then begin
-      let text = remove_space text in
-      let short_text =
-        if String.length text > char_cap then String.sub text 0 char_cap
-        else text
-      in
-      let rest_text =
-        if String.length text > char_cap then
-          String.sub text char_cap
-            (String.length text - String.length short_text)
-        else ""
-      in
-      let char_list = string_to_char_list short_text in
-      let rec draw_chars chars =
-        match chars with
-        | [] -> ()
-        | h :: t ->
-            set_color text_color;
-            draw_char h;
-            rmoveto (-15) 4;
-            set_color white;
-            draw_char h;
-            rmoveto 2 (-4);
-            set_color text_color;
-            draw_chars t
-      in
-
-      moveto start_x (start_y - (50 * (start mod 3)));
-      draw_chars char_list;
-
-      scroll_text rest_text (start + 1) max
-    end
-  in
-  scroll_text text 0 levels;
-  set_text_char_cap cap
 
 (* create a gradient of colors from black at 0,0 to white at w-1,h-1 *)
 let gradient arr w h =
@@ -431,26 +212,6 @@ let draw_gradient w h =
   let arr = Array.make_matrix h w white in
   gradient arr w h;
   draw_image (make_image arr) 0 0
-
-let draw_string_colored
-    x
-    y
-    shadow_offset
-    font_size
-    text
-    custom_color
-    shadow_color
-    () =
-  let cache_font_size = get_font_size () in
-  set_font_size font_size ();
-  moveto x y;
-  set_color shadow_color;
-  draw_string text;
-  moveto (x + shadow_offset - 1) (y + shadow_offset);
-  set_color custom_color;
-  draw_string text;
-  set_color text_color;
-  set_font_size cache_font_size ()
 
 let damage_render player_sprite player clear_function () =
   let rec damage_render_rec c () =

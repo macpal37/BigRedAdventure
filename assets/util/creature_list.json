@@ -193,6 +193,10 @@
         "level": 3
       },
       {
+        "move": "Rock Throw",
+        "level": 5
+      },
+      {
         "move": "Crystal Barrage",
         "level": 9
       },
@@ -309,7 +313,7 @@
       },
       {
         "move": "Water Gun",
-        "level": 6
+        "level": 5
       },
       {
         "move": "Mystical Power",
@@ -351,11 +355,93 @@
       },
       {
         "move": "Rock Throw",
-        "level": 13
+        "level": 4
+      },
+      {
+        "move": "Bite",
+        "level": 10
+      }
+    ]
+  },
+  "nuxel": {
+    "name": "Nuxel",
+    "poke_id": 18,
+    "catch_rate": 190,
+    "base_exp": 82,
+    "level_rate": "Medium Fast",
+    "type1": "Electric",
+    "type2": "Dark",
+    "base_stats": {
+      "hp": 67,
+      "attack": 70,
+      "defense": 45,
+      "sp_attack": 30,
+      "sp_defense": 32,
+      "speed": 56
+    },
+    "ev_stat": "attack",
+    "ev_amount": 1,
+    "evolution": {
+      "name": "jaxel",
+      "level_up": 24
+    },
+    "learnset": [
+      {
+        "move": "Scratch",
+        "level": 1
+      },
+      {
+        "move": "Leer",
+        "level": 3
+      },
+      {
+        "move": "Spark",
+        "level": 5
       },
       {
         "move": "Bite",
         "level": 18
+      }
+    ]
+  },
+  "fispie": {
+    "name": "Fispie",
+    "poke_id": 20,
+    "catch_rate": 170,
+    "base_exp": 76,
+    "level_rate": "Medium Fast",
+    "type1": "Fairy",
+    "type2": "None",
+    "base_stats": {
+      "hp": 70,
+      "attack": 35,
+      "defense": 55,
+      "sp_attack": 35,
+      "sp_defense": 55,
+      "speed": 35
+    },
+    "ev_stat": "hp",
+    "ev_amount": 1,
+    "evolution": {
+      "name": "faresse",
+      "level_up": 24
+    },
+    "learnset": [
+      {
+        "move": "Pound",
+        "level": 1
+      },
+      {
+        "move": "Growl",
+        "level": 3
+      },
+      {
+        "move": "Round",
+        "level": 13
+      },
+      {
+        "move": "Draining Kiss",
+        "level": 5
       }
     ]
   }

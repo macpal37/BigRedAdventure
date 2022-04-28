@@ -2,6 +2,8 @@ open Draw
 open Graphics
 open Creature
 open Animation
+open Util
+open DrawText
 
 (* let max_creatures = 5 let max_creatures = ref 0 *)
 let party_menu_bg = load_sprite "party_menu" GUI_Folder 3 ()
@@ -11,9 +13,9 @@ let faint = load_sprite "faint" GUI_Folder 3 ()
 let menu_position = Util.new_point ()
 let switch_position = Util.new_point ()
 let minimenu_position = Util.new_point ()
-let current_item = ref Option.None
-let set_current_item i = current_item.contents <- Some i
-let get_current_item = current_item.contents
+let current_item = null ()
+let set_current_item i = current_item := Some i
+let get_current_item = !current_item
 
 type combat_mode =
   | OverworldMode
@@ -33,7 +35,7 @@ type menu =
 let menu_mode = ref MainMenu
 
 let move_x x () =
-  match menu_mode.contents with
+  match !menu_mode with
   | MainMenu ->
       if
         menu_position.x + x >= 0
@@ -49,7 +51,7 @@ let move_x x () =
   | _ -> ()
 
 let move_y y () =
-  match menu_mode.contents with
+  match !menu_mode with
   | MainMenu ->
       if
         menu_position.y + y >= 0
@@ -127,7 +129,7 @@ let draw_selector () =
     let x, y = (9, 140) in
     set_color red;
     draw_rect x y 254 152);
-  if menu_mode.contents = SwitchMode then begin
+  if !menu_mode = SwitchMode then begin
     if switch_position.x = 1 then begin
       let x, y = (276, 577 - (112 * switch_position.y)) in
       set_color blue;
@@ -150,7 +152,7 @@ let refresh () =
 
   Ui.add_first_foreground draw_selector;
   draw_menu (Player.party_i (State.player ()) 0) ();
-  if battle_mode.contents <> InventoryMode then
+  if !battle_mode <> InventoryMode then
     Ui.add_first_foreground
       (draw_string_colored 40 36 3 50 "Choose a CREATURE" text_color2
          text_color)
@@ -171,15 +173,15 @@ let use_item creature item =
         Creature.remove_status creature Fainted;
         Creature.add_hp creature (get_stat creature HP)
     | _ -> print_endline "NICE ITEM BRO :)");
-    current_item.contents <- Option.None;
-    menu_mode.contents <- Exit
+    current_item := None;
+    menu_mode := Exit
   with NoEffect ->
     refresh ();
     Ui.add_first_foreground
       (draw_string_colored 40 36 3 50 "It has no effect" text_color2
          text_color);
     ();
-    menu_mode.contents <- MainMenu
+    menu_mode := MainMenu
 
 let minimenu () =
   let x, y, dif, f = (630, 166, 44, 40) in
@@ -240,38 +242,38 @@ let rec run_tick () =
   if key = 'a' then move_x (-1) ();
   if key = 'd' then move_x 1 ();
   if key = 'w' || key = 's' || key = 'a' || key = 'd' then refresh ();
-  (match menu_mode.contents with
+  (match !menu_mode with
   | MainMenu -> (
-      match battle_mode.contents with
+      match !battle_mode with
       | BattleSwitch | OverworldMode ->
           if key = 'e' then begin
             minimenu_position.x <- 0;
             minimenu ();
-            menu_mode.contents <- MiniMenu
+            menu_mode := MiniMenu
           end;
-          if key = 'q' then menu_mode.contents <- Exit
+          if key = 'q' then menu_mode := Exit
       | InventoryMode ->
           (if key = 'e' then
            let target_creature =
              Player.party_i (State.player ())
                (if menu_position.x = 0 then 0 else menu_position.y + 1)
            in
-           match current_item.contents with
+           match !current_item with
            | Some i -> use_item target_creature i
            | None -> ());
-          if key = 'q' then menu_mode.contents <- Exit
+          if key = 'q' then menu_mode := Exit
       | FaintedSwitch ->
           if key = 'e' then begin
             minimenu_position.x <- 0;
             minimenu ();
-            menu_mode.contents <- MiniMenu
+            menu_mode := MiniMenu
           end)
   | MiniMenu ->
       if key = 'w' || key = 's' || key = 'a' || key = 'd' then
         minimenu ();
       if key = 'q' then begin
         minimenu_position.y <- 0;
-        menu_mode.contents <- MainMenu;
+        menu_mode := MainMenu;
         refresh ()
       end;
       if key = 'e' && minimenu_position.y = 0 then begin
@@ -282,12 +284,12 @@ let rec run_tick () =
       end;
 
       (if key = 'e' && minimenu_position.y = 1 then
-       match battle_mode.contents with
+       match !battle_mode with
        | OverworldMode ->
            switch_position.x <- menu_position.x + 0;
            switch_position.y <- menu_position.y + 0;
            refresh ();
-           menu_mode.contents <- SwitchMode
+           menu_mode := SwitchMode
        | BattleSwitch | FaintedSwitch ->
            if menu_position.x <> 0 then
              let a, b =
@@ -308,14 +310,14 @@ let rec run_tick () =
                in
                let new_party = switch_creature [] party in
                Player.set_party new_party (State.player ());
-               Combat.switching_pending.contents <- Some b;
+               Combat.switching_pending := Some b;
 
                refresh ();
-               menu_mode.contents <- Exit
+               menu_mode := Exit
              end
        | _ -> ());
       if key = 'e' && minimenu_position.y = 3 then begin
-        menu_mode.contents <- MainMenu;
+        menu_mode := MainMenu;
         refresh ()
       end
   | SwitchMode ->
@@ -329,10 +331,10 @@ let rec run_tick () =
         minimenu ();
         refresh ();
 
-        menu_mode.contents <- MiniMenu
+        menu_mode := MiniMenu
       end;
       if key = 'q' then begin
-        menu_mode.contents <- MiniMenu;
+        menu_mode := MiniMenu;
         menu_position.x <- switch_position.x + 0;
         menu_position.y <- switch_position.y + 0;
         minimenu_position.x <- 1;
@@ -345,13 +347,13 @@ let rec run_tick () =
 
   (*====== MiniMenu ====== *)
   Ui.update_all ();
-  if menu_mode.contents <> Exit then run_tick ()
+  if !menu_mode <> Exit then run_tick ()
 
 let init bm () =
   Ui.clear_all ();
-  menu_mode.contents <- MainMenu;
-  Combat.switching_pending.contents <- None;
-  battle_mode.contents <- bm;
+  menu_mode := MainMenu;
+  Combat.switching_pending := None;
+  battle_mode := bm;
   minimenu_position.x <- 0;
   minimenu_position.y <- 0;
   switch_position.x <- 0;

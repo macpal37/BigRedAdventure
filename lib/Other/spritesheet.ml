@@ -2,7 +2,7 @@ open Draw
 open Graphics
 
 type sprite_sheet = {
-  sprites : sprite list;
+  sprites : sprite array;
   rows : int;
   columns : int;
   sheet_width : int;
@@ -15,53 +15,48 @@ let rec find x lst =
   | h :: t -> if x = h then 0 else 1 + find x t
 
 let little_sprite (image : Image.image) x y w h =
-  let rec pixel_map i j sprite =
-    if i < w then
-      let new_i, new_j = if j = 0 then (i + 1, w - 1) else (i, j - 1) in
-
-      let pixels, palette = sprite in
+  let palette = ref [] in
+  let pixels = Array.make (w * h) 0 in
+  for j = 0 to h - 1 do
+    for i = 0 to w - 1 do
       let color, alpha =
-        Image.read_rgba image (j + x) (i + y)
+        Image.read_rgba image (i + x) (j + y)
           (fun r g b a () -> (rgb r g b, a))
           ()
       in
-
-      let new_pallette =
-        if List.mem color palette = false then palette @ [ color ]
-        else palette
-      in
-
+      if List.mem color !palette = false then
+        palette := !palette @ [ color ];
       if alpha > 0 then
-        let index = find color new_pallette in
-        pixel_map new_i new_j ((index + 1) :: pixels, new_pallette)
-      else pixel_map new_i new_j (0 :: pixels, new_pallette)
-    else sprite
-  in
-  pixel_map 0 (h - 1) ([], [])
+        let index = find color !palette in
+        pixels.(i + (j * w)) <- index + 1
+      else pixels.(i + (j * w)) <- 0
+    done
+  done;
+  (pixels, !palette)
 
 let init_spritesheet filepath sprite_width sprite_height dpi =
   let image = ImageLib_unix.openfile filepath in
-  let w = (image.width / sprite_width) - 1 in
+
+  print_endline ("WIDTH :" ^ string_of_int image.width);
+  print_endline ("HEIGHT :" ^ string_of_int image.height);
+  let w = image.width / sprite_width in
   let h = image.height / sprite_height in
-  let rec split_sprites i j lst =
-    if j < h then
+  let sprites = Array.make (w * h) Draw.empty_sprite in
+  for j = 0 to h - 1 do
+    for i = 0 to w - 1 do
       let pixels, palette =
         little_sprite image (sprite_width * i) (sprite_height * j)
           sprite_width sprite_height
       in
-
       let sprite =
         create_sprite pixels palette sprite_width sprite_height dpi
       in
 
-      if i < w then split_sprites (i + 1) j (sprite :: lst)
-      else split_sprites 0 (j + 1) (sprite :: lst)
-    else lst
-  in
-
-  let sprites = split_sprites 0 0 [] in
+      sprites.(i + (j * w)) <- sprite
+    done
+  done;
   {
-    sprites = List.rev sprites;
+    sprites;
     rows = h;
     columns = w + 1;
     sheet_width = image.width + 1;
@@ -69,6 +64,6 @@ let init_spritesheet filepath sprite_width sprite_height dpi =
   }
 
 let get_sprite sprite_sheet i =
-  if i >= 0 && i < List.length sprite_sheet.sprites then
-    List.nth sprite_sheet.sprites i
+  if i >= 0 && i < Array.length sprite_sheet.sprites then
+    sprite_sheet.sprites.(i)
   else empty_sprite

@@ -23,6 +23,18 @@
     ],
     "effect_chance": 10
   },
+  "Round": {
+    "power": 60,
+    "accuracy": 100,
+    "pp": 15,
+    "category": "Special",
+    "type": "Normal",
+    "description": "The user attacks the target with a song. Others can join in the Round and make the attack do greater damage.",
+    "effect_ids": [
+      17
+    ],
+    "effect_chance": 10
+  },
   "Growl": {
     "power": 100,
     "accuracy": 100,
@@ -71,6 +83,18 @@
     ],
     "effect_chance": 50
   },
+  "Spark": {
+    "power": 65,
+    "accuracy": 100,
+    "pp": 15,
+    "category": "Physical",
+    "type": "Electric",
+    "description": "The user throws an electrically charged tackle at the foe. It may also leave the target paralyzed.",
+    "effect_ids": [
+      0
+    ],
+    "effect_chance": 0
+  },
   "Disarming Voice": {
     "power": 50,
     "accuracy": 100,
@@ -82,6 +106,18 @@
       0
     ],
     "effect_chance": 50
+  },
+  "Draining Kiss Voice": {
+    "power": 50,
+    "accuracy": 100,
+    "pp": 10,
+    "category": "Special",
+    "type": "Fairy",
+    "description": "The user steals the target's energy with a kiss. The user's HP is restored by over half of the damage taken by the target.",
+    "effect_ids": [
+      0
+    ],
+    "effect_chance": 0
   },
   "Flamethrower": {
     "power": 90,

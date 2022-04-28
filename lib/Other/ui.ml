@@ -22,38 +22,33 @@ let renderer =
     }
 
 let clear_all () =
-  renderer.contents.background <- [];
-  renderer.contents.gameplay <- [];
-  renderer.contents.foreground <- []
+  !renderer.background <- [];
+  !renderer.gameplay <- [];
+  !renderer.foreground <- []
 
 let clear_ui layer =
   match layer with
-  | Background -> renderer.contents.background <- []
-  | Gameplay -> renderer.contents.gameplay <- []
-  | Foreground -> renderer.contents.foreground <- []
+  | Background -> !renderer.background <- []
+  | Gameplay -> !renderer.gameplay <- []
+  | Foreground -> !renderer.foreground <- []
 
 let add_first_foreground draw_func =
-  renderer.contents.foreground <-
-    draw_func :: renderer.contents.foreground
+  !renderer.foreground <- draw_func :: !renderer.foreground
 
 let add_first_gameplay draw_func =
-  renderer.contents.gameplay <- draw_func :: renderer.contents.gameplay
+  !renderer.gameplay <- draw_func :: !renderer.gameplay
 
 let add_first_background draw_func =
-  renderer.contents.background <-
-    draw_func :: renderer.contents.background
+  !renderer.background <- draw_func :: !renderer.background
 
 let add_last_foreground draw_func =
-  renderer.contents.foreground <-
-    renderer.contents.foreground @ [ draw_func ]
+  !renderer.foreground <- !renderer.foreground @ [ draw_func ]
 
 let add_last_gameplay draw_func =
-  renderer.contents.gameplay <-
-    renderer.contents.gameplay @ [ draw_func ]
+  !renderer.gameplay <- !renderer.gameplay @ [ draw_func ]
 
 let add_last_background draw_func =
-  renderer.contents.background <-
-    renderer.contents.background @ [ draw_func ]
+  !renderer.background <- !renderer.background @ [ draw_func ]
 
 let rec draw_all_background = function
   | [] -> ()
@@ -75,27 +70,27 @@ let rec draw_all_foreground = function
 
 let update_background () =
   sync true ();
-  draw_all_background renderer.contents.background;
+  draw_all_background !renderer.background;
   sync false ()
 
 let update_gameplay () =
   sync true ();
-  draw_all_gameplay renderer.contents.gameplay;
+  draw_all_gameplay !renderer.gameplay;
   sync false ()
 
 let update_foreground () =
   sync true ();
-  draw_all_foreground renderer.contents.foreground;
+  draw_all_foreground !renderer.foreground;
   sync false ()
 
 let update_all () =
   sync false ();
-  draw_all_background renderer.contents.background;
-  renderer.contents.background <- [];
+  draw_all_background !renderer.background;
+  !renderer.background <- [];
 
-  draw_all_gameplay renderer.contents.gameplay;
-  renderer.contents.gameplay <- [];
+  draw_all_gameplay !renderer.gameplay;
+  !renderer.gameplay <- [];
 
-  draw_all_foreground renderer.contents.foreground;
-  renderer.contents.foreground <- [];
+  draw_all_foreground !renderer.foreground;
+  !renderer.foreground <- [];
   sync true ()
