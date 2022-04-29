@@ -1,4 +1,4 @@
 (executable
  (name main)
  (public_name CreatureGame)
- (libraries CreatureGame graphics))
+ (libraries CreatureGame sdl2))
