@@ -261,3 +261,12 @@ let make_grayscale sprite () =
       sprite.color_palette
 
 let reset_rgb sprite () = sprite.color_palette <- sprite.base_palette
+
+let change_color sprite i c =
+  let rec replace j = function
+    | [] -> []
+    | h :: t ->
+        if j = i then c :: replace (j + 1) t else h :: replace (j + 1) t
+  in
+  Util.print_int "L: " (List.length sprite.color_palette);
+  sprite.color_palette <- replace 0 sprite.color_palette

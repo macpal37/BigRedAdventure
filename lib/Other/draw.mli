@@ -113,3 +113,5 @@ val add_rgb : sprite -> int -> int -> int -> unit -> unit
 
 val create_sprite :
   int array -> Graphics.color list -> int -> int -> int -> sprite
+
+val change_color : sprite -> int -> int -> unit

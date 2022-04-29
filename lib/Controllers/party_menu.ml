@@ -78,15 +78,15 @@ let draw_menu lead_creature () =
   Ui.add_first_background (draw_sprite party_menu_bg 0 0);
 
   Ui.add_first_foreground
-    (draw_string_colored 24 605 2 60 "PARTY" (rgb 255 170 40) white);
+    (draw_string_colored 24 605 1 "PARTY" (rgb 255 170 40) white);
   Ui.add_first_gameplay
     (draw_sprite (get_front_sprite lead_creature) 9 318);
   Ui.add_first_gameplay
-    (draw_string_colored 20 246 1 30
+    (draw_string_colored 20 246 0
        (get_nickname lead_creature)
        white text_color);
   Ui.add_first_gameplay
-    (draw_string_colored 20 220 1 20
+    (draw_string_colored 20 220 0
        ("LVL: " ^ string_of_int (get_level lead_creature))
        white text_color);
   let max, _, aft = get_hp_status lead_creature in
@@ -105,10 +105,10 @@ let draw_creature_status creature pos () =
        (x + 11) (y + 11));
   Ui.add_first_background (draw_sprite active x y);
   Ui.add_first_gameplay
-    (draw_string_colored xx (yy + 26) 1 30 (get_nickname creature) white
+    (draw_string_colored xx (yy + 26) 0 (get_nickname creature) white
        text_color);
   Ui.add_first_gameplay
-    (draw_string_colored xx yy 1 20
+    (draw_string_colored xx yy 0
        ("LVL: " ^ string_of_int (get_level creature))
        white text_color);
   let max, _, aft = get_hp_status creature in
@@ -154,7 +154,7 @@ let refresh () =
   draw_menu (Player.party_i (State.player ()) 0) ();
   if !battle_mode <> InventoryMode then
     Ui.add_first_foreground
-      (draw_string_colored 40 36 3 50 "Choose a CREATURE" text_color2
+      (draw_string_colored 40 36 1 "Choose a CREATURE" text_color2
          text_color)
 
 let use_item creature item =
@@ -178,7 +178,7 @@ let use_item creature item =
   with NoEffect ->
     refresh ();
     Ui.add_first_foreground
-      (draw_string_colored 40 36 3 50 "It has no effect" text_color2
+      (draw_string_colored 40 36 1 "It has no effect" text_color2
          text_color);
     ();
     menu_mode := MainMenu
@@ -188,23 +188,23 @@ let minimenu () =
   Ui.add_first_foreground
     (draw_string_colored (x - 30)
        (y - 5 - (dif * minimenu_position.y))
-       2 50 ">" text_color2 text_color);
+       50 ">" text_color2 text_color);
   Ui.add_first_foreground
     (draw_string_colored x
        (y - (dif * 0))
-       2 f "Summary" text_color2 text_color);
+       f "Summary" text_color2 text_color);
   Ui.add_first_foreground
     (draw_string_colored x
        (y - (dif * 1))
-       2 f "Switch" text_color2 text_color);
+       f "Switch" text_color2 text_color);
   Ui.add_first_foreground
     (draw_string_colored x
        (y - (dif * 2))
-       2 f "Item" text_color2 text_color);
+       f "Item" text_color2 text_color);
   Ui.add_first_foreground
     (draw_string_colored x
        (y - (dif * 3))
-       2 f "Back" text_color2 text_color);
+       f "Back" text_color2 text_color);
   Ui.add_first_foreground (draw_sprite minimenu1 576 12)
 
 let get_party_index () =

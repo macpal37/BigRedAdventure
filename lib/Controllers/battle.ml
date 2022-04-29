@@ -56,15 +56,15 @@ let draw_moves creature () =
       (match move with
       | None -> ()
       | Some m ->
-          draw_string_colored x y 2 40 m.move_name
+          draw_string_colored x y 40 m.move_name
             (get_color_from_etype m.etype)
             text_color ();
-          draw_string_colored x (y - 40) 1 30
+          draw_string_colored x (y - 40) 30
             (string_of_etype m.etype)
             (get_color_from_etype m.etype)
             text_color ();
 
-          draw_string_colored (x + 110) (y - 40) 1 30
+          draw_string_colored (x + 110) (y - 40) 30
             ("PP:" ^ string_of_int m.curr_pp ^ "/"
            ^ string_of_int m.max_pp)
             white text_color ());
@@ -113,22 +113,22 @@ let draw_combat_hud
     draw_sprite sprite
       (width - sprite_width - 14)
       (360 - sprite_height) ();
-    draw_string_colored (width - 320) 316 2 30
+    draw_string_colored (width - 320) 316 1
       (String.uppercase_ascii name)
       white text_color ();
 
-    draw_string_colored (width - 100) 316 2 30
+    draw_string_colored (width - 100) 316 1
       ("Lv" ^ string_of_int level)
       white text_color ()
   end
   else begin
     set_font_size 30 ();
     draw_sprite sprite 42 (height - 45 - sprite_height) ();
-    draw_string_colored 60 (height - 85) 2 30
+    draw_string_colored 60 (height - 85) 1
       (String.uppercase_ascii name)
       white text_color ();
 
-    draw_string_colored 280 (height - 85) 2 30
+    draw_string_colored 280 (height - 85) 0
       ("Lv" ^ string_of_int level)
       white text_color ()
   end;
@@ -141,14 +141,14 @@ let draw_combat_commands () =
   let x, y = (465, 120) in
   set_color text_color;
   clear_text battle_right ();
-  draw_string_colored x y 2 50 "FIGHT" white text_color ();
-  draw_string_colored x (y - 75) 2 50 "BAG" white text_color ();
-  draw_string_colored (x + 175) y 2 50 "PARTY" white text_color ();
-  draw_string_colored (x + 175) (y - 75) 2 50 "RUN" white text_color ();
+  draw_string_colored x y 50 "FIGHT" white text_color ();
+  draw_string_colored x (y - 75) 50 "BAG" white text_color ();
+  draw_string_colored (x + 175) y 50 "PARTY" white text_color ();
+  draw_string_colored (x + 175) (y - 75) 50 "RUN" white text_color ();
   draw_string_colored
     (x - 35 + (175 * commands_position.x))
     (y - (75 * commands_position.y))
-    2 50 ">" white text_color ();
+    1 ">" white text_color ();
 
   (draw_text_string_pos 35 132 40 14
      ("What will " ^ get_nickname ~!battle_sim.player_battler.creature)
@@ -205,7 +205,7 @@ let draw_level_up creature () =
   let x, y, dif, x2 = (width - 300 + 30, 200 + 250, 35, width - 140) in
   auto_synchronize false;
   draw_sprite level_up_screen (width - 300) 210 ();
-  draw_string_colored x y 1 40
+  draw_string_colored x y 0
     ("Level " ^ string_of_int (get_level creature))
     white text_color ();
   let stat_lst =
@@ -223,18 +223,18 @@ let draw_level_up creature () =
 
     draw_string_colored x
       (y - (dif * (i + 1)))
-      1 30
+      0
       (string_of_stat_short s)
       white text_color ();
 
     draw_string_colored x2
       (y - (dif * (i + 1)))
-      1 30
+      0
       (string_of_int (get_stat2 old_stats s))
       white text_color ();
     draw_string_colored (x2 + 80)
       (y - (dif * (i + 1)))
-      1 30
+      0
       ("+"
       ^ string_of_int (get_stat2 new_stats s - get_stat2 old_stats s))
       white text_color ()
@@ -243,7 +243,7 @@ let draw_level_up creature () =
   wait (-1) ();
   auto_synchronize false;
   draw_sprite level_up_screen (width - 300) 210 ();
-  draw_string_colored x y 1 40
+  draw_string_colored x y 1
     ("Level " ^ string_of_int (get_level creature))
     white text_color ();
   for i = 0 to 5 do
@@ -251,13 +251,13 @@ let draw_level_up creature () =
 
     draw_string_colored x
       (y - (dif * (i + 1)))
-      1 30
+      0
       (string_of_stat_short s)
       white text_color ();
 
     draw_string_colored x2
       (y - (dif * (i + 1)))
-      1 30
+      0
       (string_of_int (get_stat2 new_stats s))
       white text_color ()
   done;

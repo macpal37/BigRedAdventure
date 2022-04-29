@@ -36,14 +36,14 @@ let draw_decision () =
   draw_sprite decision_menu (x - 30) (y + 3) ();
   draw_string_colored x
     (y + 60 - (40 * minimenu_position.y))
-    1 30 ">" white text_color ();
-  draw_string_colored (x + 12) (y + 60) 1 30 "Yes" white text_color ();
-  draw_string_colored (x + 12) (y + 20) 1 30 "No" white text_color ()
+    0 ">" white text_color ();
+  draw_string_colored (x + 12) (y + 60) 0 "Yes" white text_color ();
+  draw_string_colored (x + 12) (y + 20) 0 "No" white text_color ()
 
 let draw_nickname () =
   draw_sprite nameholder 240 (280 - 70) ();
-  draw_string_colored (240 + 12) (280 - 62) 1 40 !nickname white
-    text_color ()
+  draw_string_colored (240 + 12) (280 - 62) 0 !nickname white text_color
+    ()
 
 let rec run_tick () =
   Input.poll ();

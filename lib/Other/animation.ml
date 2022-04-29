@@ -18,14 +18,12 @@ let draw_hp_val x y curr max player animate () =
   else begin
     if animate then auto_synchronize false;
     let combat_bg = point_color x y in
-    set_font_size 30 ();
-    moveto x y;
-    set_color combat_bg;
+
+    Graphics.set_color combat_bg;
     fill_rect (current_x () - 2) (current_y () + 4) 100 24;
-    set_color white;
-    DrawText.draw_string
+    DrawText.draw_string_colored x y 0
       (hp_to_string curr ^ "/" ^ hp_to_string max)
-      x y ();
+      white text_color ();
     if animate then auto_synchronize true
   end
 
@@ -48,7 +46,7 @@ let draw_health_bar
   let bar_yellow = rgb 221 193 64 in
   let bar_red = rgb 246 85 55 in
   let bar_green = rgb 103 221 144 in
-  set_color text_color;
+  Graphics.set_color text_color;
   set_line_width 8;
   draw_rect xh yh hwidth hheight;
   if hp_text then
@@ -56,13 +54,13 @@ let draw_health_bar
       (xh + (hwidth / 2))
       (yh - hheight - 5 - 22)
       before max hp_text animate ();
-  set_color blank;
+  Graphics.set_color blank;
   fill_rect xh yh hwidth hheight;
   let ratio = d before 100 max in
-  if ratio <= 1 then set_color blank
-  else if ratio <= 20 then set_color bar_red
-  else if ratio <= 50 then set_color bar_yellow
-  else set_color bar_green;
+  if ratio <= 1 then Graphics.set_color blank
+  else if ratio <= 20 then Graphics.set_color bar_red
+  else if ratio <= 50 then Graphics.set_color bar_yellow
+  else Graphics.set_color bar_green;
   let before_bar = d before 100 max in
   fill_rect xh yh (d before_bar hwidth 100) hheight;
 
@@ -72,12 +70,12 @@ let draw_health_bar
       if start = target || start <= 0 then ()
       else if start > target then begin
         (*=====LOSING HEALTH=====*)
-        if start <= 1 then set_color blank
-        else if start <= 20 then set_color bar_red
-        else if start <= 50 then set_color bar_yellow
-        else set_color bar_green;
+        if start <= 1 then Graphics.set_color blank
+        else if start <= 20 then Graphics.set_color bar_red
+        else if start <= 50 then Graphics.set_color bar_yellow
+        else Graphics.set_color bar_green;
         fill_rect xh yh (d start hwidth 100) hheight;
-        set_color blank;
+        Graphics.set_color blank;
         fill_rect
           (xh + d start hwidth 100)
           yh
@@ -93,10 +91,10 @@ let draw_health_bar
       end
       else begin
         (*=====Gaining HEALTH=====*)
-        if start == 1 then set_color blank
-        else if start <= 20 then set_color bar_red
-        else if start <= 50 then set_color bar_yellow
-        else set_color bar_green;
+        if start == 1 then Graphics.set_color blank
+        else if start <= 20 then Graphics.set_color bar_red
+        else if start <= 50 then Graphics.set_color bar_yellow
+        else Graphics.set_color bar_green;
         (* HP NUMBER *)
         draw_hp_val
           (xh + (hwidth / 2))
@@ -126,11 +124,11 @@ let draw_exp_bar max before after xh yh hwidth hheight () =
   let blank = rgb 20 52 100 in
   let bar_color = rgb 255 213 65 in
 
-  set_color text_color;
+  Graphics.set_color text_color;
   (* set_line_width 8; draw_rect xh yh hwidth hheight; *)
-  set_color blank;
+  Graphics.set_color blank;
   fill_rect xh yh hwidth hheight;
-  set_color bar_color;
+  Graphics.set_color bar_color;
   let before_bar = d before 100 max in
   fill_rect xh yh (d before_bar hwidth 100) hheight;
 
@@ -139,17 +137,17 @@ let draw_exp_bar max before after xh yh hwidth hheight () =
    let rec render_bar_progress start target =
      if start = target || start < 0 then ()
      else if start <= target then begin
-       set_color bar_color;
+       Graphics.set_color bar_color;
        fill_rect xh yh (d start hwidth 100 + 4) hheight;
-       (* set_color blank; fill_rect (xh + d start hwidth 100) yh 2
-          hheight; *)
+       (* Graphics.set_color blank; fill_rect (xh + d start hwidth 100)
+          yh 2 hheight; *)
        Input.sleep 0.02 ();
        render_bar_progress (start + 1) target
      end
    in
    render_bar_progress before_bar after_bar);
 
-  set_color text_color;
+  Graphics.set_color text_color;
   if before <> after then auto_synchronize false
 
 let draw_creature_effect sprite player red green blue value () =

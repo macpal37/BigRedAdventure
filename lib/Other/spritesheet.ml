@@ -7,6 +7,7 @@ type sprite_sheet = {
   columns : int;
   sheet_width : int;
   sheet_height : int;
+  dpi : int;
 }
 
 let rec find x lst =
@@ -61,9 +62,14 @@ let init_spritesheet filepath sprite_width sprite_height dpi =
     columns = w + 1;
     sheet_width = image.width + 1;
     sheet_height = image.height + 1;
+    dpi;
   }
 
-let get_sprite sprite_sheet i =
-  if i >= 0 && i < Array.length sprite_sheet.sprites then
-    sprite_sheet.sprites.(i)
+let get_sprite ss i =
+  if i >= 0 && i < Array.length ss.sprites then ss.sprites.(i)
   else empty_sprite
+
+let set_color ss i c =
+  for j = 0 to Array.length ss.sprites - 1 do
+    change_color ss.sprites.(j) (i + 1) c
+  done

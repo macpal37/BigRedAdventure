@@ -50,11 +50,11 @@ let draw_stats () =
     Ui.add_last_foreground
       (draw_string_colored x
          (y - (dif * (i + 1)))
-         1 30 (string_of_stat s) color text_color);
+         0 (string_of_stat s) color text_color);
     Ui.add_last_foreground
       (draw_string_colored x2
          (y - (dif * (i + 1)))
-         1 30
+         0
          (string_of_int (get_stat !current_creature s))
          color text_color)
   done
@@ -94,19 +94,19 @@ let draw_moves () =
       | Some m ->
           let x, y = (text_x + (box_w * i), text_y - (box_h * j)) in
           Ui.add_first_foreground
-            (draw_string_colored x y 2 28 m.move_name
+            (draw_string_colored x y 0 m.move_name
                (get_color_from_etype m.etype)
                text_color);
 
           Ui.add_first_foreground
-            (draw_string_colored x (y - 30) 1 24
+            (draw_string_colored x (y - 30) 0
                (string_of_etype m.etype)
                (get_color_from_etype m.etype)
                text_color);
 
           set_color text_color;
           Ui.add_first_foreground
-            (draw_string_colored (x + 120) (y - 30) 1 24
+            (draw_string_colored (x + 120) (y - 30) 0
                ("PP:" ^ string_of_int m.curr_pp ^ "/"
               ^ string_of_int m.max_pp)
                white text_color));
@@ -119,16 +119,16 @@ let draw_moves () =
 
 let refresh () =
   Ui.add_first_foreground
-    (draw_string_colored 24 605 1 60 "SUMMARY" (rgb 255 170 40) white);
+    (draw_string_colored 24 605 1 "SUMMARY" (rgb 255 170 40) white);
   Ui.add_last_background (draw_sprite creature_menu_bg 0 0);
   Ui.add_first_gameplay
     (draw_sprite (get_front_sprite !current_creature) 9 318);
   Ui.add_first_gameplay
-    (draw_string_colored 20 246 1 30
+    (draw_string_colored 20 246 0
        (get_nickname !current_creature)
        white text_color);
   Ui.add_first_gameplay
-    (draw_string_colored 20 220 1 20
+    (draw_string_colored 20 220 0
        ("LVL: " ^ string_of_int (get_level !current_creature))
        white text_color);
   let max, _, aft = get_hp_status !current_creature in
@@ -137,12 +137,12 @@ let refresh () =
   Ui.add_first_gameplay (draw_status (get_status !current_creature));
   let curr_exp, min_exp, max_exp = get_exp !current_creature in
   Ui.add_first_gameplay
-    (draw_string_colored 20 140 1 24 "EXP:" white text_color);
+    (draw_string_colored 20 140 0 "EXP:" white text_color);
   Ui.add_first_gameplay
     (draw_exp_bar (max_exp - min_exp) (curr_exp - min_exp)
        (curr_exp - min_exp) 20 128 210 8);
   Ui.add_first_gameplay
-    (draw_string_colored 20 104 1 20
+    (draw_string_colored 20 104 0
        (string_of_int (curr_exp - min_exp)
        ^ "/"
        ^ string_of_int (max_exp - min_exp))
@@ -155,21 +155,21 @@ let refresh () =
   in
 
   Ui.add_first_gameplay
-    (draw_string_colored 20 (132 - 56) 1 24 ("TYPE: " ^ type_str) white
+    (draw_string_colored 20 (132 - 56) 0 ("TYPE: " ^ type_str) white
        text_color);
   draw_stats ();
 
   let nature, _, _ = get_nature !current_creature in
   Ui.add_first_gameplay
-    (draw_string_colored 20 (102 - 56) 1 24 ("NATURE: " ^ nature) white
+    (draw_string_colored 20 (102 - 56) 0 ("NATURE: " ^ nature) white
        text_color);
   draw_stats ();
   (* Ui.add_first_gameplay (draw_string_colored 20 100 1 24 type_str
      white); *)
   Ui.add_first_foreground
-    (draw_string_colored 482 383 2 36 "Moves" white text_color);
+    (draw_string_colored 482 383 0 "Moves" white text_color);
   Ui.add_first_foreground
-    (draw_string_colored 398 636 2 36 "Stats" white text_color);
+    (draw_string_colored 398 636 0 "Stats" white text_color);
   (match
      get_move_i !current_creature
        (menu_position.x + (2 * menu_position.y))

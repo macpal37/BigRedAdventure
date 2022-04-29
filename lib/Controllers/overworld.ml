@@ -63,11 +63,14 @@ let draw _ =
   draw_tiles
     ((Player.x (State.player ()) * tile_size) - ((800 - tile_size) / 2))
     ((Player.y (State.player ()) * tile_size) - ((720 - tile_size) / 2));
-  match Player.orie (State.player ()) with
+  (match Player.orie (State.player ()) with
   | Player.N -> Draw.draw_sprite player_sprite_n 368 328 ()
   | Player.E -> Draw.draw_sprite player_sprite_e 368 328 ()
   | Player.S -> Draw.draw_sprite player_sprite_s 368 328 ()
-  | Player.W -> Draw.draw_sprite player_sprite_w 368 328 ()
+  | Player.W -> Draw.draw_sprite player_sprite_w 368 328 ());
+  print_endline "Did this crash?";
+  DrawText.draw_string_colored 100 100 0 "Hello?" Graphics.red
+    Graphics.black ()
 
 let encounter_anim _ =
   for i = 1 to 60 do
@@ -79,6 +82,7 @@ let encounter_anim _ =
     | Player.E -> Draw.draw_sprite player_sprite_e 368 328 ()
     | Player.S -> Draw.draw_sprite player_sprite_s 368 328 ()
     | Player.W -> Draw.draw_sprite player_sprite_w 368 328 ());
+
     Graphics.auto_synchronize true;
     Input.sleep 0.016 ()
   done;
