@@ -3,9 +3,6 @@
     This module primarily takes care of user inputs and forwarding them
     to the appropriate game module*)
 
-val tick_rate : float
-(** The time the program should pause after each frame*)
-
 type modes =
   | ModeOverworld
   | ModeBattle

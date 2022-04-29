@@ -69,22 +69,18 @@ let rec draw_all_foreground = function
       draw_all_foreground t
 
 let update_background () =
-  sync true ();
   draw_all_background !renderer.background;
-  sync false ()
+  present ()
 
 let update_gameplay () =
-  sync true ();
   draw_all_gameplay !renderer.gameplay;
-  sync false ()
+  present ()
 
 let update_foreground () =
-  sync true ();
   draw_all_foreground !renderer.foreground;
-  sync false ()
+  present ()
 
 let update_all () =
-  sync false ();
   draw_all_background !renderer.background;
   !renderer.background <- [];
 
@@ -93,4 +89,4 @@ let update_all () =
 
   draw_all_foreground !renderer.foreground;
   !renderer.foreground <- [];
-  sync true ()
+  present ()

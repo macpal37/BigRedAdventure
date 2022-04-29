@@ -4,5 +4,5 @@
 
 val tile_dpi : int
 
-val run_tick : unit -> unit
-(** [run_tick _] runs a new tick of the overworld.*)
+val run_overworld : unit -> unit
+(** [run_overworld _] runs the overworld. *)

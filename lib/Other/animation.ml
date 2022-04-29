@@ -1,5 +1,4 @@
 open Draw
-open Graphics
 open Util
 open Spritesheet
 open DrawText
@@ -15,10 +14,13 @@ let hp_to_string hp =
 
 let draw_hp_val x y curr max player animate () =
   if player = false then ()
-  else begin
-    if animate then auto_synchronize false;
-    let combat_bg = point_color x y in
-    set_font_size 30 ();
+  else
+    let combat_bg =
+      (*point_color x y*)
+      white
+      (*placeholder*)
+    in
+    DrawText.set_font_size 30 ();
     moveto x y;
     set_color combat_bg;
     fill_rect (current_x () - 2) (current_y () + 4) 100 24;
@@ -26,8 +28,8 @@ let draw_hp_val x y curr max player animate () =
     DrawText.draw_string
       (hp_to_string curr ^ "/" ^ hp_to_string max)
       x y ();
-    if animate then auto_synchronize true
-  end
+    if animate then Draw.present ();
+    moveto 0 0
 
 let draw_health_bar
     max
@@ -40,7 +42,6 @@ let draw_health_bar
     hp_text
     animate
     () =
-  if animate then auto_synchronize true;
   let max, before, after =
     (bound max 0 max, bound before 0 max, bound after 0 max)
   in
@@ -116,10 +117,9 @@ let draw_health_bar
       (if after >= 0 then after else 0)
       max hp_text animate ()
   end;
-  if animate then auto_synchronize false
+  if animate then present ()
 
 let draw_exp_bar max before after xh yh hwidth hheight () =
-  if before <> after then auto_synchronize true;
   let max, before, after =
     (bound max 0 max, bound before 0 after, bound after 0 max)
   in
@@ -150,7 +150,7 @@ let draw_exp_bar max before after xh yh hwidth hheight () =
    render_bar_progress before_bar after_bar);
 
   set_color text_color;
-  if before <> after then auto_synchronize false
+  if before <> after then present ()
 
 let draw_creature_effect sprite player red green blue value () =
   let rec effect count =
@@ -173,20 +173,19 @@ let switch_out
     clear_function
     () =
   clear_text battle_bot ();
-  Draw.sync_draw clear_function ();
+  Draw.present_draw clear_function ();
   let time = 0.075 in
-  set_synced_mode true;
   draw_creature_effect switching_out player 255 255 255 4 ();
-  set_synced_mode false;
-  Draw.sync_draw clear_function ();
+  present ();
+  Draw.present_draw clear_function ();
   let small1 = Draw.change_dpi switching_out 2 in
   draw_creature small1 player ();
   Input.sleep time ();
-  Draw.sync_draw clear_function ();
+  Draw.present_draw clear_function ();
   let small2 = Draw.change_dpi switching_out 1 in
   draw_creature small2 player ();
   Input.sleep time ();
-  Draw.sync_draw clear_function ();
+  Draw.present_draw clear_function ();
   Input.sleep time ();
 
   draw_text ("Come back " ^ name_in ^ "!") 40 true false ();
@@ -194,19 +193,18 @@ let switch_out
   add_rgb small3 255 255 255 ();
   draw_creature small3 player ();
   Input.sleep time ();
-  Draw.sync_draw clear_function ();
+  Draw.present_draw clear_function ();
   let small4 = Draw.change_dpi switching_in 2 in
   add_rgb small4 255 255 255 ();
   draw_creature small4 player ();
   Input.sleep time ();
-  Draw.sync_draw clear_function ();
+  Draw.present_draw clear_function ();
   draw_creature switching_in player ();
   draw_text ("Go " ^ name_out ^ "!") 40 true false ();
   reset_rgb switching_out ();
   reset_rgb switching_in ()
 
 let lower_stat_effect sprite player () =
-  set_synced_mode true;
   make_grayscale sprite ();
 
   for _ = 0 to 2 do
@@ -215,10 +213,9 @@ let lower_stat_effect sprite player () =
   done;
   reset_rgb sprite ();
   draw_creature sprite player ();
-  set_synced_mode false
+  present ()
 
 let raise_stat_effect sprite player () =
-  set_synced_mode true;
   make_grayscale sprite ();
   for _ = 0 to 2 do
     draw_creature_effect sprite player 0 0 (-200) 5 ();
@@ -228,12 +225,12 @@ let raise_stat_effect sprite player () =
   reset_rgb sprite ();
   draw_creature sprite player ();
   clear_text battle_bot ();
-  set_synced_mode false
+  present ()
 
 let play_animation anim x y delay clear_function () =
   for i = 0 to Array.length anim - 1 do
-    sync_draw clear_function ();
-    sync_draw (draw_sprite (Array.get anim i) x y) ();
+    present_draw clear_function ();
+    present_draw (draw_sprite (Array.get anim i) x y) ();
     Input.sleep delay ()
   done
 
@@ -242,8 +239,8 @@ let toss_ball_animation anim delay clear_function () =
     let x = 114 + (20 * i) in
     let y = ((x - 375) * (x - 375) / -250) + 500 in
 
-    sync_draw clear_function ();
-    sync_draw (draw_sprite (Array.get anim (i mod 3)) x y) ();
+    present_draw clear_function ();
+    present_draw (draw_sprite (Array.get anim (i mod 3)) x y) ();
     Input.sleep delay ()
   done
 
@@ -284,18 +281,17 @@ let capture_animation
   play_animation capture_anim x (y + 4) 0.03 (clear_function 2) ();
 
   let time = 0.075 in
-  set_synced_mode true;
   draw_creature_effect creature false 255 255 255 4 ();
-  set_synced_mode false;
-  Draw.sync_draw (clear_function 0) ();
+  present ();
+  Draw.present_draw (clear_function 0) ();
   let small1 = Draw.change_dpi creature 2 in
   draw_sprite small1 (x + 20) (y + 40) ();
   Input.sleep time ();
-  Draw.sync_draw (clear_function 0) ();
+  Draw.present_draw (clear_function 0) ();
   let small2 = Draw.change_dpi creature 1 in
   draw_sprite small2 (x + 50) (y + 60) ();
   Input.sleep time ();
-  Draw.sync_draw (clear_function 0) ();
+  Draw.present_draw (clear_function 0) ();
   Input.sleep time ();
   let time = 0.05 in
   reset_rgb creature ();
@@ -313,9 +309,7 @@ let capture_animation
         else begin
           Input.sleep (time *. 2.) ();
           play_animation fail_anim x y 0.02 (clear_function 0) ();
-          sync_draw (clear_function 2) ()
+          present_draw (clear_function 2) ()
         end
   in
-  handle_shakes results;
-  auto_synchronize false;
-  set_synced_mode false
+  handle_shakes results

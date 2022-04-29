@@ -1,5 +1,4 @@
 open Draw
-open Graphics
 
 (* let text_font = Spritesheet.init_spritesheet
    "assets/gui_sprites/text-font3.png" 32 50 1 *)
@@ -7,6 +6,9 @@ let text_font =
   Spritesheet.init_spritesheet "assets/gui_sprites/text-font4.png" 21 33
     1
 
+let font_size = ref 50
+let set_font_size size () = font_size := size
+let get_font_size () = !font_size
 let spacing = 18
 let text_char_cap = 28
 let auto_text_time = 175000
@@ -71,15 +73,15 @@ let draw_string_colored
   set_color custom_color;
   draw_string text x y ();
   set_color text_color;
-  set_font_size cache_font_size ()
+  set_font_size cache_font_size ();
+  moveto 0 0
 
 let draw_text text font_size auto sticky () =
-  auto_synchronize true;
   set_font_size font_size ();
   let wait_time = if auto then auto_text_time else -1 in
   let wait_time = if sticky then 0 else wait_time in
 
-  sync_draw (clear_text battle_bot) ();
+  present_draw (clear_text battle_bot) ();
 
   set_color text_color;
   let start_x = 30 in
@@ -120,7 +122,7 @@ let draw_text text font_size auto sticky () =
         draw_chars char_list;
         if start == max then begin
           wait wait_time ();
-          if sticky = false then sync_draw (clear_text battle_bot) ();
+          if sticky = false then present_draw (clear_text battle_bot) ();
 
           set_color text_color;
           scroll_text 0 max t
@@ -130,7 +132,8 @@ let draw_text text font_size auto sticky () =
 
   set_color text_color;
   scroll_text 0 1 levels;
-  auto_synchronize false
+  present ();
+  moveto 0 0
 
 let draw_text_string_pos x y font_size char_cap text _ () =
   set_font_size font_size ();
@@ -167,7 +170,8 @@ let draw_text_string_pos x y font_size char_cap text _ () =
         scroll_text (i + 1) t
   in
   set_color text_color;
-  scroll_text 0 levels
+  scroll_text 0 levels;
+  moveto 0 0
 
 let draw_text_string text () =
   set_font_size 40 ();
@@ -210,4 +214,5 @@ let draw_text_string text () =
       scroll_text rest_text (start + 1) max
     end
   in
-  scroll_text text 0 levels
+  scroll_text text 0 levels;
+  moveto 0 0

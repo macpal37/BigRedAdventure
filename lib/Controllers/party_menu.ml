@@ -1,9 +1,9 @@
 open Draw
-open Graphics
 open Creature
 open Animation
 open Util
 open DrawText
+open Sdlkeycode
 
 (* let max_creatures = 5 let max_creatures = ref 0 *)
 let party_menu_bg = load_sprite "party_menu" GUI_Folder 3 ()
@@ -229,31 +229,34 @@ let switch () =
   Player.set_party new_party (State.player ())
 
 let rec run_tick () =
-  Input.poll ();
+  Input.sleep Draw.tick_rate ();
   let key =
-    match Input.key_option () with
+    match Input.pop_key_option () with
     | Some c -> c
-    | None -> '#'
+    | None -> Unknown
   in
 
   (*====== Move Selector ====== *)
-  if key = 'w' then move_y (-1) ();
-  if key = 's' then move_y 1 ();
-  if key = 'a' then move_x (-1) ();
-  if key = 'd' then move_x 1 ();
-  if key = 'w' || key = 's' || key = 'a' || key = 'd' then refresh ();
+  if key = W || key = Up then move_y (-1) ();
+  if key = S || key = Down then move_y 1 ();
+  if key = A || key = Left then move_x (-1) ();
+  if key = D || key = Right then move_x 1 ();
+  if
+    key = A || key = S || key = A || key = D || key = Up || key = Down
+    || key = Right || key = Left
+  then refresh ();
   (match !menu_mode with
   | MainMenu -> (
       match !battle_mode with
       | BattleSwitch | OverworldMode ->
-          if key = 'e' then begin
+          if key = E || key = Z then begin
             minimenu_position.x <- 0;
             minimenu ();
             menu_mode := MiniMenu
           end;
-          if key = 'q' then menu_mode := Exit
+          if key = Q || key = X then menu_mode := Exit
       | InventoryMode ->
-          (if key = 'e' then
+          (if key = E || key = Z then
            let target_creature =
              Player.party_i (State.player ())
                (if menu_position.x = 0 then 0 else menu_position.y + 1)
@@ -261,29 +264,31 @@ let rec run_tick () =
            match !current_item with
            | Some i -> use_item target_creature i
            | None -> ());
-          if key = 'q' then menu_mode := Exit
+          if key = Q || key = X then menu_mode := Exit
       | FaintedSwitch ->
-          if key = 'e' then begin
+          if key = E || key = Z then begin
             minimenu_position.x <- 0;
             minimenu ();
             menu_mode := MiniMenu
           end)
   | MiniMenu ->
-      if key = 'w' || key = 's' || key = 'a' || key = 'd' then
-        minimenu ();
-      if key = 'q' then begin
+      if
+        key = A || key = S || key = A || key = D || key = Up
+        || key = Down || key = Right || key = Left
+      then minimenu ();
+      if key = Q || key = X then begin
         minimenu_position.y <- 0;
         menu_mode := MainMenu;
         refresh ()
       end;
-      if key = 'e' && minimenu_position.y = 0 then begin
+      if (key = E || key = Z) && minimenu_position.y = 0 then begin
         Creature_menu.set_creature (get_party_index ());
         Creature_menu.init ();
         minimenu ();
         refresh ()
       end;
 
-      (if key = 'e' && minimenu_position.y = 1 then
+      (if (key = E || key = Z) && minimenu_position.y = 1 then
        match !battle_mode with
        | OverworldMode ->
            switch_position.x <- menu_position.x + 0;
@@ -316,12 +321,12 @@ let rec run_tick () =
                menu_mode := Exit
              end
        | _ -> ());
-      if key = 'e' && minimenu_position.y = 3 then begin
+      if (key = E || key = Z) && minimenu_position.y = 3 then begin
         menu_mode := MainMenu;
         refresh ()
       end
   | SwitchMode ->
-      if key = 'e' then begin
+      if key = E || key = Z then begin
         switch ();
         menu_position.x <- switch_position.x + 0;
         menu_position.y <- switch_position.y + 0;
@@ -333,7 +338,7 @@ let rec run_tick () =
 
         menu_mode := MiniMenu
       end;
-      if key = 'q' then begin
+      if key = Q || key = X then begin
         menu_mode := MiniMenu;
         menu_position.x <- switch_position.x + 0;
         menu_position.y <- switch_position.y + 0;

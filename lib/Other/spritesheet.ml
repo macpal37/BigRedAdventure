@@ -1,5 +1,4 @@
 open Draw
-open Graphics
 
 type sprite_sheet = {
   sprites : sprite array;
@@ -21,7 +20,7 @@ let little_sprite (image : Image.image) x y w h =
     for i = 0 to w - 1 do
       let color, alpha =
         Image.read_rgba image (i + x) (j + y)
-          (fun r g b a () -> (rgb r g b, a))
+          (fun r g b a () -> (Draw.rgb r g b, a))
           ()
       in
       if List.mem color !palette = false then

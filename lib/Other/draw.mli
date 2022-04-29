@@ -1,12 +1,15 @@
 (** Abstract Representation of the View
 
-    This module containsa all the functions sued to load and render all
+    This module contains all the functions used to load and render all
     the assets used in the Game *)
 
 type sprite
 (** The abstract type that represents a sprite. It stores the width and
     height of the sprite, all the pixels of the sprites, and the color
     palettes used to color the sprite *)
+
+type color = int
+(** A single int representing a color*)
 
 type folder =
   | Creature_Folder
@@ -22,14 +25,52 @@ val width : int
 val height : int
 (** Height of the screen*)
 
+val tick_rate : float
+(** The time the program should pause after each frame*)
+
 val empty_sprite : sprite
 (** Represents a blank sprite that draws nothing *)
 
-val text_color : Graphics.color
+val white : color
+val red : color
+val blue : color
+
+val text_color : color
 (** Represents the color of the text.*)
 
-val text_color2 : Graphics.color
+val text_color2 : color
 (** Represents the color of the text.*)
+
+val open_window : unit -> unit
+(** Makes the window*)
+
+val renderer : unit -> Sdlrender.t
+(** DEBUG exposing renderer*)
+
+val present : unit -> unit
+(** Makes new drawing visible*)
+
+val rgb : int -> int -> int -> color
+(** mirrors Graphics.rgb*)
+
+val set_draw_color : int -> int -> int -> unit
+val set_color : color -> unit
+
+val fill_rect : int -> int -> int -> int -> unit
+(** [fill_rect x y w h] fills a rectangle with bottom corner (x,y) and
+    dimensions (w,h)*)
+
+val set_line_width : int -> unit
+(** Sets the width of draw functions*)
+
+val draw_rect : int -> int -> int -> int -> unit
+(** [draw_rect x y w h] draws a rectangle with bottom corner (x,y) and
+    dimensions (w,h)*)
+
+val current_x : unit -> int
+val current_y : unit -> int
+val moveto : int -> int -> unit
+val rmoveto : int -> int -> unit
 
 (** {1 Getters and Setters}*)
 
@@ -38,9 +79,6 @@ val get_dimension : sprite -> int * int
     tuple.*)
 
 val set_erase_mode : bool -> unit -> unit
-val set_synced_mode : bool -> unit
-val set_font_size : int -> unit -> unit
-val get_font_size : unit -> int
 val change_dpi : sprite -> int -> sprite
 
 val clear_screen : unit -> unit
@@ -51,8 +89,7 @@ val wait : int -> unit -> unit
     continue. If [delay_time = -1] then it waits indefinetely until user
     input *)
 
-val sync_draw : (unit -> unit) -> unit -> unit
-val sync : bool -> unit -> unit
+val present_draw : (unit -> unit) -> unit -> unit
 
 (** {1 Loading Sprites}*)
 
@@ -112,4 +149,4 @@ val reset_rgb : sprite -> unit -> unit
 val add_rgb : sprite -> int -> int -> int -> unit -> unit
 
 val create_sprite :
-  int array -> Graphics.color list -> int -> int -> int -> sprite
+  int array -> color list -> int -> int -> int -> sprite

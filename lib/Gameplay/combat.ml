@@ -373,8 +373,8 @@ let exec_turn attacker defender brecord =
       match attacker.current_move with
       | None -> 0.0
       | Some m ->
-          Ui.add_last_gameplay (fun () ->
-              Graphics.auto_synchronize false);
+          (*Ui.add_last_gameplay (fun () -> Graphics.auto_synchronize
+            false);*)
           Ui.add_last_gameplay
             (draw_text
                (get_nickname attacker.creature ^ " used " ^ m.move_name)

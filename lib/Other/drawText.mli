@@ -5,14 +5,17 @@ val battle_bot : sprite
 val clear_text : sprite -> unit -> unit
 (** [clear_text clear_sprite] Clears the text with the givn sprite. *)
 
+val set_font_size : int -> unit -> unit
+val get_font_size : unit -> int
+
 val draw_string_colored :
   int ->
   int ->
   int ->
   int ->
   string ->
-  Graphics.color ->
-  Graphics.color ->
+  Draw.color ->
+  Draw.color ->
   unit ->
   unit
 (** [draw_string_colored x y shadow_offset font_size text text_color shadow_color]
@@ -35,7 +38,7 @@ val draw_text_string : string -> unit -> unit
     scroll.*)
 
 val draw_text_string_pos :
-  int -> int -> int -> int -> string -> Graphics.color -> unit -> unit
+  int -> int -> int -> int -> string -> Draw.color -> unit -> unit
 (** [draw_text_string_pos x y font_size char_cap  text color (_)] draws
     the given [text] with the given [font_size]on the [x y]. There is no
     text scroll.*)

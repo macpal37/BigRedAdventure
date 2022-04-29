@@ -3,7 +3,7 @@
 (library
  (name CreatureGame)
  (public_name CreatureGame)
- (libraries yojson ANSITerminal graphics imagelib.unix stdlib)
+ (libraries yojson ANSITerminal imagelib.unix stdlib sdl2)
  (modules
   ; =====Controllers=====
   battle
