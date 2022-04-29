@@ -18,4 +18,4 @@ val get_sprite : sprite_sheet -> int -> sprite
 (** [get_sprite sprite_sheet id] Returns the sprite at index [i] from
     [sprite_sheet]*)
 
-val set_color : sprite_sheet -> int -> int -> unit
+val set_text_color : sprite_sheet -> int -> int -> unit

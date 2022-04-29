@@ -1,8 +1,8 @@
 open Draw
-open Graphics
 open Creature
 open Animation
 open DrawText
+open Sdlkeycode
 
 let creature_menu_bg = load_sprite "creature_menu" GUI_Folder 3 ()
 let menu_position = Util.new_point ()
@@ -216,32 +216,37 @@ let switch_move () =
    new_moves *)
 
 let rec run_tick () =
-  Input.poll ();
+  Input.sleep Draw.tick_rate ();
   let key =
-    match Input.key_option () with
+    match Input.pop_key_option () with
     | Some c -> c
-    | None -> '#'
+    | None -> Unknown
   in
   if menu_position.x = -3 then menu_position.x <- -2;
 
   if menu_position.x <> -2 then begin
-    if key = 'w' then move_y (-1) ();
-    if key = 's' then move_y 1 ();
-    if key = 'a' then move_x (-1) ();
-    if key = 'd' then move_x 1 ()
+    if key = W || key = Up then move_y (-1) ();
+    if key = S || key = Down then move_y 1 ();
+    if key = A || key = Left then move_x (-1) ();
+    if key = D || key = Right then move_x 1 ()
   end
   else begin
-    if key = 'a' then next_creature (-1);
-    if key = 'd' then next_creature 1
+    if key = A || key = Left then next_creature (-1);
+    if key = D || key = Right then next_creature 1
   end;
 
   (*====== Switch ====== *)
-  if key = 'e' && menu_position.x >= 0 && switch_position.x = -1 then begin
+  if
+    (key = E || key = Z)
+    && menu_position.x >= 0 && switch_position.x = -1
+  then begin
     switch_position.x <- menu_position.x + 0;
     switch_position.y <- menu_position.y + 0;
     refresh ()
   end
-  else if key = 'e' && switch_position.x <> -1 && menu_position.x <> -2
+  else if
+    (key = E || key = Z)
+    && switch_position.x <> -1 && menu_position.x <> -2
   then begin
     switch_move ();
     menu_position.x <- switch_position.x + 0;
@@ -251,23 +256,22 @@ let rec run_tick () =
     refresh ()
   end;
 
-  if key = 'e' && menu_position.x = -2 then begin
+  if (key = E || key = Z) && menu_position.x = -2 then begin
     menu_position.x <- 0;
     refresh ();
     draw_moves ()
   end;
-  if key = 'q' && menu_position.x <> -2 then begin
+  if (key = Q || key = X) && menu_position.x <> -2 then begin
     menu_position.x <- -3;
     refresh ()
   end;
 
-  if key = 'w' || key = 's' || key = 'd' || key = 'a' then refresh ();
+  refresh ();
 
   Ui.update_all ();
-  if key <> 'q' || menu_position.x <> -2 then run_tick ()
+  if (key <> Q && key <> X) || menu_position.x <> -2 then run_tick ()
 
 let init () =
-  set_synced_mode false;
   menu_position.x <- -2;
   switch_position.x <- -1;
 

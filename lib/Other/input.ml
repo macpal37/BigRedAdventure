@@ -1,20 +1,30 @@
-let key : char option ref = ref None
-let nil = char_of_int 0
+let key : Sdlkeycode.t option ref = ref None
+(* let nil = Sdlkeycode.Unknown *)
 
-let key_char _ =
-  match !key with
-  | Some k -> k
-  | None -> nil
+(* let key_char _ = match !key with | Some k -> k | None ->
+   Sdlkeycode.Unknown *)
 
-let key_option _ = !key
+let poll_key_option _ = !key
 
-let poll _ =
-  key :=
-    (fun _ ->
-      if Graphics.key_pressed () then Some (Graphics.read_key ())
-      else None)
-      ()
+let pop_key_option _ =
+  let k = !key in
+  key := None;
+  k
+
+let rec input_poll _ =
+  match Sdlevent.poll_event () with
+  | Some (Sdlevent.Quit _) ->
+      Sdl.quit ();
+      exit 0
+  | Some (KeyDown e) ->
+      key := Some e.keycode;
+      input_poll ()
+  | Some (KeyUp _) ->
+      key := None;
+      input_poll ()
+  | None -> ()
+  | _ -> input_poll ()
 
 let sleep time () =
   Unix.sleepf time;
-  poll ()
+  input_poll ()

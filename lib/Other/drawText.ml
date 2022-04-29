@@ -57,16 +57,16 @@ let rmoveto dx dy =
 let draw_string_colored x y f_size text cust_c shdw_c () =
   let font = get_font f_size in
   moveto x y;
-  set_color font 1 shdw_c;
-  set_color font 0 cust_c;
+  set_text_color font 1 shdw_c;
+  set_text_color font 0 cust_c;
   draw_string x y font text ()
 
 let draw_text text f_size auto sticky () =
   let font = get_font f_size in
   let wait_time = if auto then wait_time else -1 in
   let wait_time = if sticky then 0 else wait_time in
-
-  set_color font 0 text_color;
+  present_draw (clear_text battle_bot) ();
+  set_text_color font 0 text_color;
   let start_x = 30 in
   let start_y = 128 in
   moveto start_x start_y;
@@ -87,7 +87,7 @@ let draw_text text f_size auto sticky () =
   let rec scroll_text start max = function
     | [] ->
         if start = 1 then wait wait_time ();
-        set_color font 0 text_color
+        set_text_color font 0 text_color
     | h :: t ->
         let char_list = string_to_char_list h in
         let rec draw_chars chars =
@@ -103,16 +103,18 @@ let draw_text text f_size auto sticky () =
         draw_chars char_list;
         if start == max then begin
           wait wait_time ();
-          if sticky = false then (clear_text battle_bot) ();
+          if sticky = false then present_draw (clear_text battle_bot) ();
 
-          set_color font 0 text_color;
+          set_text_color font 0 text_color;
           scroll_text 0 max t
         end
         else scroll_text (start + 1) max t
   in
 
-  set_color font 0 text_color;
-  scroll_text 0 1 levels
+  set_text_color font 0 text_color;
+  scroll_text 0 1 levels;
+  present ();
+  moveto 0 0
 
 let draw_text_string_pos x y f_size char_cap text _ () =
   let font = get_font f_size in
@@ -132,7 +134,7 @@ let draw_text_string_pos x y f_size char_cap text _ () =
   in
 
   let rec scroll_text i = function
-    | [] -> set_color font 0 text_color
+    | [] -> set_text_color font 0 text_color
     | h :: t ->
         let char_list = string_to_char_list h in
         let rec draw_chars chars =
@@ -148,13 +150,13 @@ let draw_text_string_pos x y f_size char_cap text _ () =
         draw_chars char_list;
         scroll_text (i + 1) t
   in
-  set_color font 1 text_color;
+  set_text_color font 1 text_color;
   scroll_text 0 levels
 
 let draw_text_string text () =
   let font = get_font 1 in
   clear_text battle_bot ();
-  set_color font 1 text_color;
+  set_text_color font 1 text_color;
   let start_x = 30 in
   let start_y = 142 in
   moveto start_x start_y;
@@ -162,7 +164,7 @@ let draw_text_string text () =
   let levels = len / cap in
   let rec scroll_text text start max =
     if start mod 3 = 0 then
-      if start <> 0 then set_color font 1 text_color;
+      if start <> 0 then set_text_color font 1 text_color;
     if start <> max + 1 then begin
       let text = remove_space text in
       let short_text =
@@ -190,4 +192,5 @@ let draw_text_string text () =
       scroll_text rest_text (start + 1) max
     end
   in
-  scroll_text text 0 levels
+  scroll_text text 0 levels;
+  moveto 0 0

@@ -1,9 +1,9 @@
 open Draw
-open Graphics
 open Creature
 open Animation
 open Util
 open DrawText
+open Sdlkeycode
 
 let text_box_height = 212
 let moves_position = new_point ()
@@ -46,7 +46,6 @@ let draw_moves creature () =
   let box_x, box_y = (28, 200 - box_h) in
   let text_x, text_y = (38, (4 * text_box_height / 5) - 12) in
   let text_xdif, text_ydif = (376, 95) in
-  set_font_size 30 ();
   set_line_width 6;
   let rec draw_all_moves i j length =
     if length <= 0 then ()
@@ -109,7 +108,6 @@ let draw_combat_hud
     () =
   let sprite_width, sprite_height = get_dimension sprite in
   if player then begin
-    set_font_size 30 ();
     draw_sprite sprite
       (width - sprite_width - 14)
       (360 - sprite_height) ();
@@ -122,7 +120,6 @@ let draw_combat_hud
       white text_color ()
   end
   else begin
-    set_font_size 30 ();
     draw_sprite sprite 42 (height - 45 - sprite_height) ();
     draw_string_colored 60 (height - 85) 1
       (String.uppercase_ascii name)
@@ -133,18 +130,16 @@ let draw_combat_hud
       white text_color ()
   end;
   if still then draw_health_bar_combat max before before player false ()
-  else draw_health_bar_combat max before after player true ();
-  set_font_size 40 ()
+  else draw_health_bar_combat max before after player true ()
 
 let draw_combat_commands () =
-  set_font_size 50 ();
   let x, y = (465, 120) in
   set_color text_color;
   clear_text battle_right ();
-  draw_string_colored x y 50 "FIGHT" white text_color ();
-  draw_string_colored x (y - 75) 50 "BAG" white text_color ();
-  draw_string_colored (x + 175) y 50 "PARTY" white text_color ();
-  draw_string_colored (x + 175) (y - 75) 50 "RUN" white text_color ();
+  draw_string_colored x y 1 "FIGHT" white text_color ();
+  draw_string_colored x (y - 75) 1 "BAG" white text_color ();
+  draw_string_colored (x + 175) y 1 "PARTY" white text_color ();
+  draw_string_colored (x + 175) (y - 75) 1 "RUN" white text_color ();
   draw_string_colored
     (x - 35 + (175 * commands_position.x))
     (y - (75 * commands_position.y))
@@ -203,7 +198,6 @@ let draw_level_up creature () =
   level_up creature ();
   let new_stats = get_stats creature in
   let x, y, dif, x2 = (width - 300 + 30, 200 + 250, 35, width - 140) in
-  auto_synchronize false;
   draw_sprite level_up_screen (width - 300) 210 ();
   draw_string_colored x y 0
     ("Level " ^ string_of_int (get_level creature))
@@ -239,9 +233,8 @@ let draw_level_up creature () =
       ^ string_of_int (get_stat2 new_stats s - get_stat2 old_stats s))
       white text_color ()
   done;
-  auto_synchronize true;
+  present ();
   wait (-1) ();
-  auto_synchronize false;
   draw_sprite level_up_screen (width - 300) 210 ();
   draw_string_colored x y 1
     ("Level " ^ string_of_int (get_level creature))
@@ -261,16 +254,14 @@ let draw_level_up creature () =
       (string_of_int (get_stat2 new_stats s))
       white text_color ()
   done;
-  auto_synchronize true;
+  present ();
   wait (-1) ();
-  auto_synchronize false;
   !Combat.refresh_battle
     (get_current_hp ~!battle_sim.player_battler.creature)
     (get_current_hp ~!battle_sim.enemy_battler.creature)
     0 ();
 
-  auto_synchronize true;
-  auto_synchronize false
+  present ()
 
 let handle_exp player_creature enemy_creature () =
   Ui.update_all ();
@@ -332,16 +323,14 @@ let rec faint base c sprite player () =
     else (width - 50 - sprite_width, height - 50 - sprite_height)
   in
   if c = base - 2 then begin
-    auto_synchronize false;
     !Combat.refresh_battle
       (get_current_hp ~!battle_sim.player_battler.creature)
       (get_current_hp ~!battle_sim.enemy_battler.creature)
       (if player then 1 else 0)
       ();
-    auto_synchronize true
+    present ()
   end
   else begin
-    auto_synchronize false;
     !Combat.refresh_battle
       (get_current_hp ~!battle_sim.player_battler.creature)
       (get_current_hp ~!battle_sim.enemy_battler.creature)
@@ -353,21 +342,16 @@ let rec faint base c sprite player () =
       (sprite_height - (sprite_height / c), sprite_height)
       ();
     clear_text DrawText.battle_bot ();
-    auto_synchronize true;
+    present ();
     Input.sleep 0.075 ();
     faint base (c + 1) sprite player ()
   end;
-  set_color text_color;
-  set_synced_mode false
+  set_color text_color
 
-let animate_faint creature player () =
-  set_synced_mode false;
-  faint 20 1 creature player ()
+let animate_faint creature player () = faint 20 1 creature player ()
 
 let handle_combat move =
   Ui.update_all ();
-  set_synced_mode false;
-  auto_synchronize false;
   if ~!battle_sim.battle_status = Ongoing then begin
     Combat.turn_builder ~!battle_sim move;
     let player, enemy =
@@ -471,14 +455,13 @@ let refresh_battle () =
   Ui.add_first_foreground
     (draw_creature_exp ~!battle_sim.player_battler.creature false);
   Ui.add_first_foreground draw_combat_commands;
-  auto_synchronize false
+  present ()
 
 let clear_battle p_hp e_hp state () =
   let player, opponent =
     ( ~!battle_sim.player_battler.creature,
       ~!battle_sim.enemy_battler.creature )
   in
-  let text_box = Graphics.get_image 3 0 797 216 in
   (draw_sprite battle_bg1 0 0) ();
 
   draw_combat_hud combat_hud (get_nickname opponent)
@@ -492,7 +475,7 @@ let clear_battle p_hp e_hp state () =
     ((get_stats player).max_hp, p_hp, p_hp)
     true ();
   (draw_creature_exp ~!battle_sim.player_battler.creature false) ();
-  (match state with
+  match state with
   | 0 ->
       if ~!battle_sim.player_battler.active then
         draw_creature
@@ -512,8 +495,7 @@ let clear_battle p_hp e_hp state () =
         draw_creature
           (get_front_sprite ~!battle_sim.enemy_battler.creature)
           false ()
-  | _ -> ());
-  draw_image text_box 3 0
+  | _ -> ()
 (* (clear_text Draw.battle_bot) () *)
 
 let rec handle_inventory () =
@@ -558,28 +540,31 @@ let move_y y () =
   | _ -> ()
 
 let rec run_tick () =
-  Input.poll ();
+  Input.sleep Draw.tick_rate ();
   let key =
-    match Input.key_option () with
+    match Input.poll_key_option () with
     | Some c -> c
-    | None -> '#'
+    | None -> Unknown
   in
 
-  if key = 'd' then move_x 1 ();
-  if key = 'a' then move_x (-1) ();
-  if key = 'w' then move_y (-1) ();
-  if key = 's' then move_y 1 ();
+  if key = D || key = Right then move_x 1 ();
+  if key = A || key = Left then move_x (-1) ();
+  if key = W || key = Up then move_y (-1) ();
+  if key = S || key = Down then move_y 1 ();
   let action =
     match !combat_mode with
     | Commands ->
         (* ===================================== *)
         (* =================MOVES=============== *)
         (* ===================================== *)
-        if key <> 'e' || key = 'a' || key = 'w' || key = 's' then
-          Ui.add_first_foreground draw_combat_commands;
         if
-          key = 'e' && commands_position.x = 0
-          && commands_position.y = 0
+          (key <> E && key <> X)
+          || key = A || key = Left || key = W || key = Up || key = S
+          || key = Down
+        then Ui.add_first_foreground draw_combat_commands;
+        if
+          (key = E || key = Z)
+          && commands_position.x = 0 && commands_position.y = 0
           && ~!battle_sim.battle_status <> Combat.Victory
         then begin
           combat_mode := Moves;
@@ -591,15 +576,15 @@ let rec run_tick () =
           (* ===================================== *)
         end
         else if
-          key = 'e' && commands_position.x = 0
-          && commands_position.y = 1
+          (key = E || key = Z)
+          && commands_position.x = 0 && commands_position.y = 1
         then handle_inventory ()
           (* ===================================== *)
           (* =================PARTY=============== *)
           (* ===================================== *)
         else if
-          key = 'e' && commands_position.x = 1
-          && commands_position.y = 0
+          (key = E || key = Z)
+          && commands_position.x = 1 && commands_position.y = 0
         then begin
           Party_menu.init BattleSwitch ();
           match !Combat.switching_pending with
@@ -621,8 +606,8 @@ let rec run_tick () =
           (* ===================================== *)
         end
         else if
-          key = 'e' && commands_position.x = 1
-          && commands_position.y = 1
+          (key = E || key = Z)
+          && commands_position.x = 1 && commands_position.y = 1
         then begin
           Combat.run_away ~!battle_sim;
           if ~!battle_sim.battle_status = Combat.Flee then begin
@@ -640,11 +625,15 @@ let rec run_tick () =
           end
         end
     | Moves ->
-        if key <> 'e' || key = 'a' || key = 'w' || key = 's' then
+        if
+          (key <> E && key <> X)
+          || key = A || key = Left || key = W || key = Up || key = S
+          || key = Down
+        then
           Ui.add_first_foreground
             (draw_moves ~!battle_sim.player_battler.creature);
 
-        if key = 'e' then begin
+        if key = E || key = Z then begin
           Ui.add_first_foreground (clear_text DrawText.battle_bot);
           let move =
             (get_move_i ~!battle_sim.player_battler.creature)
@@ -654,7 +643,7 @@ let rec run_tick () =
           combat_mode := Attack;
           handle_combat move
         end;
-        if key = 'q' then begin
+        if key = Q || key = X then begin
           Ui.clear_ui Ui.Foreground;
           Ui.add_first_foreground draw_combat_commands;
           combat_mode := Commands
@@ -701,7 +690,6 @@ let rec run_tick () =
   action;
 
   Ui.update_all ();
-  Unix.sleepf 0.016;
   if !combat_mode <> Exit then run_tick ()
 
 let start_wild_battle c =

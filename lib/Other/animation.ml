@@ -1,5 +1,4 @@
 open Draw
-open Graphics
 open Util
 open Spritesheet
 open DrawText
@@ -15,17 +14,18 @@ let hp_to_string hp =
 
 let draw_hp_val x y curr max player animate () =
   if player = false then ()
-  else begin
-    if animate then auto_synchronize false;
-    let combat_bg = point_color x y in
-
-    Graphics.set_color combat_bg;
+  else
+    let combat_bg =
+      (*point_color x y*)
+      white
+      (*placeholder*)
+    in
+    set_color combat_bg;
     fill_rect (current_x () - 2) (current_y () + 4) 100 24;
     DrawText.draw_string_colored x y 0
       (hp_to_string curr ^ "/" ^ hp_to_string max)
       white text_color ();
-    if animate then auto_synchronize true
-  end
+    if animate then Draw.present ()
 
 let draw_health_bar
     max
@@ -38,7 +38,6 @@ let draw_health_bar
     hp_text
     animate
     () =
-  if animate then auto_synchronize true;
   let max, before, after =
     (bound max 0 max, bound before 0 max, bound after 0 max)
   in
@@ -46,7 +45,7 @@ let draw_health_bar
   let bar_yellow = rgb 221 193 64 in
   let bar_red = rgb 246 85 55 in
   let bar_green = rgb 103 221 144 in
-  Graphics.set_color text_color;
+  set_color text_color;
   set_line_width 8;
   draw_rect xh yh hwidth hheight;
   if hp_text then
@@ -54,13 +53,13 @@ let draw_health_bar
       (xh + (hwidth / 2))
       (yh - hheight - 5 - 22)
       before max hp_text animate ();
-  Graphics.set_color blank;
+  set_color blank;
   fill_rect xh yh hwidth hheight;
   let ratio = d before 100 max in
-  if ratio <= 1 then Graphics.set_color blank
-  else if ratio <= 20 then Graphics.set_color bar_red
-  else if ratio <= 50 then Graphics.set_color bar_yellow
-  else Graphics.set_color bar_green;
+  if ratio <= 1 then set_color blank
+  else if ratio <= 20 then set_color bar_red
+  else if ratio <= 50 then set_color bar_yellow
+  else set_color bar_green;
   let before_bar = d before 100 max in
   fill_rect xh yh (d before_bar hwidth 100) hheight;
 
@@ -70,12 +69,12 @@ let draw_health_bar
       if start = target || start <= 0 then ()
       else if start > target then begin
         (*=====LOSING HEALTH=====*)
-        if start <= 1 then Graphics.set_color blank
-        else if start <= 20 then Graphics.set_color bar_red
-        else if start <= 50 then Graphics.set_color bar_yellow
-        else Graphics.set_color bar_green;
+        if start <= 1 then set_color blank
+        else if start <= 20 then set_color bar_red
+        else if start <= 50 then set_color bar_yellow
+        else set_color bar_green;
         fill_rect xh yh (d start hwidth 100) hheight;
-        Graphics.set_color blank;
+        set_color blank;
         fill_rect
           (xh + d start hwidth 100)
           yh
@@ -91,10 +90,10 @@ let draw_health_bar
       end
       else begin
         (*=====Gaining HEALTH=====*)
-        if start == 1 then Graphics.set_color blank
-        else if start <= 20 then Graphics.set_color bar_red
-        else if start <= 50 then Graphics.set_color bar_yellow
-        else Graphics.set_color bar_green;
+        if start == 1 then set_color blank
+        else if start <= 20 then set_color bar_red
+        else if start <= 50 then set_color bar_yellow
+        else set_color bar_green;
         (* HP NUMBER *)
         draw_hp_val
           (xh + (hwidth / 2))
@@ -114,21 +113,20 @@ let draw_health_bar
       (if after >= 0 then after else 0)
       max hp_text animate ()
   end;
-  if animate then auto_synchronize false
+  if animate then present ()
 
 let draw_exp_bar max before after xh yh hwidth hheight () =
-  if before <> after then auto_synchronize true;
   let max, before, after =
     (bound max 0 max, bound before 0 after, bound after 0 max)
   in
   let blank = rgb 20 52 100 in
   let bar_color = rgb 255 213 65 in
 
-  Graphics.set_color text_color;
+  set_color text_color;
   (* set_line_width 8; draw_rect xh yh hwidth hheight; *)
-  Graphics.set_color blank;
+  set_color blank;
   fill_rect xh yh hwidth hheight;
-  Graphics.set_color bar_color;
+  set_color bar_color;
   let before_bar = d before 100 max in
   fill_rect xh yh (d before_bar hwidth 100) hheight;
 
@@ -137,18 +135,18 @@ let draw_exp_bar max before after xh yh hwidth hheight () =
    let rec render_bar_progress start target =
      if start = target || start < 0 then ()
      else if start <= target then begin
-       Graphics.set_color bar_color;
+       set_color bar_color;
        fill_rect xh yh (d start hwidth 100 + 4) hheight;
-       (* Graphics.set_color blank; fill_rect (xh + d start hwidth 100)
-          yh 2 hheight; *)
+       (* set_color blank; fill_rect (xh + d start hwidth 100) yh 2
+          hheight; *)
        Input.sleep 0.02 ();
        render_bar_progress (start + 1) target
      end
    in
    render_bar_progress before_bar after_bar);
 
-  Graphics.set_color text_color;
-  if before <> after then auto_synchronize false
+  set_color text_color;
+  if before <> after then present ()
 
 let draw_creature_effect sprite player red green blue value () =
   let rec effect count =
@@ -171,20 +169,19 @@ let switch_out
     clear_function
     () =
   clear_text battle_bot ();
-  Draw.sync_draw clear_function ();
+  Draw.present_draw clear_function ();
   let time = 0.075 in
-  set_synced_mode true;
   draw_creature_effect switching_out player 255 255 255 4 ();
-  set_synced_mode false;
-  Draw.sync_draw clear_function ();
+  present ();
+  Draw.present_draw clear_function ();
   let small1 = Draw.change_dpi switching_out 2 in
   draw_creature small1 player ();
   Input.sleep time ();
-  Draw.sync_draw clear_function ();
+  Draw.present_draw clear_function ();
   let small2 = Draw.change_dpi switching_out 1 in
   draw_creature small2 player ();
   Input.sleep time ();
-  Draw.sync_draw clear_function ();
+  Draw.present_draw clear_function ();
   Input.sleep time ();
 
   draw_text ("Come back " ^ name_in ^ "!") 40 true false ();
@@ -192,19 +189,18 @@ let switch_out
   add_rgb small3 255 255 255 ();
   draw_creature small3 player ();
   Input.sleep time ();
-  Draw.sync_draw clear_function ();
+  Draw.present_draw clear_function ();
   let small4 = Draw.change_dpi switching_in 2 in
   add_rgb small4 255 255 255 ();
   draw_creature small4 player ();
   Input.sleep time ();
-  Draw.sync_draw clear_function ();
+  Draw.present_draw clear_function ();
   draw_creature switching_in player ();
   draw_text ("Go " ^ name_out ^ "!") 40 true false ();
   reset_rgb switching_out ();
   reset_rgb switching_in ()
 
 let lower_stat_effect sprite player () =
-  set_synced_mode true;
   make_grayscale sprite ();
 
   for _ = 0 to 2 do
@@ -213,10 +209,9 @@ let lower_stat_effect sprite player () =
   done;
   reset_rgb sprite ();
   draw_creature sprite player ();
-  set_synced_mode false
+  present ()
 
 let raise_stat_effect sprite player () =
-  set_synced_mode true;
   make_grayscale sprite ();
   for _ = 0 to 2 do
     draw_creature_effect sprite player 0 0 (-200) 5 ();
@@ -226,12 +221,12 @@ let raise_stat_effect sprite player () =
   reset_rgb sprite ();
   draw_creature sprite player ();
   clear_text battle_bot ();
-  set_synced_mode false
+  present ()
 
 let play_animation anim x y delay clear_function () =
   for i = 0 to Array.length anim - 1 do
-    sync_draw clear_function ();
-    sync_draw (draw_sprite (Array.get anim i) x y) ();
+    present_draw clear_function ();
+    present_draw (draw_sprite (Array.get anim i) x y) ();
     Input.sleep delay ()
   done
 
@@ -240,8 +235,8 @@ let toss_ball_animation anim delay clear_function () =
     let x = 114 + (20 * i) in
     let y = ((x - 375) * (x - 375) / -250) + 500 in
 
-    sync_draw clear_function ();
-    sync_draw (draw_sprite (Array.get anim (i mod 3)) x y) ();
+    present_draw clear_function ();
+    present_draw (draw_sprite (Array.get anim (i mod 3)) x y) ();
     Input.sleep delay ()
   done
 
@@ -282,18 +277,17 @@ let capture_animation
   play_animation capture_anim x (y + 4) 0.03 (clear_function 2) ();
 
   let time = 0.075 in
-  set_synced_mode true;
   draw_creature_effect creature false 255 255 255 4 ();
-  set_synced_mode false;
-  Draw.sync_draw (clear_function 0) ();
+  present ();
+  Draw.present_draw (clear_function 0) ();
   let small1 = Draw.change_dpi creature 2 in
   draw_sprite small1 (x + 20) (y + 40) ();
   Input.sleep time ();
-  Draw.sync_draw (clear_function 0) ();
+  Draw.present_draw (clear_function 0) ();
   let small2 = Draw.change_dpi creature 1 in
   draw_sprite small2 (x + 50) (y + 60) ();
   Input.sleep time ();
-  Draw.sync_draw (clear_function 0) ();
+  Draw.present_draw (clear_function 0) ();
   Input.sleep time ();
   let time = 0.05 in
   reset_rgb creature ();
@@ -311,9 +305,7 @@ let capture_animation
         else begin
           Input.sleep (time *. 2.) ();
           play_animation fail_anim x y 0.02 (clear_function 0) ();
-          sync_draw (clear_function 2) ()
+          present_draw (clear_function 2) ()
         end
   in
-  handle_shakes results;
-  auto_synchronize false;
-  set_synced_mode false
+  handle_shakes results
