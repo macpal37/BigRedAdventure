@@ -149,7 +149,6 @@ let refresh () =
         (Player.party_i (State.player ()) (i + 1))
         i ()
     done;
-
   Ui.add_first_foreground draw_selector;
   draw_menu (Player.party_i (State.player ()) 0) ();
   if !battle_mode <> InventoryMode then
@@ -241,10 +240,8 @@ let rec run_tick () =
   if key = S || key = Down then move_y 1 ();
   if key = A || key = Left then move_x (-1) ();
   if key = D || key = Right then move_x 1 ();
-  if
-    key = A || key = S || key = A || key = D || key = Up || key = Down
-    || key = Right || key = Left
-  then refresh ();
+
+  refresh ();
   (match !menu_mode with
   | MainMenu -> (
       match !battle_mode with
@@ -364,5 +361,4 @@ let init bm () =
   switch_position.x <- 0;
   switch_position.y <- 0;
   refresh ();
-  Ui.add_first_background clear_screen;
   run_tick ()

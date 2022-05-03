@@ -276,5 +276,4 @@ let init () =
   switch_position.x <- -1;
 
   refresh ();
-  Ui.add_first_background clear_screen;
   run_tick ()

@@ -80,9 +80,6 @@ val get_dimension : sprite -> int * int
 
 val change_dpi : sprite -> int -> sprite
 
-val clear_screen : unit -> unit
-(** [clear_screen ()] Clears the screen with the background color.*)
-
 val wait : int -> unit -> unit
 (** [wait delay_time] waits for [delay_time] or util user input to
     continue. If [delay_time = -1] then it waits indefinetely until user

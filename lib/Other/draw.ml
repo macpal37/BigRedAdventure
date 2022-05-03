@@ -126,10 +126,6 @@ let rmoveto x y =
   Sdlrender.set_viewport (renderer ())
     (Sdlrect.make1 (!offset_x, !offset_y, width, height))
 
-let clear_screen () =
-  set_draw_color 255 255 255;
-  fill_rect 0 0 width height
-
 let draw_pixel size x y () =
   fill_rect (x - (size / 2)) (y - (size / 2)) size size
 

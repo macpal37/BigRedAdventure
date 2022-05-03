@@ -358,7 +358,6 @@ let handle_combat move =
       ( ~!battle_sim.player_battler.creature,
         ~!battle_sim.enemy_battler.creature )
     in
-
     (***=============First Half =============***)
     Combat.battle_sim_fh ~!battle_sim;
     Ui.update_all ();
@@ -381,15 +380,11 @@ let handle_combat move =
     end
   end
 
-(* let pokeball_spritesheet = Spritesheet.init_spritesheet
-   "assets/item_sprites/pokeball_capture.png" 64 64 3 *)
-
 let handle_item item () =
   combat_mode := Attack;
   match Item.get_type item with
   | Item.Misc -> false
   | Item.Medicine -> (
-      print_endline "HI!";
       Party_menu.set_current_item item;
       Party_menu.init Party_menu.InventoryMode ();
       match Party_menu.get_current_item with
@@ -420,7 +415,7 @@ let handle_item item () =
              ("You captured "
              ^ get_nickname ~!battle_sim.enemy_battler.creature
              ^ "!")
-             40 true false);
+             0 true false);
         handle_exp ~!battle_sim.player_battler.creature
           ~!battle_sim.enemy_battler.creature ();
         ~!battle_sim.enemy_battler.active <- false;
@@ -695,7 +690,6 @@ let rec run_tick () =
 let start_wild_battle c =
   Combat.refresh_battle := clear_battle;
   Combat.health_bar := draw_health_bar_combat;
-  Ui.add_last_background clear_screen;
   combat_mode := Commands;
 
   Ui.add_last_background (clear_text battle_right);
