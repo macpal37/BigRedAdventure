@@ -44,13 +44,28 @@ let increment = 0.1
 let load_entity = failwith "Unimplemented"
 let get_type entity = entity.e_type
 let get_orientation entity = entity.orie
-let get_position e = e.pos
-let get_handler = failwith "Unimplemented"
+let get_position entity = entity.pos
+let get_handler entity = entity.handler_id
 let get_sprite = failwith "Unimplemented"
 let get_dialogue n = n.dialogue
 let update = failwith "Unimplemented"
-let go = failwith "Unimplemented"
+
+let correct_step d n =
+  let opposite_dir = function
+    | N -> S
+    | E -> W
+    | S -> N
+    | W -> E
+  in
+  if n < 0 then Step (opposite_dir d, ~-n)
+  else if n = 0 then Turn d
+  else Step (d, n)
+
+let go e d n = e.priority_queue |> Queue.push (correct_step d n)
+
+(* NOT COMPREHENSIVE RIGHT NOW *)
 let turn = failwith "Unimplemented"
+let wait = failwith "Unimplemented"
 let in_motion = failwith "Unimplemented"
 let restart_loop = failwith "Unimplemented"
 let is_static entity = entity.path = None

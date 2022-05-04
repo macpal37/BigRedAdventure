@@ -32,11 +32,11 @@ val get_orientation : t -> orientation
 val get_position : t -> coord
 (** [get_position n] returns [n]'s current position *)
 
-val get_handler : t -> string
-(** [get_handler n] returns the id of [n]'s associated handler *)
-
 val get_sprite : unit -> sprite
 (** [get_sprite n] returns [n]'s current sprite representation *)
+
+val get_handler : t -> string
+(** [get_handler n] returns the id of [n]'s associated handler *)
 
 val get_dialogue : t -> string list
 (** [get_dialogue n] returns the dialogue [n] gives *)
@@ -51,11 +51,15 @@ val go : t -> orientation -> int -> unit
 val turn : t -> orientation -> unit
 (** [turn n d] turns [n] to face direction [d] *)
 
+val wait : t -> int -> unit
+(** [wait n t] makes [n] wait for [t] intervals *)
+
 val in_motion : t -> bool
-(** [in_motion n] is [true] if [n] is currently in motion and
-    false otherwise *)
+(** [in_motion n] is [true] if [n] is currently in motion and false
+    otherwise *)
 
 val restart_loop : t -> unit
 (** *)
 
 val is_static : t -> bool
+(** [is_static e] returns whether e has a preset movement loop or not *)
