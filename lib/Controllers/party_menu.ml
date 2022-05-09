@@ -241,7 +241,6 @@ let rec run_tick () =
   if key = A || key = Left then move_x (-1) ();
   if key = D || key = Right then move_x 1 ();
 
-  refresh ();
   (match !menu_mode with
   | MainMenu -> (
       match !battle_mode with
@@ -281,10 +280,10 @@ let rec run_tick () =
       if (key = E || key = Z) && minimenu_position.y = 0 then begin
         Creature_menu.set_creature (get_party_index ());
         Creature_menu.init ();
-        minimenu ();
+
         refresh ()
       end;
-
+      minimenu ();
       (if (key = E || key = Z) && minimenu_position.y = 1 then
        match !battle_mode with
        | OverworldMode ->
@@ -314,14 +313,11 @@ let rec run_tick () =
                Player.set_party new_party (State.player ());
                Combat.switching_pending := Some b;
 
-               refresh ();
                menu_mode := Exit
              end
        | _ -> ());
-      if (key = E || key = Z) && minimenu_position.y = 3 then begin
-        menu_mode := MainMenu;
-        refresh ()
-      end
+      if (key = E || key = Z) && minimenu_position.y = 3 then
+        menu_mode := MainMenu
   | SwitchMode ->
       if key = E || key = Z then begin
         switch ();
@@ -331,7 +327,6 @@ let rec run_tick () =
         switch_position.x <- 0;
         switch_position.y <- 0;
         minimenu ();
-        refresh ();
 
         menu_mode := MiniMenu
       end;
@@ -342,11 +337,11 @@ let rec run_tick () =
         minimenu_position.x <- 1;
         switch_position.x <- 0;
         switch_position.y <- 0;
-        minimenu ();
-        refresh ()
+        minimenu ()
       end
   | Exit -> ());
 
+  refresh ();
   (*====== MiniMenu ====== *)
   Ui.update_all ();
   if !menu_mode <> Exit then run_tick ()

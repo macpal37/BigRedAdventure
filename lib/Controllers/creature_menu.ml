@@ -241,8 +241,7 @@ let rec run_tick () =
     && menu_position.x >= 0 && switch_position.x = -1
   then begin
     switch_position.x <- menu_position.x + 0;
-    switch_position.y <- menu_position.y + 0;
-    refresh ()
+    switch_position.y <- menu_position.y + 0
   end
   else if
     (key = E || key = Z)

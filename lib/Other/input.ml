@@ -3,6 +3,43 @@ let key : Sdlkeycode.t option ref = ref None
 
 (* let key_char _ = match !key with | Some k -> k | None ->
    Sdlkeycode.Unknown *)
+type control_key =
+  | Up
+  | Down
+  | Left
+  | Right
+  | Action
+  | Back
+  | Start
+  | Select
+  | NoKey
+
+let ( => ) (sdl : Sdlkeycode.t) (ctrl : control_key) : bool =
+  let c =
+    match sdl with
+    | Sdlkeycode.Up -> Up
+    | Sdlkeycode.Down -> Down
+    | Sdlkeycode.Left -> Left
+    | Sdlkeycode.Right -> Right
+    | Sdlkeycode.X -> Action
+    | Sdlkeycode.Z -> Back
+    | Sdlkeycode.Slash -> Start
+    | Sdlkeycode.Period -> Select
+    | _ -> NoKey
+  in
+  c = ctrl
+
+let get_ctrl_key (sdl : Sdlkeycode.t) : control_key =
+  match sdl with
+  | Sdlkeycode.Up -> Up
+  | Sdlkeycode.Down -> Down
+  | Sdlkeycode.Left -> Left
+  | Sdlkeycode.Right -> Right
+  | Sdlkeycode.X -> Action
+  | Sdlkeycode.Z -> Back
+  | Sdlkeycode.Slash -> Start
+  | Sdlkeycode.Period -> Select
+  | _ -> NoKey
 
 let poll_key_option _ = !key
 

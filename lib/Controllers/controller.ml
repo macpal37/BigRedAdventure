@@ -35,10 +35,10 @@ let main _ =
   State.adhoc_init ();
   setup ();
   Draw.open_window ();
+
   Overworld.run_overworld ()
 (* Draw.set_synced_mode false; let mode = ModeOverworld in *)
-
-(* Battle.start_battle (Creature.create_creature "rafu" 10); *)
+(* Battle.start_wild_battle (Creature.create_creature "rafu" 10) *)
 
 (* moveto 100 200; *)
 (* set_font "-*-fixed-bold-r-semicondensed--40-*-*-*-*-*-iso8859-1";

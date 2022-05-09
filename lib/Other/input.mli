@@ -11,3 +11,20 @@ val pop_key_option : unit -> Sdlkeycode.t option
     until a new key press (held keys are ignored)*)
 
 val sleep : float -> unit -> unit
+
+(*****************************************************************)
+(***************    Game Control Keys     *********************)
+(*****************************************************************)
+type control_key =
+  | Up
+  | Down
+  | Left
+  | Right
+  | Action
+  | Back
+  | Start
+  | Select
+  | NoKey
+
+val ( => ) : Sdlkeycode.t -> control_key -> bool
+val get_ctrl_key : Sdlkeycode.t -> control_key

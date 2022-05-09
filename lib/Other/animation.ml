@@ -3,6 +3,17 @@ open Util
 open Spritesheet
 open DrawText
 
+(* let run_animation (refresh : unit -> unit) (anim : animation) = let
+   rec run_animation_rec frame = (* TODO: PSUEDO CODE *) Input.sleep
+   Draw.tick_rate ();
+
+   Ui.add_first_background refresh; Ui.update_all(); if anim frame ()
+   then () else run_animation_rec (frame + 1) in run_animation_rec 0
+
+   let draw_text_aniamtion (clear : unit -> unit) (anim : animation) =
+   let rec run_animation_rec frame = (* TODO *) run_animation_rec (frame
+   + 1) in run_animation_rec 0 *)
+
 let d a b c =
   let x = a * b in
   x / c
@@ -309,3 +320,5 @@ let capture_animation
         end
   in
   handle_shakes results
+
+let animate_faint _ _ () = ()
