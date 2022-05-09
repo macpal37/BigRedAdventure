@@ -8,23 +8,24 @@ type coord = float * float
 (** type representing the coordinate of a tile on a map. (0, 0) is the
     bottom left corner of the map *)
 
-type entity_type =
-  | Trainer of creature list
+type entity_trigger =
+  | Battle of creature list
   | KeyItem of string
-  | ButtonItem of string
+  | Button of string
+  | None
 
 type orientation =
   | N
   | S
   | E
-  | W  (** Type representing the four orientations*)
+  | W  (** Type representing the four orientations *)
 
 val load_entity : string -> t
 (** [load_npc file] is the npc represented by [file]. Raises
     [Malformed_Json] if the json file is invalid *)
 
-val get_type : t -> entity_type
-(** [get_type n] returns the type of entity [n] is *)
+val get_trigger : t -> entity_trigger
+(** [get_trigger n] returns what interaction triggers [n] *)
 
 val get_orientation : t -> orientation
 (** [get_orientation n] is the current direction [n] is facing *)

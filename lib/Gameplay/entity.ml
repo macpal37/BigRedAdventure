@@ -21,32 +21,39 @@ type movement =
   | Path of step Loopq.t
   | None
 
-type entity_type =
-  | Trainer of creature list
+type entity_trigger =
+  | Battle of creature list
   | KeyItem of string
   | Button of string
+  | None
+      (** If more types are needed, maybe polymorphism would be a better
+          option? dunno how viable parsing a json would be then tho *)
 
 type t = {
   handler_id : string;
-  e_type : entity_type;
+  e_type : entity_trigger;
   mutable orie : orientation;
   mutable pos : coord;
   dialogue : string;
-  active : bool;
+  mutable active : bool;
+  mutable interval_frac : float;
   (* fields for movement/animation *)
   animations : (step, sprite Loopq.t) Hashtbl.t;
   priority_queue : step Queue.t;
   path : movement;
 }
 
-(* [increment] is how far this entity moves when update is called *)
+(* [increment] is how far this entity moves when update is called, also
+   determines the duration of a pause and turns *)
 let increment = 0.1
 let load_entity = failwith "Unimplemented"
-let get_type entity = entity.e_type
+let get_trigger entity = entity.e_type
 let get_orientation entity = entity.orie
 let get_position entity = entity.pos
 let get_handler entity = entity.handler_id
 let get_sprite = failwith "Unimplemented"
+(* Each entity must at least have a forward facing sprite *)
+
 let get_dialogue n = n.dialogue
 let update = failwith "Unimplemented"
 
@@ -62,8 +69,6 @@ let correct_step d n =
   else Step (d, n)
 
 let go e d n = e.priority_queue |> Queue.push (correct_step d n)
-
-(* NOT COMPREHENSIVE RIGHT NOW *)
 let turn = failwith "Unimplemented"
 let wait = failwith "Unimplemented"
 let in_motion = failwith "Unimplemented"
