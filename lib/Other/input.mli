@@ -1,15 +1,30 @@
-val nil : char
-(** Char representing no key being pressed*)
+val input_poll : unit -> unit
+(** Polls for event queue the latest key press. MAY EXIT THE PROGRAM*)
 
-val poll : unit -> unit
-(** Polls the Graphics for the latest key press.*)
+val poll_key_option : unit -> Sdlkeycode.t option
+(** [poll_key_option _] is the option of the keycode of the last key
+    press, or None if no key pressed*)
 
-val key_char : unit -> char
-(** [key_char _] is the char of the last key press. Equals nil if no key
-    pressed*)
-
-val key_option : unit -> char option
-(** [key_option _] is the option of the char of the last key press, or
-    None if no key pressed*)
+val pop_key_option : unit -> Sdlkeycode.t option
+(** [pop_key_option _] is the option of the keycode of the last key
+    press, or None if no key pressed. Subsequent calls will return None
+    until a new key press (held keys are ignored)*)
 
 val sleep : float -> unit -> unit
+
+(*****************************************************************)
+(***************    Game Control Keys     *********************)
+(*****************************************************************)
+type control_key =
+  | Up
+  | Down
+  | Left
+  | Right
+  | Action
+  | Back
+  | Start
+  | Select
+  | NoKey
+
+val ( => ) : Sdlkeycode.t -> control_key -> bool
+val get_ctrl_key : Sdlkeycode.t -> control_key

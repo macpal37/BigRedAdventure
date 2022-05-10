@@ -1,4 +1,4 @@
-open Graphics
+type color = int
 
 type sprite = {
   pixels : int array;
@@ -15,7 +15,18 @@ type folder =
   | Tile_Folder
   | Item_Folder
 
-let font_size = ref 50
+let rgb r g b =
+  Int.shift_left r 16 lor Int.shift_left g 8 lor Int.shift_left b 0
+
+let color_to_rgb color =
+  let r = (color land 0xFF0000) asr 0x10
+  and g = (color land 0x00FF00) asr 0x8
+  and b = color land 0x0000FF in
+  (r, g, b)
+
+let white = rgb 255 255 255
+let red = rgb 255 0 0
+let blue = rgb 0 0 255
 let text_color = rgb 68 68 68
 let text_color2 = rgb 215 215 255
 
@@ -39,25 +50,32 @@ let create_sprite pixels palette width height dpi =
     dpi;
   }
 
-let erase_mode = ref false
-let synced_mode = ref true
-
 (* let blue = rgb 200 200 240 *)
+
 let width = 800
 let height = 720
-let sync flag () = auto_synchronize flag
-let usync flag () = if !synced_mode then auto_synchronize flag
+let tick_rate = 0.016
+let window = ref None
+let renderer = ref None
 
-let set_font_size size () =
-  font_size := size;
-  set_font
-    ("-*-fixed-bold-r-semicondensed--" ^ string_of_int size
-   ^ "-*-*-*-*-*-iso8859-1")
+let open_window _ =
+  let w =
+    Sdlwindow.create2 ~title:"Big Red Adventure" ~x:`undefined
+      ~y:`undefined ~width ~height ~flags:[]
+  in
+  window := Some w;
+  renderer :=
+    Some (Sdlrender.create_renderer ~win:w ~index:(-1) ~flags:[])
+(* let window _ = match !window with | Some w -> w | None -> failwith
+   "Window not initialized"*)
 
+let renderer _ =
+  match !renderer with
+  | Some r -> r
+  | None -> failwith "Window not initialized"
+
+let present _ = Sdlrender.render_present (renderer ())
 let get_dimension sprite = (sprite.width, sprite.height)
-let get_font_size () = !font_size
-let set_erase_mode flag () = erase_mode := flag
-let set_synced_mode flag = synced_mode := flag
 
 let change_dpi sprite dpi =
   {
@@ -67,14 +85,46 @@ let change_dpi sprite dpi =
     dpi;
   }
 
-let sync_draw draw () =
-  sync false ();
+let present_draw draw () =
   draw ();
-  sync true ()
+  present ()
 
-let clear_screen () =
-  set_color (rgb 255 255 255);
-  fill_rect 0 0 width height
+let set_draw_color r g b =
+  Sdlrender.set_draw_color3 (renderer ()) ~r ~g ~b ~a:255
+
+let set_color c =
+  let r, g, b = color_to_rgb c in
+  set_draw_color r g b
+
+let fill_rect x y w h =
+  Sdlrender.fill_rect (renderer ())
+    (Sdlrect.make1 (x, height - y - h, w, h))
+
+let line_width = ref 1
+let set_line_width i = line_width := i
+
+let draw_rect x y w h =
+  fill_rect x y !line_width h;
+  fill_rect x y w !line_width;
+  fill_rect (x + w - (1 * !line_width)) y !line_width h;
+  fill_rect x (y + h - (1 * !line_width)) w !line_width
+
+let offset_x = ref 0
+let offset_y = ref 0
+let current_x _ = !offset_x
+let current_y _ = !offset_y
+
+let moveto x y =
+  offset_x := x;
+  offset_y := -y;
+  Sdlrender.set_viewport (renderer ())
+    (Sdlrect.make1 (!offset_x, !offset_y, width, height))
+
+let rmoveto x y =
+  offset_x := !offset_x + x;
+  offset_y := !offset_y - y;
+  Sdlrender.set_viewport (renderer ())
+    (Sdlrect.make1 (!offset_x, !offset_y, width, height))
 
 let draw_pixel size x y () =
   fill_rect (x - (size / 2)) (y - (size / 2)) size size
@@ -90,12 +140,6 @@ let draw_from_pixels sprite x y min_w min_h max_w max_h () =
       end
     done
   done
-
-let color_to_rgb color =
-  let r = (color land 0xFF0000) asr 0x10
-  and g = (color land 0x00FF00) asr 0x8
-  and b = color land 0x0000FF in
-  (r, g, b)
 
 let rec find x lst =
   match lst with
@@ -154,13 +198,6 @@ let load_creature name () =
   let filename = "assets/creature_sprites/" ^ name ^ ".png" in
   load_sprite_from_filepath filename 3 ()
 
-let clear_sprite sprite x y () =
-  usync false ();
-  set_erase_mode true ();
-  draw_from_pixels sprite x y 0 0 sprite.width sprite.height ();
-  set_erase_mode false ();
-  usync true ()
-
 let draw_sprite_crop
     sprite
     x
@@ -168,23 +205,14 @@ let draw_sprite_crop
     (width_min, width_max)
     (height_min, height_max)
     () =
-  usync false ();
   draw_from_pixels sprite x y width_min height_min width_max height_max
-    ();
-  usync true ()
+    ()
 
 let draw_sprite sprite x y () =
-  usync false ();
-  draw_from_pixels sprite x y 0 0 sprite.width sprite.height ();
-  usync true ()
+  draw_from_pixels sprite x y 0 0 sprite.width sprite.height ()
 
 let draw_creature sprite player () =
-  if player then begin
-    let text_box = Graphics.get_image 3 0 797 216 in
-
-    draw_sprite sprite 50 166 ();
-    draw_image text_box 3 0
-  end
+  if player then draw_sprite sprite 50 166 ()
   else
     draw_sprite sprite
       (width - sprite.width - 50)
@@ -192,49 +220,39 @@ let draw_creature sprite player () =
       ()
 
 let rec wait timer () =
-  if timer = 0 then ()
-  else if Graphics.key_pressed () then begin
-    if Graphics.read_key () = 'e' then ()
-  end
-  else wait (timer - 1) ()
+  if timer = 0 then () else Input.sleep 1. ();
+  match Input.pop_key_option () with
+  | Some _ -> ()
+  | None -> wait (timer - 1) ()
 
-(* create a gradient of colors from black at 0,0 to white at w-1,h-1 *)
-let gradient arr w h =
+let draw_gradient w h =
   for y = 0 to h - 1 do
     for x = 0 to w - 1 do
       let s = 255 * (x + y) / (w + h - 2) in
-      arr.(y).(x) <- rgb s s s
+      set_draw_color s s s;
+      Sdlrender.draw_point2 (renderer ()) ~x ~y
     done
   done
 
-let draw_gradient w h =
-  (* w and h are flipped from perspective of the matrix *)
-  let arr = Array.make_matrix h w white in
-  gradient arr w h;
-  draw_image (make_image arr) 0 0
-
 let damage_render player_sprite player clear_function () =
   let rec damage_render_rec c () =
-    set_synced_mode false;
-    auto_synchronize false;
     if c = 0 then
       (* draw_creature enemy_sprite (player = false) (); *)
       draw_creature player_sprite player ()
     else begin
       if c mod 2 = 0 then draw_creature player_sprite player ()
       else begin
-        auto_synchronize false;
         clear_function ();
 
-        auto_synchronize true
+        present ()
       end;
-      auto_synchronize true;
+      present ();
       Input.sleep 0.1 ();
       damage_render_rec (c - 1) ()
     end
   in
   damage_render_rec 7 ();
-  auto_synchronize false;
+  present ();
   set_color text_color
 
 let add_rgb sprite red green blue () =
@@ -261,3 +279,11 @@ let make_grayscale sprite () =
       sprite.color_palette
 
 let reset_rgb sprite () = sprite.color_palette <- sprite.base_palette
+
+let change_color sprite i c =
+  let rec replace j = function
+    | [] -> []
+    | h :: t ->
+        if j = i then c :: replace (j + 1) t else h :: replace (j + 1) t
+  in
+  sprite.color_palette <- replace 0 sprite.color_palette

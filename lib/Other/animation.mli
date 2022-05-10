@@ -47,3 +47,7 @@ val capture_animation :
   (int -> unit -> unit) ->
   unit ->
   unit
+
+val animate_faint : sprite -> bool -> unit -> unit
+(** [animate_faint sprite (_)] performs the fainting animation of the
+    creature [sprite] *)

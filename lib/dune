@@ -3,7 +3,7 @@
 (library
  (name CreatureGame)
  (public_name CreatureGame)
- (libraries yojson ANSITerminal graphics imagelib.unix stdlib)
+ (libraries yojson ANSITerminal imagelib.unix stdlib sdl2)
  (modules
   ; =====Controllers=====
   battle
@@ -12,7 +12,6 @@
   creature_menu
   event_menu
   party_menu
-  menu
   state
   overworld
   state
