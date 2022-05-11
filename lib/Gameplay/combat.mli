@@ -1,4 +1,5 @@
 open Creature
+open Creature.Move
 
 type bstatus =
   | Victory
@@ -16,6 +17,27 @@ type turn_status =
   | Pending
   | Halfway
   | Finished
+
+type damage_type =
+  | SuperEffective
+  | Effective
+  | NotEffective
+  | Immune
+
+(** Type of Action taken by a creature *)
+type action =
+  | Damage of int * int * damage_type * bool
+      (** Damage:
+          [hp_before, hp_after, damage_type,
+        is_critical_hit].*)
+  | Heal of int * int  (** Heal: [hp before, hp after]*)
+  | StatusGain of bool * status
+      (** StatusGain: [gain_or_remove,status]*)
+  | StatusEffect of status * int * int
+      (** StatusEffect: [status,hp_before,hp_after]*)
+  | StatGain of stat * int  (** StatGain: [stat,stages_gained]*)
+  | Switch  (** StatGain: Whether the creautre is switched*)
+  | Fainted  (** Fainted: Whether the creautre has fainted*)
 
 type battle_creature = {
   mutable creature : creature;
@@ -46,7 +68,6 @@ type battle_record = {
 
 val refresh_battle : (int -> int -> int -> unit -> unit) ref
 val health_bar : (int -> int -> int -> bool -> bool -> unit -> unit) ref
-val empty_battle : battle_record
 
 val wild_init : creature list -> creature list -> battle_record
 (**Initializes a battle record for a wild creature encounter.*)

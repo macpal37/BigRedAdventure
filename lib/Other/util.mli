@@ -35,7 +35,11 @@ val bound : int -> int -> int -> int
 (** [bound number min max] bounds the [number] to either the [min] or
     [max] if it goss below or above them respectively.*)
 
+val boundf : float -> float -> float -> float
+(** [bound number min max] same as [bound] but for float values.*)
+
 val rand : int -> unit -> int
+val randf : float -> unit -> float
 
 val captilize_all_string : string -> string
 (** [captilize_all_string text ] returns a string with all the words

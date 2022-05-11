@@ -65,7 +65,7 @@ let draw_text text f_size auto sticky () =
   let font = get_font f_size in
   let wait_time = if auto then wait_time else -1 in
   let wait_time = if sticky then 0 else wait_time in
-  present_draw (clear_text battle_bot) ();
+  (clear_text battle_bot) ();
   set_text_color font 0 text_color;
   let start_x = 30 in
   let start_y = 128 in
@@ -103,7 +103,7 @@ let draw_text text f_size auto sticky () =
         draw_chars char_list;
         if start == max then begin
           wait wait_time ();
-          if sticky = false then present_draw (clear_text battle_bot) ();
+          if sticky = false then (clear_text battle_bot) ();
 
           set_text_color font 0 text_color;
           scroll_text 0 max t

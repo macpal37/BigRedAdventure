@@ -17,12 +17,12 @@ exception MalformedJson
 exception NoCreature
 
 type stats = {
-  mutable max_hp : int;
-  mutable attack : int;
-  mutable defense : int;
-  mutable sp_attack : int;
-  mutable sp_defense : int;
-  mutable speed : int;
+  mutable max_hp : float;
+  mutable attack : float;
+  mutable defense : float;
+  mutable sp_attack : float;
+  mutable sp_defense : float;
+  mutable speed : float;
 }
 (** The mutable type that represents the stats of a creature *)
 
@@ -73,33 +73,35 @@ type etype =
 
 (** {1 Moves}*)
 
-(** Moves used when in combat*)
-
-type move_catgeory =
-  | Physical
-  | Special
-  | Status
-
-type move = {
-  move_name : string;
-  power : int;
-  accuracy : float;
-  mutable curr_pp : int;
-  mutable max_pp : int;
-  etype : etype;
-  category : move_catgeory;
-  description : string;
-  effect_ids : int list;
-  effect_chance : int;
-}
 (** Loads and handles all the moves performed during combat*)
+module Move : sig
+  type move_catgeory =
+    | Physical
+    | Special
+    | Status  (** Moves used when in combat*)
 
-val empty_stats : stats
-(** Represents an emtpy set of stats*)
+  val etype_of_string : string -> etype
+  (** [string_to_etype etype_name] returns the etype representation of
+      the [etype_name] string.*)
 
-val create_move : string -> move
-(** [get_create_movemove move_name] generates a move given by the
-    [move_name] from the move_list.json.*)
+  type move = {
+    move_name : string;
+    power : float;
+    accuracy : float;
+    mutable priority : int;
+    mutable curr_pp : int;
+    mutable max_pp : int;
+    etype : etype;
+    category : move_catgeory;
+    description : string;
+    effect_ids : int list;
+    effect_chance : float;
+  }
+
+  val create_move : string -> move
+  (** [get_create_movemove move_name] generates a move given by the
+      [move_name] from the move_list.json.*)
+end
 
 (** {1 Creature Creation}*)
 
@@ -109,9 +111,12 @@ val create_creature : string -> int -> creature
     unique, in the sense that its features differ slightly from creature
     to creature of the name [name] *)
 
-val mod_stat : stats -> stat -> float -> int
+val mod_stat : stats -> stat -> float -> float
 (** [mod_stat stats stat power] returns the modified value of the [stat]
     by [power]*)
+
+val empty_stats : stats
+(** Represents an emtpy set of stats*)
 
 (** {1 String Formatting}*)
 
@@ -124,10 +129,6 @@ val string_of_stat : stat -> string
 val string_of_etype : etype -> string
 (** [etype_to_string etype] returns a string representation of the
     [etype].*)
-
-val etype_of_string : string -> etype
-(** [string_to_etype etype_name] returns the etype representation of the
-    [etype_name] string.*)
 
 val string_of_status : status -> string
 (** [status_to_string status] returns a string representation of the
@@ -142,10 +143,10 @@ val get_nature : creature -> string * stat * stat
 val get_status : creature -> status
 (** [get_status creature] returns the [creature]'s current status.*)
 
-val get_current_hp : creature -> int
+val get_current_hp : creature -> float
 (** [get_current_hp creature] Returns the [creature]'s current hp *)
 
-val set_current_hp : creature -> int -> unit
+val set_current_hp : creature -> float -> unit
 (** [set_current_hp creature] Sets the [creature]'s current hp to
     [amount] *)
 
@@ -153,20 +154,20 @@ val get_types : creature -> etype * etype
 (** [get_types creature] returns the types of the creature as a tuple of
     strings*)
 
-val get_stat2 : stats -> stat -> int
+val get_stat2 : stats -> stat -> float
 
 val get_stats : creature -> stats
 (** [get_type_mod attack_type defender] returns the damage modification
     caused by type resistances, weaknesses or immunities from the
     [defender] by the [attack_type].*)
 
-val get_stat : creature -> stat -> int
+val get_stat : creature -> stat -> float
 val get_ivs : creature -> stats
 val get_evs : creature -> stats
-val get_ev_gain : creature -> stat * int
-val add_ev_gain : creature -> stat * int -> unit
+val get_ev_gain : creature -> stat * float
+val add_ev_gain : creature -> stat * float -> unit
 val get_exp_gain : creature -> int
-val add_hp : creature -> int -> unit
+val add_hp : creature -> float -> unit
 
 val get_type_mod : etype -> creature -> float
 (** [get_type_mod attack_type defender] returns the damage modification
@@ -189,7 +190,7 @@ val remove_status : creature -> status -> unit
     Raises No_Effect exception if the [creature] already has the
     [Healthy] status.*)
 
-val get_moves : creature -> move option array
+val get_moves : creature -> Move.move option array
 (** [get_moves creature] returns all of the moves of the [creature] by
     name. Used in conjuction with Move.execute_move. *)
 
@@ -225,7 +226,7 @@ val get_front_sprite : creature -> Draw.sprite
 val set_front_sprite : creature -> Draw.sprite -> unit
 val get_back_sprite : creature -> Draw.sprite
 val set_back_sprite : creature -> Draw.sprite -> unit
-val get_hp_status : creature -> int * int * int
+val get_hp_status : creature -> float * float
 val get_specias : creature -> string
 val get_color_from_etype : etype -> Draw.color
-val get_move_i : creature -> int -> move option
+val get_move_i : creature -> int -> Move.move option

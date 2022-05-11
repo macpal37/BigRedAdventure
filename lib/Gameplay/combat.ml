@@ -1,4 +1,5 @@
 open Creature
+open Creature.Move
 open DrawText
 open Util
 
@@ -17,6 +18,12 @@ type btype =
   | Trainer
   | Wild
 
+type damage_type =
+  | SuperEffective
+  | Effective
+  | NotEffective
+  | Immune
+
 type turn_status =
   | Choosing
   | Pending
@@ -33,6 +40,16 @@ type battle_creature = {
   is_player : bool;
 }
 
+(** Type of Action taken by a creature *)
+type action =
+  | Damage of int * int * damage_type * bool
+  | Heal of int * int
+  | StatusGain of bool * status
+  | StatusEffect of status * int * int
+  | StatGain of stat * int
+  | Switch
+  | Fainted
+
 type battle_record = {
   mutable player_creatures : creature list;
   mutable enemy_creatures : creature list;
@@ -46,41 +63,11 @@ type battle_record = {
   mutable turn_pos : turn_status;
   mutable creatures_switched : creature list;
 }
+(** Records all the events occurred in battle. *)
 
 let refresh_battle = ref (fun _ _ _ () -> ())
 let health_bar = ref (fun _ _ _ _ _ () -> ())
 let player_first = ref false
-
-let empty_battle =
-  {
-    player_creatures = [];
-    enemy_creatures = [];
-    battle_type = Wild;
-    battle_status = Ongoing;
-    catch_attempts = 0;
-    escape_attempts = 0;
-    player_battler =
-      {
-        creature = create_creature "missingno" 1;
-        current_move = None;
-        stat_changes = empty_stats;
-        status_effect = Healthy;
-        is_player = true;
-        active = false;
-      };
-    enemy_battler =
-      {
-        creature = create_creature "missingno" 1;
-        current_move = None;
-        stat_changes = empty_stats;
-        status_effect = Healthy;
-        is_player = false;
-        active = false;
-      };
-    turn_counter = 0;
-    turn_pos = Choosing;
-    creatures_switched = [];
-  }
 
 let generate_battler creature player =
   {
@@ -98,7 +85,6 @@ let wild_init plist elist =
     ( List.nth (List.filter (fun c -> get_status c <> Fainted) plist) 0,
       List.nth elist 0 )
   in
-
   {
     player_creatures = plist;
     enemy_creatures = elist;
@@ -149,35 +135,31 @@ let get_crit () =
   let x = Util.rand 16 () in
   if x = 0 then 2. else 1.
 
-let stat_modified stat stages =
-  if stages > 0 then stat * (stages + 2) * 100 / 200
-  else if stages < 0 then stat * 200 / (((-1 * stages) + 2) * 100)
+let stat_modified (stat : float) (stages : float) =
+  if stages > 0. then stat *. (stages +. 2.) *. 0.5
+  else if stages < 0. then stat *. 2. /. ((-1. *. stages) +. 2.)
   else stat
 
 let damage_calc move attacker defender =
   let a = get_stats attacker.creature in
   let b = get_stats defender.creature in
-  let d a b c =
-    let x = a * b in
-    x / c
-  in
   let crit_damage = get_crit () in
   let x =
     match move.category with
     | Physical ->
-        d
-          (stat_modified a.attack attacker.stat_changes.attack)
-          move.power
-          (stat_modified b.defense defender.stat_changes.defense)
+        stat_modified a.attack attacker.stat_changes.attack
+        *. move.power
+        /. stat_modified b.defense defender.stat_changes.defense
     | Special ->
-        d
-          (stat_modified a.sp_attack attacker.stat_changes.sp_attack)
-          move.power
-          (stat_modified b.sp_defense defender.stat_changes.sp_defense)
-    | _ -> 0
+        stat_modified a.sp_attack attacker.stat_changes.sp_attack
+        *. move.power
+        /. stat_modified b.sp_defense defender.stat_changes.sp_defense
+    | _ -> 0.
   in
   let base_damage =
-    float_of_int (d (d 2 (get_level attacker.creature) 5 + 2) x 50 + 2)
+    ((2. *. float_of_int (get_level attacker.creature) /. 5.) +. 2.)
+    *. x /. 50.
+    +. 2.
   in
   let type_mod = get_type_mod move.etype defender.creature in
   let total_damage =
@@ -191,12 +173,12 @@ let damage_calc move attacker defender =
 
 let active_crtr_filter crtrlist =
   List.filter
-    (fun x -> if get_current_hp x > 0 then true else false)
+    (fun x -> if get_current_hp x > 0. then true else false)
     crtrlist
 
 let inactive_crtr_filter crtrlist =
   List.filter
-    (fun x -> if get_current_hp x > 0 then false else true)
+    (fun x -> if get_current_hp x > 0. then false else true)
     crtrlist
 
 let updated_player_creatures brecord =
@@ -228,14 +210,14 @@ let player_faster brecord =
   in
   if player_speed > enemy_speed then true
   else if player_speed < enemy_speed then false
-  else if Random.int 2 = 1 then true
+  else if Util.rand 2 () = 1 then true
   else false
 
 (* ==============================================================*)
 (* ================ Stat Changes Handler BEGIN===================*)
 (* ==============================================================*)
-let stat_bound stat_val name stat_name =
-  if stat_val > 6 then begin
+let stat_bound (stat_val : float) name stat_name =
+  if stat_val > 6. then begin
     Ui.add_last_gameplay
       (draw_text
          (name ^ "'s "
@@ -244,64 +226,53 @@ let stat_bound stat_val name stat_name =
          40 true false);
     false
   end
-  else if stat_val < -6 then begin
+  else if stat_val < -6. then begin
     Ui.add_last_gameplay
       (draw_text (name ^ "'s ATK can't go any lower.") 40 true false);
     false
   end
   else true
 
-let handle_stat_changes battler stat stages =
-  if battler.is_player then
-    if stages < 0 then
-      Ui.add_last_gameplay
-        (Animation.lower_stat_effect
-           (get_back_sprite battler.creature)
-           true)
-    else
-      Ui.add_last_gameplay
-        (Animation.raise_stat_effect
-           (get_back_sprite battler.creature)
-           true)
-  else if stages < 0 then
+let handle_stat_changes battler stat (stages : float) =
+  if stages < 0. then
     Ui.add_last_gameplay
       (Animation.lower_stat_effect
-         (get_front_sprite battler.creature)
-         false)
+         (get_back_sprite battler.creature)
+         battler.is_player)
   else
     Ui.add_last_gameplay
       (Animation.raise_stat_effect
-         (get_front_sprite battler.creature)
-         false);
+         (get_back_sprite battler.creature)
+         battler.is_player);
 
   match stat with
   | HP -> ()
   | Attack ->
-      let stat_change = battler.stat_changes.attack + stages in
+      let stat_change = battler.stat_changes.attack +. stages in
       if stat_bound stat_change (get_nickname battler.creature) stat
       then
         battler.stat_changes <-
           { battler.stat_changes with attack = stat_change }
   | Defense ->
-      let stat_change = battler.stat_changes.attack + stages in
+      let stat_change = battler.stat_changes.attack +. stages in
       if stat_bound stat_change (get_nickname battler.creature) stat
       then
         battler.stat_changes <-
           { battler.stat_changes with defense = stat_change }
   | Sp_Attack ->
-      let stat_change = battler.stat_changes.attack + stages in
+      let stat_change = battler.stat_changes.attack +. stages in
       if stat_bound stat_change (get_nickname battler.creature) stat
       then
         battler.stat_changes <-
           { battler.stat_changes with sp_attack = stat_change }
   | Sp_Defense ->
-      let stat_change = battler.stat_changes.attack + stages in
+      let stat_change = battler.stat_changes.attack +. stages in
       if stat_bound stat_change (get_nickname battler.creature) stat
       then
         battler.stat_changes <-
           { battler.stat_changes with sp_defense = stat_change }
   | Speed ->
-      let stat_change = battler.stat_changes.attack + stages in
+      let stat_change = battler.stat_changes.attack +. stages in
       if stat_bound stat_change (get_nickname battler.creature) stat
       then
         battler.stat_changes <-
@@ -347,12 +318,12 @@ let handle_effects move attacker defender () =
                   (get_nickname target.creature
                   ^ "'s " ^ string_of_stat stat ^ " " ^ state)
                   40 true true);
-             handle_stat_changes target stat stages
+             handle_stat_changes target stat (float_of_int stages)
          | _ -> ());
         handle_effects_rec t
   in
   Random.self_init ();
-  if Random.int 100 + 1 < move.effect_chance then
+  if Random.int 100 + 1 < int_of_float move.effect_chance then
     handle_effects_rec move.effect_ids
   else ()
 
@@ -381,11 +352,11 @@ let exec_turn attacker defender brecord =
                40 true false);
 
           let dmg =
-            if m.power > 0 then begin
+            if m.power > 0. then begin
               if attacker.creature = brecord.player_battler.creature
               then
                 Ui.add_last_gameplay
-                  (Draw.damage_render
+                  (Animation.damage_render
                      (get_front_sprite defender.creature)
                      false
                      (!refresh_battle
@@ -394,7 +365,7 @@ let exec_turn attacker defender brecord =
                         0))
               else
                 Ui.add_last_gameplay
-                  (Draw.damage_render
+                  (Animation.damage_render
                      (get_back_sprite defender.creature)
                      true
                      (!refresh_battle
@@ -430,8 +401,7 @@ let exec_turn attacker defender brecord =
                 (!health_bar
                    (get_stat defender.creature HP)
                    (get_current_hp defender.creature)
-                   (get_current_hp defender.creature
-                   - int_of_float damage)
+                   (get_current_hp defender.creature -. damage)
                    defender.is_player true);
               if crit then
                 Ui.add_last_gameplay
@@ -445,9 +415,9 @@ let exec_turn attacker defender brecord =
     in
 
     set_current_hp defender.creature
-      (get_current_hp defender.creature - int_of_float damage_pte);
+      (get_current_hp defender.creature -. damage_pte);
 
-    if get_current_hp defender.creature > 0 then ()
+    if get_current_hp defender.creature > 0. then ()
     else if defender.creature = brecord.player_battler.creature then
       updated_player_creatures brecord
     else updated_enemy_creatures brecord
@@ -478,11 +448,11 @@ let execute_turn brecord =
         exec_turn brecord.player_battler brecord.enemy_battler brecord
 
 let check_active_status brecord =
-  if get_current_hp brecord.player_battler.creature <= 0 then begin
+  if get_current_hp brecord.player_battler.creature <= 0. then begin
     brecord.player_battler.active <- false;
     apply_status brecord.player_battler.creature Fainted
   end;
-  if get_current_hp brecord.enemy_battler.creature <= 0 then begin
+  if get_current_hp brecord.enemy_battler.creature <= 0. then begin
     brecord.enemy_battler.active <- false;
     apply_status brecord.enemy_battler.creature Fainted
   end
@@ -523,7 +493,10 @@ let run_away brecord =
   let pspeed = (get_stats brecord.player_battler.creature).speed in
   let espeed = (get_stats brecord.enemy_battler.creature).speed in
   let odds_escape =
-    ((pspeed * 128 / espeed) + (30 * brecord.escape_attempts)) mod 256
+    int_of_float
+      ((pspeed *. 128. /. espeed)
+      +. (30. *. float_of_int brecord.escape_attempts))
+    mod 256
   in
   Random.self_init ();
   let chance = Random.int 256 in
@@ -548,12 +521,8 @@ let capture brecord modifier =
     (*Marco print a message about not being able to capture in a trainer
       battle here :D *)
   else
-    let e_currhp =
-      float_of_int (get_current_hp brecord.enemy_battler.creature)
-    in
-    let e_maxhp =
-      float_of_int (get_stats brecord.enemy_battler.creature).max_hp
-    in
+    let e_currhp = get_current_hp brecord.enemy_battler.creature in
+    let e_maxhp = (get_stats brecord.enemy_battler.creature).max_hp in
     let e_rate = get_catch_rate brecord.enemy_battler.creature in
     let catch_rate1 =
       ((3.0 *. e_maxhp) -. (2.0 *. e_currhp))

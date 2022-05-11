@@ -85,8 +85,6 @@ val wait : int -> unit -> unit
     continue. If [delay_time = -1] then it waits indefinetely until user
     input *)
 
-val present_draw : (unit -> unit) -> unit -> unit
-
 (** {1 Loading Sprites}*)
 
 val load_creature : string -> unit -> sprite
@@ -123,11 +121,6 @@ val draw_sprite_crop :
     (height_min, height_max) (_)]
     draws an image from the given [sprite] representation at [x] and [y]
     with cropped based on the bounds defined*)
-
-val damage_render : sprite -> bool -> (unit -> unit) -> unit -> unit
-(** [damage_render sprite is_player (_)] performs the damage animation
-    of either the enemy or the player depedning on the [is_player]
-    boolean *)
 
 val draw_gradient : int -> int -> unit
 (** (draw_gradient w h ) draws a cool radiant with width [w] adnd height

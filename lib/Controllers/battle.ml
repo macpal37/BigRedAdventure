@@ -1,11 +1,11 @@
 open Draw
 open Creature
+open Creature.Move
 open Animation
 open Util
 open Input
 open DrawText
 
-let text_box_height = 212
 let moves_position = new_point ()
 let cmd_pos = new_point ()
 
@@ -38,19 +38,22 @@ let level_up_screen = load_sprite "level_up" GUI_Folder 3 ()
 (***************     Combat Drawing Commands     *********************)
 (*****************************************************************)
 
-let draw_moves creature () =
+let draw_moves () =
   clear_text moves_window ();
-  let moves = get_moves creature in
+  let moves = get_moves ~!bs.player_battler.creature in
   let size = Array.length moves in
   let box_w, box_h = (370, 92) in
   let box_x, box_y = (28, 200 - box_h) in
-  let text_x, text_y = (38, (4 * text_box_height / 5) - 12) in
+  (* Height of Box 212 *)
+  let text_x, text_y = (38, (4 * 212 / 5) - 12) in
   let text_xdif, text_ydif = (376, 95) in
   set_line_width 6;
   let rec draw_all_moves i j length =
     if length <= 0 then ()
     else
-      let move = get_move_i creature (i + (j * 2)) in
+      let move =
+        get_move_i ~!bs.player_battler.creature (i + (j * 2))
+      in
       let x, y = (text_x + (text_xdif * i), text_y - (text_ydif * j)) in
       (match move with
       | None -> ()
@@ -101,7 +104,7 @@ let draw_combat_hud
     name
     level
     player
-    (max, before, after)
+    ((max, before, after) : float * float * float)
     still
     () =
   let sprite_width, sprite_height = get_dimension sprite in
@@ -309,40 +312,6 @@ let handle_exp player_creature enemy_creature () =
   in
   rest_exp_events ~!bs.creatures_switched
 
-let rec faint base c sprite player () =
-  let sprite_width, sprite_height = get_dimension sprite in
-  let xx, yy =
-    if player then (50, 166)
-    else (width - 50 - sprite_width, height - 50 - sprite_height)
-  in
-  if c = base - 2 then begin
-    !Combat.refresh_battle
-      (get_current_hp ~!bs.player_battler.creature)
-      (get_current_hp ~!bs.enemy_battler.creature)
-      (if player then 1 else 0)
-      ();
-    present ()
-  end
-  else begin
-    !Combat.refresh_battle
-      (get_current_hp ~!bs.player_battler.creature)
-      (get_current_hp ~!bs.enemy_battler.creature)
-      (if player then 1 else 0)
-      ();
-    draw_sprite_crop sprite xx
-      (yy - (sprite_height - (sprite_height / c)))
-      (0, sprite_width)
-      (sprite_height - (sprite_height / c), sprite_height)
-      ();
-    clear_text DrawText.battle_bot ();
-    present ();
-    Input.sleep 0.075 ();
-    faint base (c + 1) sprite player ()
-  end;
-  set_color text_color
-
-let animate_faint creature player () = faint 20 1 creature player ()
-
 let handle_combat move =
   Ui.update_all ();
   if ~!bs.battle_status = Ongoing then begin
@@ -426,6 +395,7 @@ let handle_item item () =
 
 let refresh_battle () =
   Ui.add_last_background (draw_sprite battle_bg1 0 0);
+  (* Draws the ally and enemy creature *)
   if ~!bs.enemy_battler.active = true then
     Ui.add_first_gameplay
       (draw_creature
@@ -435,7 +405,15 @@ let refresh_battle () =
     Ui.add_first_gameplay
       (draw_creature
          (get_back_sprite ~!bs.player_battler.creature)
-         true)
+         true);
+
+  Ui.add_last_foreground refresh_hud;
+  Ui.add_first_foreground
+    (match !combat_mode with
+    | Commands -> draw_combat_commands
+    | Moves -> draw_moves
+    | _ -> clear_text battle_bot)
+
 (* let refresh_battle1 () = Ui.add_first_foreground (clear_text
    battle_bot); Ui.add_last_background (draw_sprite battle_bg1 0 0); if
    ~!bs.enemy_battler.active = true then Ui.add_first_gameplay
@@ -455,13 +433,13 @@ let clear_battle p_hp e_hp state () =
 
   draw_combat_hud combat_hud (get_nickname opponent)
     (get_level opponent) false
-    ((get_stats opponent).max_hp, e_hp, e_hp)
+    (int_of_float (get_stats opponent).max_hp, e_hp, e_hp)
     true ();
 
   (* Ui.add_first_gameplay *)
   draw_combat_hud player_hud (get_nickname player) (get_level player)
     true
-    ((get_stats player).max_hp, p_hp, p_hp)
+    (int_of_float (get_stats player).max_hp, p_hp, p_hp)
     true ();
   (draw_creature_exp ~!bs.player_battler.creature false) ();
   match state with
@@ -485,6 +463,22 @@ let clear_battle p_hp e_hp state () =
           (get_front_sprite ~!bs.enemy_battler.creature)
           false ()
   | _ -> ()
+
+let handle_party () =
+  Party_menu.init BattleSwitch ();
+  match !Combat.switching_pending with
+  | Some c ->
+      Ui.add_first_foreground (clear_text DrawText.battle_bot);
+
+      Combat.switch_player ~!bs c (Player.party (State.player ()));
+      refresh_battle ();
+      Ui.update_all ();
+      combat_mode := Attack;
+      Combat.switching_pending := None;
+      handle_combat None;
+      cmd_pos.x <- 0;
+      cmd_pos.y <- 0
+  | None -> refresh_battle ()
 
 let rec handle_inventory () =
   Inventory_menu.init ();
@@ -545,7 +539,7 @@ let rec run_tick () =
     | Some c -> get_ctrl_key c
     | None -> NoKey
   in
-
+  (*===== Selecting a command ===*)
   (match key with
   | Right -> move_x 1 ()
   | Left -> move_x (-1) ()
@@ -559,22 +553,7 @@ let rec run_tick () =
         match selected_command () with
         | Fight -> combat_mode := Moves
         | Bag -> handle_inventory ()
-        | Party -> (
-            Party_menu.init BattleSwitch ();
-            match !Combat.switching_pending with
-            | Some c ->
-                Ui.add_first_foreground (clear_text DrawText.battle_bot);
-
-                Combat.switch_player ~!bs c
-                  (Player.party (State.player ()));
-                refresh_battle ();
-                Ui.update_all ();
-                combat_mode := Attack;
-                Combat.switching_pending := None;
-                handle_combat None;
-                cmd_pos.x <- 0;
-                cmd_pos.y <- 0
-            | None -> refresh_battle ())
+        | Party -> handle_party ()
         | Run ->
             Combat.run_away ~!bs;
             if ~!bs.battle_status = Combat.Flee then begin
@@ -645,10 +624,8 @@ let start_wild_battle c =
   Combat.refresh_battle := clear_battle;
   Combat.health_bar := draw_health_bar_combat;
   combat_mode := Commands;
-
-  Ui.add_last_background (clear_text battle_right);
-
   (* ========= Start the Battle ========= *)
+  (* ========= Filter out the fainted creatures ========= *)
   let rec battle_party fainted = function
     | [] -> fainted
     | h :: t ->
@@ -663,9 +640,4 @@ let start_wild_battle c =
     (State.player ());
 
   (* ========= Draw the Battle ========= *)
-  draw_moves c ();
-  refresh_hud ();
-  refresh_battle ();
-  Ui.clear_all ();
-  Ui.update_all ();
   run_tick ()

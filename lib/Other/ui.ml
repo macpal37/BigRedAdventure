@@ -3,7 +3,6 @@ open Draw
 type draw_func = unit -> unit
 
 (* FALSE: Continue Animation TRUE: End Animation *)
-type animation = int -> unit -> bool
 
 type layer =
   | Background

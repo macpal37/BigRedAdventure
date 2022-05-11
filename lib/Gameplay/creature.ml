@@ -6,12 +6,12 @@ exception MalformedJson
 exception NoCreature
 
 type stats = {
-  mutable max_hp : int;
-  mutable attack : int;
-  mutable defense : int;
-  mutable sp_attack : int;
-  mutable sp_defense : int;
-  mutable speed : int;
+  mutable max_hp : float;
+  mutable attack : float;
+  mutable defense : float;
+  mutable sp_attack : float;
+  mutable sp_defense : float;
+  mutable speed : float;
 }
 
 type stat =
@@ -73,29 +73,87 @@ type nature = {
 
 (**=========== Moves===========**)
 
-type move_catgeory =
-  | Physical
-  | Special
-  | Status
+module Move = struct
+  type move_catgeory =
+    | Physical
+    | Special
+    | Status
 
-type move = {
-  move_name : string;
-  power : int;
-  accuracy : float;
-  mutable curr_pp : int;
-  mutable max_pp : int;
-  etype : etype;
-  category : move_catgeory;
-  description : string;
-  effect_ids : int list;
-  effect_chance : int;
-}
+  let category_of_string cat_string =
+    match cat_string with
+    | "Physical" -> Physical
+    | "Special" -> Special
+    | "Status" -> Status
+    | _ -> Status
+
+  type move = {
+    move_name : string;
+    power : float;
+    accuracy : float;
+    mutable priority : int;
+    mutable curr_pp : int;
+    mutable max_pp : int;
+    etype : etype;
+    category : move_catgeory;
+    description : string;
+    effect_ids : int list;
+    effect_chance : float;
+  }
+
+  let etype_of_string etype_string =
+    match etype_string with
+    | "Normal" -> Normal
+    | "Fire" -> Fire
+    | "Water" -> Water
+    | "Grass" -> Grass
+    | "Fairy" -> Fairy
+    | "Rock" -> Rock
+    | "Ghost" -> Ghost
+    | "Dark" -> Dark
+    | "Steel" -> Steel
+    | "Electric" -> Electric
+    | "Poison" -> Poison
+    | "Psychic" -> Psychic
+    | "Ground" -> Ground
+    | "Dragon" -> Dragon
+    | "Bug" -> Bug
+    | "Ice" -> Ice
+    | "Fighting" -> Fighting
+    | _ -> NoType
+
+  let parse_move name json =
+    {
+      move_name = name;
+      power = json |> member "power" |> to_int |> float_of_int;
+      accuracy = float_of_int (json |> member "accuracy" |> to_int);
+      priority = json |> member "priority" |> to_int;
+      curr_pp = json |> member "pp" |> to_int;
+      max_pp = json |> member "pp" |> to_int;
+      etype = etype_of_string (json |> member "type" |> to_string);
+      category =
+        category_of_string (json |> member "category" |> to_string);
+      description = json |> member "description" |> to_string;
+      effect_ids =
+        json |> member "effect_ids" |> to_list |> List.map to_int;
+      effect_chance =
+        json |> member "effect_chance" |> to_int |> float_of_int;
+    }
+
+  (**=============== Moves ============**)
+  let create_move name =
+    let move_json =
+      Yojson.Basic.from_file "assets/util/move_list.json"
+    in
+    parse_move name (move_json |> member name)
+end
+
+open Move
 
 type creature = {
   mutable nickname : string;
   species : string;
   mutable level : int;
-  mutable current_hp : int;
+  mutable current_hp : float;
   mutable exp : int;
   base_stats : stats;
   mutable current_stats : stats;
@@ -202,27 +260,6 @@ let string_of_etype etype_var =
   | Fighting -> "Fighting"
   | _ -> "None"
 
-let etype_of_string etype_string =
-  match etype_string with
-  | "Normal" -> Normal
-  | "Fire" -> Fire
-  | "Water" -> Water
-  | "Grass" -> Grass
-  | "Fairy" -> Fairy
-  | "Rock" -> Rock
-  | "Ghost" -> Ghost
-  | "Dark" -> Dark
-  | "Steel" -> Steel
-  | "Electric" -> Electric
-  | "Poison" -> Poison
-  | "Psychic" -> Psychic
-  | "Ground" -> Ground
-  | "Dragon" -> Dragon
-  | "Bug" -> Bug
-  | "Ice" -> Ice
-  | "Fighting" -> Fighting
-  | _ -> NoType
-
 (* let string_of_etype etype_var = match etype_var with | Neutral ->
    "Neutral" | Fire -> "Fire" | Water -> "Water" | Air -> "Air" | Nature
    -> "Nature" | Light -> "Light" | Earth -> "Earth" | Specter ->
@@ -237,13 +274,6 @@ let etype_of_string etype_string =
    Electric | "Acid" -> Acid | "Cosmic" -> Cosmic | "Ice" -> Ice | _ ->
    None *)
 
-let category_of_string cat_string =
-  match cat_string with
-  | "Physical" -> Physical
-  | "Special" -> Special
-  | "Status" -> Status
-  | _ -> Status
-
 (**=============== JSON Parsing ============**)
 let parse_learn_set json =
   {
@@ -253,12 +283,12 @@ let parse_learn_set json =
 
 let stats_of_json json =
   {
-    max_hp = json |> member "hp" |> to_int;
-    attack = json |> member "attack" |> to_int;
-    defense = json |> member "defense" |> to_int;
-    sp_attack = json |> member "sp_attack" |> to_int;
-    sp_defense = json |> member "sp_defense" |> to_int;
-    speed = json |> member "speed" |> to_int;
+    max_hp = json |> member "hp" |> to_int |> float_of_int;
+    attack = json |> member "attack" |> to_int |> float_of_int;
+    defense = json |> member "defense" |> to_int |> float_of_int;
+    sp_attack = json |> member "sp_attack" |> to_int |> float_of_int;
+    sp_defense = json |> member "sp_defense" |> to_int |> float_of_int;
+    speed = json |> member "speed" |> to_int |> float_of_int;
   }
 
 let etype_from_json json num =
@@ -275,27 +305,6 @@ let level_rate_from_json json =
   | "Slow" -> Slow
   | _ -> Fast
 
-let parse_move name json =
-  {
-    move_name = name;
-    power = json |> member "power" |> to_int;
-    accuracy = float_of_int (json |> member "accuracy" |> to_int);
-    curr_pp = json |> member "pp" |> to_int;
-    max_pp = json |> member "pp" |> to_int;
-    etype = etype_of_string (json |> member "type" |> to_string);
-    category =
-      category_of_string (json |> member "category" |> to_string);
-    description = json |> member "description" |> to_string;
-    effect_ids =
-      json |> member "effect_ids" |> to_list |> List.map to_int;
-    effect_chance = json |> member "effect_chance" |> to_int;
-  }
-
-(**=============== Moves ============**)
-let create_move name =
-  let move_json = Yojson.Basic.from_file "assets/util/move_list.json" in
-  parse_move name (move_json |> member name)
-
 let generate_moves learnset level =
   let possible_moves =
     List.rev (List.filter (fun a -> a.level_learned <= level) learnset)
@@ -310,60 +319,53 @@ let generate_moves learnset level =
   moves
 
 let mod_stat stats stat_name pow =
-  let d a b c =
-    let x = (a * b) + 50 in
-    x / c
-  in
-  let pow = int_of_float (100. *. pow) in
   match stat_name with
-  | Attack -> d stats.attack pow 100
-  | Defense -> d stats.defense pow 100
-  | Sp_Attack -> d stats.sp_attack pow 100
-  | Sp_Defense -> d stats.sp_defense pow 100
-  | Speed -> d stats.speed pow 100
-  | _ -> -1
+  | Attack -> stats.attack *. pow
+  | Defense -> stats.defense *. pow
+  | Sp_Attack -> stats.sp_attack *. pow
+  | Sp_Defense -> stats.sp_defense *. pow
+  | Speed -> stats.speed *. pow
+  | _ -> -1.
 
 let mod_statc stats stat_name pow =
-  let d a b c =
-    let x = (a * b) + 50 in
-    x / c
-  in
-  let pow = int_of_float (100. *. pow) in
   match stat_name with
-  | Attack -> stats.attack <- d stats.attack pow 100
-  | Defense -> stats.defense <- d stats.defense pow 100
-  | Sp_Attack -> stats.sp_attack <- d stats.sp_attack pow 100
-  | Sp_Defense -> stats.sp_defense <- d stats.sp_defense pow 100
-  | Speed -> stats.speed <- d stats.speed pow 100
+  | Attack -> stats.attack <- stats.attack *. pow
+  | Defense -> stats.defense <- stats.defense *. pow
+  | Sp_Attack -> stats.sp_attack <- stats.sp_attack *. pow
+  | Sp_Defense -> stats.sp_defense <- stats.sp_defense *. pow
+  | Speed -> stats.speed <- stats.speed *. pow
   | _ -> ()
 
 let calculate_stats level bstats ivs evs nature =
+  let level = float_of_int level in
   let un_mod_stats =
     {
       max_hp =
-        ((2 * bstats.max_hp) + ivs.max_hp + (evs.max_hp / 4))
-        * level / 100
-        + level + 10;
+        ((2. *. bstats.max_hp) +. ivs.max_hp +. (evs.max_hp /. 4.))
+        *. level /. 100.
+        +. level +. 10.;
       attack =
-        ((2 * bstats.attack) + ivs.attack + (evs.attack / 4))
-        * level / 100
-        + 5;
+        ((2. *. bstats.attack) +. ivs.attack +. (evs.attack /. 4.))
+        *. level /. 100.
+        +. 5.;
       defense =
-        ((2 * bstats.defense) + ivs.defense + (evs.defense / 4))
-        * level / 100
-        + 5;
+        ((2. *. bstats.defense) +. ivs.defense +. (evs.defense /. 4.))
+        *. level /. 100.
+        +. 5.;
       sp_attack =
-        ((2 * bstats.sp_attack) + ivs.sp_attack + (evs.sp_attack / 4))
-        * level / 100
-        + 5;
+        ((2. *. bstats.sp_attack)
+        +. ivs.sp_attack +. (evs.sp_attack /. 4.))
+        *. level /. 100.
+        +. 5.;
       sp_defense =
-        ((2 * bstats.sp_defense) + ivs.sp_defense + (evs.sp_defense / 4))
-        * level / 100
-        + 5;
+        ((2. *. bstats.sp_defense)
+        +. ivs.sp_defense +. (evs.sp_defense /. 4.))
+        *. level /. 100.
+        +. 5.;
       speed =
-        ((2 * bstats.speed) + ivs.speed + (evs.speed / 4))
-        * level / 100
-        + 5;
+        ((2. *. bstats.speed) +. ivs.speed +. (evs.speed /. 4.))
+        *. level /. 100.
+        +. 5.;
     }
   in
   mod_statc un_mod_stats nature.nerf 0.90;
@@ -372,25 +374,24 @@ let calculate_stats level bstats ivs evs nature =
 
 (** Generate Indiviudal Values (IVs) for the creature, randomizng the
     seed each time*)
-let generate_ivs rand_func =
-  Random.init (rand 107374184 ());
+let generate_ivs () =
   {
-    max_hp = rand_func 32 ();
-    attack = rand_func 32 ();
-    defense = rand_func 32 ();
-    sp_attack = rand_func 32 ();
-    sp_defense = rand_func 32 ();
-    speed = rand_func 32 ();
+    max_hp = Util.rand 32 () |> float_of_int;
+    attack = Util.rand 32 () |> float_of_int;
+    defense = Util.rand 32 () |> float_of_int;
+    sp_attack = Util.rand 32 () |> float_of_int;
+    sp_defense = Util.rand 32 () |> float_of_int;
+    speed = Util.rand 32 () |> float_of_int;
   }
 
 let empty_stats =
   {
-    max_hp = 0;
-    attack = 0;
-    defense = 0;
-    sp_attack = 0;
-    sp_defense = 0;
-    speed = 0;
+    max_hp = 0.;
+    attack = 0.;
+    defense = 0.;
+    sp_attack = 0.;
+    sp_defense = 0.;
+    speed = 0.;
   }
 
 let generate_nature nat_rand =
@@ -441,9 +442,7 @@ let exp_calc level rate =
       + (100 * level) - 140
   | Slow -> 5 * level * level * level / 4
 
-let curr_hp_cache = ref 0
-
-let create_creature name level =
+let create_creature name (level : int) =
   let json =
     Yojson.Basic.from_file "assets/util/creature_list.json"
     |> member name
@@ -452,7 +451,7 @@ let create_creature name level =
   Random.self_init ();
   let name = json |> member "name" |> to_string in
   let bstats = stats_of_json (json |> member "base_stats") in
-  let ivs = generate_ivs rand in
+  let ivs = generate_ivs () in
   let random_nature = generate_nature (rand 25 ()) in
   let curr_stats =
     calculate_stats level bstats ivs empty_stats random_nature
@@ -467,7 +466,6 @@ let create_creature name level =
       ("assets/creature_sprites/" ^ String.lowercase_ascii name ^ ".png")
       80 80 3
   in
-  curr_hp_cache := curr_stats.max_hp;
   {
     nickname = name;
     species = name;
@@ -529,7 +527,7 @@ let get_evs creature = creature.ev_stats
 
 let get_ev_gain creature =
   let a, b = creature.ev_gain in
-  (a, b * 2)
+  (a, float_of_int b *. 2.)
 
 let add_hp creature amount =
   if
@@ -537,9 +535,9 @@ let add_hp creature amount =
     && creature.current_status <> Fainted
   then
     creature.current_hp <-
-      Util.bound
-        (creature.current_hp + amount)
-        0 creature.current_stats.max_hp
+      Util.boundf
+        (creature.current_hp +. amount)
+        0. creature.current_stats.max_hp
   else raise NoEffect
 
 let apply_status c s =
@@ -556,28 +554,26 @@ let remove_status c s =
 let add_ev_gain creature (stat, amount) =
   match stat with
   | Attack ->
-      creature.ev_stats.attack <- creature.ev_stats.attack + amount
+      creature.ev_stats.attack <- creature.ev_stats.attack +. amount
   | Defense ->
-      creature.ev_stats.defense <- creature.ev_stats.defense + amount
+      creature.ev_stats.defense <- creature.ev_stats.defense +. amount
   | Sp_Attack ->
       creature.ev_stats.sp_attack <-
-        creature.ev_stats.sp_attack + amount
+        creature.ev_stats.sp_attack +. amount
   | Sp_Defense ->
       creature.ev_stats.sp_defense <-
-        creature.ev_stats.sp_defense + amount
-  | Speed -> creature.ev_stats.speed <- creature.ev_stats.speed + amount
+        creature.ev_stats.sp_defense +. amount
+  | Speed ->
+      creature.ev_stats.speed <- creature.ev_stats.speed +. amount
   | _ -> ()
 
 let get_exp_gain creature = (creature.level * creature.base_exp / 5) + 1
 let get_current_hp creature = creature.current_hp
 let get_specias creature = creature.species
-
-let set_current_hp creature amount =
-  curr_hp_cache := creature.current_hp;
-  creature.current_hp <- amount
+let set_current_hp creature amount = creature.current_hp <- amount
 
 let get_hp_status creature =
-  (creature.current_stats.max_hp, !curr_hp_cache, creature.current_hp)
+  (creature.current_stats.max_hp, creature.current_hp)
 
 let get_catch_rate creature = float_of_int creature.catch_rate
 
@@ -618,70 +614,14 @@ let get_exp creature =
     exp_calc creature.level creature.leveling_rate,
     exp_calc (creature.level + 1) creature.leveling_rate )
 
-let print_level_up creature () =
-  let old_stats = creature.current_stats in
-  let new_stats =
-    calculate_stats (creature.level + 1) creature.base_stats
-      creature.iv_stats creature.ev_stats creature.nature
-  in
-  print_endline
-    "=======================================================";
-  print_endline
-    ("LEVELUP: Lvl: " ^ string_of_int (get_level creature + 1));
-  print_endline
-    ("HP:\t"
-    ^ string_of_int old_stats.max_hp
-    ^ "\t-->\n   "
-    ^ string_of_int new_stats.max_hp
-    ^ "\t+"
-    ^ string_of_int (new_stats.max_hp - old_stats.max_hp));
-  print_endline
-    ("ATK:\t"
-    ^ string_of_int old_stats.attack
-    ^ "\t--> "
-    ^ string_of_int new_stats.attack
-    ^ "\t+"
-    ^ string_of_int (new_stats.attack - old_stats.attack));
-  print_endline
-    ("DEF:\t"
-    ^ string_of_int old_stats.defense
-    ^ "\t--> "
-    ^ string_of_int new_stats.defense
-    ^ "\t+"
-    ^ string_of_int (new_stats.defense - old_stats.defense));
-  print_endline
-    ("SPATK:\t"
-    ^ string_of_int old_stats.sp_attack
-    ^ "\t--> "
-    ^ string_of_int new_stats.sp_attack
-    ^ "\t+"
-    ^ string_of_int (new_stats.sp_attack - old_stats.sp_attack));
-  print_endline
-    ("SPDEF:\t"
-    ^ string_of_int old_stats.sp_defense
-    ^ "\t--> "
-    ^ string_of_int new_stats.sp_defense
-    ^ "\t+"
-    ^ string_of_int (new_stats.sp_defense - old_stats.sp_defense));
-  print_endline
-    ("SPD:\t"
-    ^ string_of_int old_stats.speed
-    ^ "\t--> "
-    ^ string_of_int new_stats.speed
-    ^ "\t+"
-    ^ string_of_int (new_stats.speed - old_stats.speed));
-  print_endline
-    "======================================================="
-
 let level_up creature () =
   let before_hp = creature.current_stats.max_hp in
-  print_level_up creature ();
   creature.level <- creature.level + 1;
   creature.current_stats <-
     calculate_stats creature.level creature.base_stats creature.iv_stats
       creature.ev_stats creature.nature;
   creature.current_hp <-
-    creature.current_hp + (creature.current_stats.max_hp - before_hp)
+    creature.current_hp +. (creature.current_stats.max_hp -. before_hp)
 
 (** [add_exp creature amount] add [amount] to the current exp of
     [creature]*)

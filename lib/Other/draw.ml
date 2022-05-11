@@ -85,10 +85,6 @@ let change_dpi sprite dpi =
     dpi;
   }
 
-let present_draw draw () =
-  draw ();
-  present ()
-
 let set_draw_color r g b =
   Sdlrender.set_draw_color3 (renderer ()) ~r ~g ~b ~a:255
 
@@ -233,27 +229,6 @@ let draw_gradient w h =
       Sdlrender.draw_point2 (renderer ()) ~x ~y
     done
   done
-
-let damage_render player_sprite player clear_function () =
-  let rec damage_render_rec c () =
-    if c = 0 then
-      (* draw_creature enemy_sprite (player = false) (); *)
-      draw_creature player_sprite player ()
-    else begin
-      if c mod 2 = 0 then draw_creature player_sprite player ()
-      else begin
-        clear_function ();
-
-        present ()
-      end;
-      present ();
-      Input.sleep 0.1 ();
-      damage_render_rec (c - 1) ()
-    end
-  in
-  damage_render_rec 7 ();
-  present ();
-  set_color text_color
 
 let add_rgb sprite red green blue () =
   let rec add_rgb_rec = function
