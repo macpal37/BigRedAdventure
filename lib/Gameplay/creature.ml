@@ -610,9 +610,10 @@ let get_stab_mod creature etype =
 let get_level creature = creature.level
 
 let get_exp creature =
-  ( creature.exp,
-    exp_calc creature.level creature.leveling_rate,
-    exp_calc (creature.level + 1) creature.leveling_rate )
+  ( float_of_int creature.exp,
+    float_of_int (exp_calc creature.level creature.leveling_rate),
+    float_of_int (exp_calc (creature.level + 1) creature.leveling_rate)
+  )
 
 let level_up creature () =
   let before_hp = creature.current_stats.max_hp in

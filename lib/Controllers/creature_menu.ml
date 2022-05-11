@@ -55,7 +55,7 @@ let draw_stats () =
       (draw_string_colored x2
          (y - (dif * (i + 1)))
          0
-         (string_of_int (get_stat !current_creature s))
+         (Util.string_of_intf (get_stat !current_creature s))
          color text_color)
   done
 
@@ -131,21 +131,20 @@ let refresh () =
     (draw_string_colored 20 220 0
        ("LVL: " ^ string_of_int (get_level !current_creature))
        white text_color);
-  let max, _, aft = get_hp_status !current_creature in
-  Ui.add_first_gameplay
-    (draw_health_bar max aft aft 56 192 180 6 true false);
+  let max, aft = get_hp_status !current_creature in
+  Ui.add_first_gameplay (draw_health_bar max aft 56 192 180 6 true);
   Ui.add_first_gameplay (draw_status (get_status !current_creature));
   let curr_exp, min_exp, max_exp = get_exp !current_creature in
   Ui.add_first_gameplay
     (draw_string_colored 20 140 0 "EXP:" white text_color);
   Ui.add_first_gameplay
-    (draw_exp_bar (max_exp - min_exp) (curr_exp - min_exp)
-       (curr_exp - min_exp) 20 128 210 8);
+    (draw_exp_bar (max_exp -. min_exp) (curr_exp -. min_exp) 20 128 210
+       8);
   Ui.add_first_gameplay
     (draw_string_colored 20 104 0
-       (string_of_int (curr_exp - min_exp)
+       (Util.string_of_intf (curr_exp -. min_exp)
        ^ "/"
-       ^ string_of_int (max_exp - min_exp))
+       ^ Util.string_of_intf (max_exp -. min_exp))
        white text_color);
 
   let type1, type2 = get_types !current_creature in

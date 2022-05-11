@@ -2,7 +2,6 @@ open Draw
 open Util
 open Spritesheet
 open DrawText
-open Creature
 open Ui
 
 type animation = {
@@ -85,28 +84,21 @@ let draw_health_bar
 
 let draw_exp_bar
     (max : float)
-    (before : float)
-    (after : float)
+    (curr : float)
     (xh : int)
     (yh : int)
     (hwidth : int)
     (hheight : int)
     () =
-  let max, before, after =
-    (boundf max 0. max, boundf before 0. after, boundf after 0. max)
-  in
-  let h = float_of_int hheight in
+  let curr = boundf curr 0. max in
+  let w = float_of_int hwidth in
   let blank = rgb 20 52 100 in
   let bar_color = rgb 255 213 65 in
-  let frame = anim.frame in
   set_color blank;
-  Ui.add_first_gameplay (fun () -> fill_rect xh yh hwidth hheight);
+  fill_rect xh yh hwidth hheight;
   set_color bar_color;
-  let curr_bar = (before /. max *. 100.) +. float_of_int frame in
-  let goal_bar = after /. max *. 100. in
-  Ui.add_first_gameplay (fun () ->
-      fill_rect xh yh (int_of_float (curr_bar *. h /. 100.)) hheight);
-  anim.finished <- goal_bar <= curr_bar
+  let curr_bar = curr /. max in
+  fill_rect xh yh (int_of_float (curr_bar *. w)) hheight
 
 let animate_health_bar
     (max : float)
@@ -123,10 +115,6 @@ let animate_health_bar
     (boundf max 0. max, boundf before 0. max, boundf after 0. max)
   in
   let frame = anim.frame in
-  let blank = rgb 84 97 89 in
-  let bar_yellow = rgb 221 193 64 in
-  let bar_red = rgb 246 85 55 in
-  let bar_green = rgb 103 221 144 in
   let new_hp =
     before
     +. float_of_int
@@ -134,33 +122,8 @@ let animate_health_bar
          else if after > before then frame
          else 0)
   in
-  Ui.add_last_foreground (fun () ->
-      set_color text_color;
-      set_line_width 8;
-      draw_rect xh yh hwidth hheight);
-  if hp_text then
-    draw_hp_val
-      (xh + (hwidth / 2))
-      (yh - hheight - 5 - 22)
-      new_hp max hp_text ();
-
-  Ui.add_last_foreground (fun () ->
-      set_color blank;
-      fill_rect xh yh hwidth hheight);
-  let ratio = 100. *. new_hp /. max in
-  let hp_color =
-    if ratio <= 1. then blank
-    else if ratio <= 20. then bar_red
-    else if ratio <= 50. then bar_yellow
-    else bar_green
-  in
-
-  Ui.add_last_foreground (fun () ->
-      set_color hp_color;
-      fill_rect xh yh
-        (int_of_float (new_hp /. max *. float_of_int hwidth))
-        hheight);
-
+  Ui.add_last_foreground
+    (draw_health_bar max new_hp xh yh hwidth hheight hp_text);
   anim.finished <- int_of_float new_hp = int_of_float after
 
 let animate_exp_bar
@@ -176,17 +139,12 @@ let animate_exp_bar
   let max, before, after =
     (boundf max 0. max, boundf before 0. after, boundf after 0. max)
   in
-  let h = float_of_int hheight in
-  let blank = rgb 20 52 100 in
-  let bar_color = rgb 255 213 65 in
   let frame = anim.frame in
-  set_color blank;
-  Ui.add_first_gameplay (fun () -> fill_rect xh yh hwidth hheight);
-  set_color bar_color;
   let curr_bar = (before /. max *. 100.) +. float_of_int frame in
   let goal_bar = after /. max *. 100. in
-  Ui.add_first_gameplay (fun () ->
-      fill_rect xh yh (int_of_float (curr_bar *. h /. 100.)) hheight);
+  let curr_exp = curr_bar /. 100. *. max in
+  Ui.add_last_foreground
+    (draw_exp_bar max curr_exp xh yh hwidth hheight);
   anim.finished <- goal_bar <= curr_bar
 
 let animate_effect
@@ -210,7 +168,7 @@ let animate_effect
 let animate_lower_stat_effect sprite player (anim : animation) () =
   let frame = anim.frame in
   if anim.frame = 0 then make_grayscale sprite ();
-  match frame with
+  (match frame with
   | 0 | 1 ->
       run_animation
         (make_animation anim.refresh_func
@@ -219,19 +177,18 @@ let animate_lower_stat_effect sprite player (anim : animation) () =
       run_animation
         (make_animation anim.refresh_func
            (animate_effect sprite player 80 80 0 5)
-           0);
-      false
+           0)
   | 2 ->
       Ui.add_first_gameplay (fun () ->
           reset_rgb sprite ();
-          draw_creature sprite player ());
-      true
-  | _ -> true
+          draw_creature sprite player ())
+  | _ -> ());
+  anim.finished <- frame >= 2
 
 let animate_raise_stat_effect sprite player (anim : animation) () =
   let frame = anim.frame in
   if anim.frame = 0 then make_grayscale sprite ();
-  match frame with
+  (match frame with
   | 0 | 1 ->
       run_animation
         (make_animation anim.refresh_func
@@ -240,14 +197,13 @@ let animate_raise_stat_effect sprite player (anim : animation) () =
       run_animation
         (make_animation anim.refresh_func
            (animate_effect sprite player 0 0 200 5)
-           0);
-      false
+           0)
   | 2 ->
       Ui.add_first_gameplay (fun () ->
           reset_rgb sprite ();
-          draw_creature sprite player ());
-      true
-  | _ -> true
+          draw_creature sprite player ())
+  | _ -> ());
+  anim.finished <- frame >= 2
 
 let switch_out
     (switching_out : sprite)

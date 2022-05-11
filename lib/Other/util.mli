@@ -41,6 +41,9 @@ val boundf : float -> float -> float -> float
 val rand : int -> unit -> int
 val randf : float -> unit -> float
 
+val string_of_intf : float -> string
+(** [string_of_intf] Returns a string of the float as if itw as an int.*)
+
 val captilize_all_string : string -> string
 (** [captilize_all_string text ] returns a string with all the words
     separate with a space captilized.*)

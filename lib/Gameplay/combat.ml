@@ -65,8 +65,6 @@ type battle_record = {
 }
 (** Records all the events occurred in battle. *)
 
-let refresh_battle = ref (fun _ _ _ () -> ())
-let health_bar = ref (fun _ _ _ _ _ () -> ())
 let player_first = ref false
 
 let generate_battler creature player =
@@ -234,17 +232,15 @@ let stat_bound (stat_val : float) name stat_name =
   else true
 
 let handle_stat_changes battler stat (stages : float) =
-  if stages < 0. then
-    Ui.add_last_gameplay
-      (Animation.lower_stat_effect
-         (get_back_sprite battler.creature)
-         battler.is_player)
-  else
-    Ui.add_last_gameplay
-      (Animation.raise_stat_effect
-         (get_back_sprite battler.creature)
-         battler.is_player);
+  (* (TODO: Faint EFFECT) *)
+  if stages < 0. then ()
+    (* Ui.add_last_gameplay (Animation.lower_stat_effect
+       (get_back_sprite battler.creature) battler.is_player) *)
+  else (* (TODO: Faint EFFECT) *)
+    ();
 
+  (* Ui.add_last_gameplay (Animation.raise_stat_effect (get_back_sprite
+     battler.creature) battler.is_player); *)
   match stat with
   | HP -> ()
   | Attack ->
@@ -354,24 +350,18 @@ let exec_turn attacker defender brecord =
           let dmg =
             if m.power > 0. then begin
               if attacker.creature = brecord.player_battler.creature
-              then
-                Ui.add_last_gameplay
-                  (Animation.damage_render
-                     (get_front_sprite defender.creature)
-                     false
-                     (!refresh_battle
-                        (get_current_hp attacker.creature)
-                        (get_current_hp defender.creature)
-                        0))
+              then ()
+                (* (TODO: Faint Animation) *)
+                (* Ui.add_last_gameplay (Animation.damage_render
+                   (get_front_sprite defender.creature) false
+                   (!refresh_battle (get_current_hp attacker.creature)
+                   (get_current_hp defender.creature) 0)) *)
               else
-                Ui.add_last_gameplay
-                  (Animation.damage_render
-                     (get_back_sprite defender.creature)
-                     true
-                     (!refresh_battle
-                        (get_current_hp defender.creature)
-                        (get_current_hp attacker.creature)
-                        1));
+                (* (TODO: Faint Animation) *)
+                (* Ui.add_last_gameplay (Animation.damage_render
+                   (get_back_sprite defender.creature) true
+                   (!refresh_battle (get_current_hp defender.creature)
+                   (get_current_hp attacker.creature) 1)); *) ();
 
               let damage, crit, mult =
                 damage_calc m attacker defender
@@ -391,18 +381,15 @@ let exec_turn attacker defender brecord =
                        ^ get_nickname defender.creature
                        ^ ".")
                        40 true true);
-              Ui.add_last_gameplay
-                (!health_bar
-                   (get_stat attacker.creature HP)
-                   (get_current_hp attacker.creature)
-                   (get_current_hp attacker.creature)
-                   attacker.is_player true);
-              Ui.add_last_gameplay
-                (!health_bar
-                   (get_stat defender.creature HP)
-                   (get_current_hp defender.creature)
-                   (get_current_hp defender.creature -. damage)
-                   defender.is_player true);
+              (* TODO: ANIMATE HP BAR *)
+              (* Ui.add_last_gameplay (!health_bar (get_stat
+                 attacker.creature HP) (get_current_hp
+                 attacker.creature) (get_current_hp attacker.creature)
+                 attacker.is_player true); Ui.add_last_gameplay
+                 (!health_bar (get_stat defender.creature HP)
+                 (get_current_hp defender.creature) (get_current_hp
+                 defender.creature -. damage) defender.is_player
+                 true); *)
               if crit then
                 Ui.add_last_gameplay
                   (draw_text "Critical Hit!" 40 true false);
@@ -573,17 +560,12 @@ let capture brecord modifier =
 let switching_pending = null ()
 
 let switch_player brecord creature _ =
-  Ui.add_first_gameplay
-    (Animation.switch_out
-       (get_back_sprite brecord.player_battler.creature)
-       (get_back_sprite creature)
-       true
-       (get_nickname brecord.player_battler.creature)
-       (get_nickname creature)
-       (!refresh_battle
-          (get_current_hp creature)
-          (get_current_hp brecord.enemy_battler.creature)
-          1));
+  (* (TODO: Faint Animation) *)
+  (* Ui.add_first_gameplay (Animation.switch_out (get_back_sprite
+     brecord.player_battler.creature) (get_back_sprite creature) true
+     (get_nickname brecord.player_battler.creature) (get_nickname
+     creature) (!refresh_battle (get_current_hp creature)
+     (get_current_hp brecord.enemy_battler.creature) 1)); *)
   if List.mem creature brecord.creatures_switched = false then
     brecord.creatures_switched <- creature :: brecord.creatures_switched;
   let new_battler = generate_battler creature true in

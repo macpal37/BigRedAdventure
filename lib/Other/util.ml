@@ -22,6 +22,8 @@ let bound num min max =
 let boundf num min max =
   if num >= max +. 1. then max else if num <= min then min else num
 
+let string_of_intf f = string_of_int (int_of_float f)
+
 let rand max () =
   Random.self_init ();
   Random.int max

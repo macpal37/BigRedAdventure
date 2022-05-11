@@ -89,9 +89,8 @@ let draw_menu lead_creature () =
     (draw_string_colored 20 220 0
        ("LVL: " ^ string_of_int (get_level lead_creature))
        white text_color);
-  let max, _, aft = get_hp_status lead_creature in
-  Ui.add_first_gameplay
-    (draw_health_bar max aft aft 56 192 180 6 true false);
+  let max, curr = get_hp_status lead_creature in
+  Ui.add_first_gameplay (draw_health_bar max curr 56 192 180 6 true);
   Ui.add_first_gameplay
     (draw_status (56 - 20) (192 - 30) (get_status lead_creature))
 
@@ -111,9 +110,9 @@ let draw_creature_status creature pos () =
     (draw_string_colored xx yy 0
        ("LVL: " ^ string_of_int (get_level creature))
        white text_color);
-  let max, _, aft = get_hp_status creature in
+  let max, curr = get_hp_status creature in
   Ui.add_first_gameplay
-    (draw_health_bar max aft aft (xx + 130) (yy + 6) 250 6 true false);
+    (draw_health_bar max curr (xx + 130) (yy + 6) 250 6 true);
   Ui.add_first_gameplay
     (draw_status (xx + 120) (yy - 24) (get_status creature))
 
@@ -161,13 +160,13 @@ let use_item creature item =
   let id = Item.get_id item in
   try
     (match id with
-    | 1 -> Creature.add_hp creature 20
-    | 2 -> Creature.add_hp creature 50
-    | 3 -> Creature.add_hp creature 120
+    | 1 -> Creature.add_hp creature 20.
+    | 2 -> Creature.add_hp creature 50.
+    | 3 -> Creature.add_hp creature 120.
     | 4 -> Creature.add_hp creature (get_stat creature HP)
     | 7 ->
         Creature.remove_status creature Fainted;
-        Creature.add_hp creature (get_stat creature HP / 2)
+        Creature.add_hp creature (get_stat creature HP /. 2.)
     | 8 ->
         Creature.remove_status creature Fainted;
         Creature.add_hp creature (get_stat creature HP)

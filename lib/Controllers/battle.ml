@@ -83,29 +83,26 @@ let draw_moves () =
     box_w box_h;
   set_color text_color
 
-let draw_exp_bar_combat max before after () =
-  let hwidth = 250 in
-  let hheight = 6 in
+(* let draw_exp_bar_combat max curr () = let hwidth = 250 in let hheight
+   = 6 in
 
-  let xh, yh = (width - hwidth - 30, 240) in
-  draw_exp_bar max before after xh yh hwidth hheight ()
+   let xh, yh = (width - hwidth - 30, 240) in draw_exp_bar max curr xh
+   yh hwidth hheight () *)
 
-let draw_health_bar_combat max before after player animate () =
+let draw_health_bar_combat (max : float) (curr : float) player () =
   let hwidth = 210 in
   let hheight = 6 in
   let xh, yh =
     if player then (width - hwidth - 31 - 10, 296) else (130, 615)
   in
-  draw_health_bar max before after xh yh hwidth hheight player animate
-    ()
+  draw_health_bar max curr xh yh hwidth hheight player ()
 
 let draw_combat_hud
     sprite
     name
     level
     player
-    ((max, before, after) : float * float * float)
-    still
+    ((max, curr) : float * float)
     () =
   let sprite_width, sprite_height = get_dimension sprite in
   if player then begin
@@ -130,8 +127,7 @@ let draw_combat_hud
       ("Lv" ^ string_of_int level)
       white text_color ()
   end;
-  if still then draw_health_bar_combat max before before player false ()
-  else draw_health_bar_combat max before after player true ()
+  draw_health_bar_combat max curr player ()
 
 let draw_combat_commands () =
   let x, y = (465, 120) in
@@ -160,34 +156,23 @@ let refresh_hud () =
   (* Ui.add_first_gameplay *)
   draw_combat_hud combat_hud (get_nickname opponent)
     (get_level opponent) false
-    ( (get_stats opponent).max_hp,
-      get_current_hp opponent,
-      get_current_hp opponent )
-    true ();
+    ((get_stats opponent).max_hp, get_current_hp opponent)
+    ();
 
   (* Ui.add_first_gameplay *)
   draw_combat_hud player_hud (get_nickname player) (get_level player)
     true
-    ( (get_stats player).max_hp,
-      get_current_hp player,
-      get_current_hp player )
-    true ()
+    ((get_stats player).max_hp, get_current_hp player)
+    ()
 
 (* let update_health creature before () = let curr, max =
    (get_current_hp creature, (get_stats creature).max_hp) in
    draw_health_bar_combat max before curr false true () *)
 
-let draw_creature_exp creature render () =
-  let curr_exp, min_exp, max_exp = get_exp creature in
-  let curr_exp = if curr_exp >= max_exp then min_exp else curr_exp in
-  if render then
-    Ui.add_first_foreground
-      (draw_exp_bar_combat (max_exp - min_exp) (curr_exp - min_exp)
-         (curr_exp - min_exp))
-  else
-    (draw_exp_bar_combat (max_exp - min_exp) (curr_exp - min_exp)
-       (curr_exp - min_exp))
-      ()
+(* let draw_creature_exp creature () = let curr_exp, min_exp, max_exp =
+   get_exp creature in let curr_exp = if curr_exp >= max_exp then
+   min_exp else curr_exp in Ui.add_first_foreground (draw_exp_bar_combat
+   (max_exp -. min_exp) (curr_exp -. min_exp)) *)
 
 let draw_level_up creature () =
   let old_stats = get_stats creature in
@@ -220,13 +205,14 @@ let draw_level_up creature () =
     draw_string_colored x2
       (y - (dif * (i + 1)))
       0
-      (string_of_int (get_stat2 old_stats s))
+      (string_of_intf (get_stat2 old_stats s))
       white text_color ();
     draw_string_colored (x2 + 80)
       (y - (dif * (i + 1)))
       0
       ("+"
-      ^ string_of_int (get_stat2 new_stats s - get_stat2 old_stats s))
+      ^ string_of_intf (get_stat2 new_stats s -. get_stat2 old_stats s)
+      )
       white text_color ()
   done;
   present ();
@@ -247,17 +233,11 @@ let draw_level_up creature () =
     draw_string_colored x2
       (y - (dif * (i + 1)))
       0
-      (string_of_int (get_stat2 new_stats s))
+      (string_of_intf (get_stat2 new_stats s))
       white text_color ()
   done;
-  present ();
-  wait (-1) ();
-  !Combat.refresh_battle
-    (get_current_hp ~!bs.player_battler.creature)
-    (get_current_hp ~!bs.enemy_battler.creature)
-    0 ();
 
-  present ()
+  wait (-1) ()
 
 let handle_exp player_creature enemy_creature () =
   Ui.update_all ();
@@ -282,10 +262,13 @@ let handle_exp player_creature enemy_creature () =
       let rec level_up_handler level = function
         | [] -> ()
         | h :: t ->
-            let max, bef, aft, lvl = h in
+            (* let max, bef, aft, lvl = h in *)
+            let _, _, _, lvl = h in
 
-            if player then
-              Ui.add_last_foreground (draw_exp_bar_combat max bef aft);
+            if player then ();
+            (* TODO: Animate EXP! *)
+            (* Ui.add_last_foreground (draw_exp_bar_combat max bef
+               aft); *)
             if level <> lvl then begin
               (* Ui.add_last_foreground (level_up target); *)
               Ui.add_last_foreground
@@ -328,17 +311,19 @@ let handle_combat move =
     (***============= Resolution =============***)
     if ~!bs.enemy_battler.active = false then (
       combat_mode := End_Battle;
-      Ui.add_last_gameplay
-        (animate_faint (get_front_sprite enemy) false);
+
+      (* (TODO: Faint Animation) *)
+      (* Ui.add_last_gameplay (animate_faint (get_front_sprite enemy)
+         false); *)
       ~!bs.enemy_battler.active <- false;
       Ui.add_last_gameplay (Input.sleep 0.5);
 
       handle_exp player enemy ();
       Ui.update_all ());
-    if ~!bs.player_battler.active = false then begin
-      combat_mode := Attack;
-      Ui.add_last_gameplay (animate_faint (get_back_sprite player) true)
-    end
+    if ~!bs.player_battler.active = false then combat_mode := Attack
+    (* (TODO: Faint Animation) *)
+    (* Ui.add_last_gameplay (animate_faint (get_back_sprite player)
+       true) *)
   end
 
 let handle_item item () =
@@ -425,44 +410,24 @@ let refresh_battle () =
    (draw_creature_exp ~!bs.player_battler.creature false);
    Ui.add_first_foreground draw_combat_commands *)
 
-let clear_battle p_hp e_hp state () =
-  let player, opponent =
-    (~!bs.player_battler.creature, ~!bs.enemy_battler.creature)
-  in
-  (draw_sprite battle_bg1 0 0) ();
+(* let clear_battle p_hp e_hp state () = let player, opponent =
+   (~!bs.player_battler.creature, ~!bs.enemy_battler.creature) in
+   (draw_sprite battle_bg1 0 0) ();
 
-  draw_combat_hud combat_hud (get_nickname opponent)
-    (get_level opponent) false
-    (int_of_float (get_stats opponent).max_hp, e_hp, e_hp)
-    true ();
+   draw_combat_hud combat_hud (get_nickname opponent) (get_level
+   opponent) false ((get_stats opponent).max_hp, e_hp) ();
 
-  (* Ui.add_first_gameplay *)
-  draw_combat_hud player_hud (get_nickname player) (get_level player)
-    true
-    (int_of_float (get_stats player).max_hp, p_hp, p_hp)
-    true ();
-  (draw_creature_exp ~!bs.player_battler.creature false) ();
-  match state with
-  | 0 ->
-      if ~!bs.player_battler.active then
-        draw_creature
-          (get_back_sprite ~!bs.player_battler.creature)
-          true ()
-  | 1 ->
-      if ~!bs.enemy_battler.active then
-        draw_creature
-          (get_front_sprite ~!bs.enemy_battler.creature)
-          false ()
-  | 2 ->
-      if ~!bs.player_battler.active then
-        draw_creature
-          (get_back_sprite ~!bs.player_battler.creature)
-          true ();
-      if ~!bs.enemy_battler.active then
-        draw_creature
-          (get_front_sprite ~!bs.enemy_battler.creature)
-          false ()
-  | _ -> ()
+   (* Ui.add_first_gameplay *) draw_combat_hud player_hud (get_nickname
+   player) (get_level player) true ((get_stats player).max_hp, p_hp) ();
+   (draw_creature_exp ~!bs.player_battler.creature) (); match state with
+   | 0 -> if ~!bs.player_battler.active then draw_creature
+   (get_back_sprite ~!bs.player_battler.creature) true () | 1 -> if
+   ~!bs.enemy_battler.active then draw_creature (get_front_sprite
+   ~!bs.enemy_battler.creature) false () | 2 -> if
+   ~!bs.player_battler.active then draw_creature (get_back_sprite
+   ~!bs.player_battler.creature) true (); if ~!bs.enemy_battler.active
+   then draw_creature (get_front_sprite ~!bs.enemy_battler.creature)
+   false () | _ -> () *)
 
 let handle_party () =
   Party_menu.init BattleSwitch ();
@@ -487,12 +452,6 @@ let rec handle_inventory () =
   | Some i ->
       let valid_item = handle_item i () in
       if valid_item then begin
-        Ui.update_all ();
-        Ui.add_first_background
-          (!Combat.refresh_battle
-             (get_current_hp ~!bs.player_battler.creature)
-             (get_current_hp ~!bs.enemy_battler.creature)
-             2);
         Inventory.consume_item (Player.inventory (State.player ())) i;
         handle_combat None
       end
@@ -621,8 +580,6 @@ let rec run_tick () =
   if !combat_mode <> Exit then run_tick ()
 
 let start_wild_battle c =
-  Combat.refresh_battle := clear_battle;
-  Combat.health_bar := draw_health_bar_combat;
   combat_mode := Commands;
   (* ========= Start the Battle ========= *)
   (* ========= Filter out the fainted creatures ========= *)

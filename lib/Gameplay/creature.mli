@@ -205,7 +205,7 @@ val level_up : creature -> unit -> unit
 (** [level_up creature] levels up the creature by one level, modifying
     its stats.*)
 
-val get_exp : creature -> int * int * int
+val get_exp : creature -> float * float * float
 (** [get_exp creature] returns a tuple that represents the creautre's
     exp [curr,min,max]*)
 

@@ -7,23 +7,13 @@ val make_animation :
   draw_func -> (animation -> unit -> unit) -> int -> animation
 
 val draw_health_bar :
-  float ->
-  float ->
-  float ->
-  int ->
-  int ->
-  int ->
-  int ->
-  bool ->
-  unit ->
-  unit
-(** [draw_health_bar max_hp before_curr_hp after_curr_hp x y width height is_hptext is_animated(_)]
-    performs the health bar gain/loss animation. *)
+  float -> float -> int -> int -> int -> int -> bool -> unit -> unit
+(** [draw_health_bar max_hp curr_hp x y width height is_hptext (_)]
+    draws the hp bar. *)
 
 val draw_exp_bar :
-  float -> float -> float -> int -> int -> int -> int -> unit -> unit
-(** [draw_exp_bar max_xp before_curr_xp after_curr_xp x y width height(_)]
-    performs the xp gain animation*)
+  float -> float -> int -> int -> int -> int -> unit -> unit
+(** [draw_exp_bar max_xp curr_xp x y width height(_)] draws the xp bar. *)
 
 val animate_health_bar :
   float ->
