@@ -28,3 +28,4 @@ type control_key =
 
 val ( => ) : Sdlkeycode.t -> control_key -> bool
 val get_ctrl_key : Sdlkeycode.t -> control_key
+val get_ctrl_option : Sdlkeycode.t option -> control_key option
