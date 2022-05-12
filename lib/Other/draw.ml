@@ -211,6 +211,12 @@ let draw_sprite_crop
 let draw_sprite sprite x y () =
   draw_from_pixels sprite x y 0 0 sprite.width sprite.height ()
 
+let draw_sprite_centered sprite x y () =
+  draw_sprite sprite
+    (x - (sprite.width / 2))
+    (y - (sprite.height / 2))
+    ()
+
 let draw_creature sprite player () =
   if player then draw_sprite sprite 50 166 ()
   else

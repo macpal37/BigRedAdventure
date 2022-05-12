@@ -111,6 +111,10 @@ val draw_sprite : sprite -> int -> int -> unit -> unit
 (** [draw_creature_pos sprite x y (_)] draws the [sprite] at the given
     position [x] [y] *)
 
+val draw_sprite_centered : sprite -> int -> int -> unit -> unit
+(** [draw_creature_pos sprite x y (_)] draws the [sprite] centered at
+    [x] [y] *)
+
 val draw_creature : sprite -> bool -> unit -> unit
 (** [draw_creature_pos sprite is_player (_)] draws the [sprite] at
     combat positions. If [is_player] is true then it draws the [sprite]
