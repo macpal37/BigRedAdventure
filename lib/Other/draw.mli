@@ -78,6 +78,10 @@ val get_dimension : sprite -> int * int
 (** [get_dimension sprite] returns the width and height of a sprite as a
     tuple.*)
 
+val set_active : sprite -> bool -> unit
+(** [set_active s flag] sets the sprite [s] to be active or not based on
+    the [flag] boolean .*)
+
 val change_dpi : sprite -> int -> sprite
 
 val wait : int -> unit -> unit

@@ -12,6 +12,7 @@ type control_key =
   | Back
   | Start
   | Select
+  | Debug
   | NoKey
 
 let ( => ) (sdl : Sdlkeycode.t) (ctrl : control_key) : bool =
@@ -25,6 +26,7 @@ let ( => ) (sdl : Sdlkeycode.t) (ctrl : control_key) : bool =
     | Sdlkeycode.Z -> Back
     | Sdlkeycode.Slash -> Start
     | Sdlkeycode.Period -> Select
+    | Sdlkeycode.D | Sdlkeycode.S -> Debug
     | _ -> NoKey
   in
   c = ctrl
@@ -38,6 +40,7 @@ let get_ctrl_key (sdl : Sdlkeycode.t) : control_key =
   | Sdlkeycode.X -> Action
   | Sdlkeycode.Z -> Back
   | Sdlkeycode.Slash -> Start
+  | Sdlkeycode.D | Sdlkeycode.S -> Debug
   | Sdlkeycode.Period -> Select
   | _ -> NoKey
 

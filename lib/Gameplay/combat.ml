@@ -1,6 +1,5 @@
 open Creature
 open Creature.Move
-open DrawText
 open Util
 
 exception Empty
@@ -214,21 +213,18 @@ let player_faster brecord =
 (* ==============================================================*)
 (* ================ Stat Changes Handler BEGIN===================*)
 (* ==============================================================*)
-let stat_bound (stat_val : float) name stat_name =
-  if stat_val > 6. then begin
-    Ui.add_last_gameplay
-      (draw_text
-         (name ^ "'s "
-         ^ string_of_stat stat_name
-         ^ " can't go any higher.")
-         40 true false);
+let stat_bound (stat_val : float) _ _ =
+  (* TODO: Missing: name stat_name*)
+  if stat_val > 6. then
+    (* TODO: TEXT BOX*)
+    (* Ui.add_last_gameplay (draw_text (name ^ "'s " ^ string_of_stat
+       stat_name ^ " can't go any higher.") 40 true false); *)
     false
-  end
-  else if stat_val < -6. then begin
-    Ui.add_last_gameplay
-      (draw_text (name ^ "'s ATK can't go any lower.") 40 true false);
+  else if stat_val < -6. then
+    (* TODO: TEXT BOX*)
+    (* Ui.add_last_gameplay (draw_text (name ^ "'s ATK can't go any
+       lower.") 40 true false); *)
     false
-  end
   else true
 
 let handle_stat_changes battler stat (stages : float) =
@@ -292,7 +288,8 @@ let handle_effects move attacker defender () =
              in
              let target = if digit2 = 0 then defender else attacker in
 
-             let stat, stages, state =
+             let stat, stages, _ =
+               (* TODO: Missing: state*)
                if digit1 < 5 then
                  ( List.nth stat_lst digit1,
                    -(digit3 + 1),
@@ -308,12 +305,10 @@ let handle_effects move attacker defender () =
                    | 1 -> "rose sharply!"
                    | _ -> "rose drastically!" )
              in
-
-             Ui.add_last_gameplay
-               (draw_text
-                  (get_nickname target.creature
-                  ^ "'s " ^ string_of_stat stat ^ " " ^ state)
-                  40 true true);
+             (* TODO: *)
+             (* Ui.add_last_gameplay (draw_text (get_nickname
+                target.creature ^ "'s " ^ string_of_stat stat ^ " " ^
+                state) 40 true true); *)
              handle_stat_changes target stat (float_of_int stages)
          | _ -> ());
         handle_effects_rec t
@@ -342,11 +337,10 @@ let exec_turn attacker defender brecord =
       | Some m ->
           (*Ui.add_last_gameplay (fun () -> Graphics.auto_synchronize
             false);*)
-          Ui.add_last_gameplay
-            (draw_text
-               (get_nickname attacker.creature ^ " used " ^ m.move_name)
-               40 true false);
-
+          (* TODO: TEXT BOX*)
+          (* Ui.add_last_gameplay (draw_text (get_nickname
+             attacker.creature ^ " used " ^ m.move_name) 40 true
+             false); *)
           let dmg =
             if m.power > 0. then begin
               if attacker.creature = brecord.player_battler.creature
@@ -363,24 +357,17 @@ let exec_turn attacker defender brecord =
                    (!refresh_battle (get_current_hp defender.creature)
                    (get_current_hp attacker.creature) 1)); *) ();
 
-              let damage, crit, mult =
-                damage_calc m attacker defender
-              in
-
-              if mult <> 1.0 then
-                if mult < 1. then
-                  Ui.add_last_gameplay
-                    (draw_text "It was not very effective!" 40 true true)
-                else if mult > 1. then
-                  Ui.add_last_gameplay
-                    (draw_text "It was super-effective!" 40 true true)
-                else if mult = 0.0 then
-                  Ui.add_last_gameplay
-                    (draw_text
-                       ("It does not affect "
-                       ^ get_nickname defender.creature
-                       ^ ".")
-                       40 true true);
+              (* TODO: Missing: crit, mult*)
+              let damage, _, _ = damage_calc m attacker defender in
+              (* TODO: TEXT BOX*)
+              (* if mult <> 1.0 then if mult < 1. then
+                 Ui.add_last_gameplay (draw_text "It was not very
+                 effective!" 40 true true) else if mult > 1. then
+                 Ui.add_last_gameplay (draw_text "It was
+                 super-effective!" 40 true true) else if mult = 0.0 then
+                 Ui.add_last_gameplay (draw_text ("It does not affect "
+                 ^ get_nickname defender.creature ^ ".") 40 true
+                 true); *)
               (* TODO: ANIMATE HP BAR *)
               (* Ui.add_last_gameplay (!health_bar (get_stat
                  attacker.creature HP) (get_current_hp
@@ -390,9 +377,9 @@ let exec_turn attacker defender brecord =
                  (get_current_hp defender.creature) (get_current_hp
                  defender.creature -. damage) defender.is_player
                  true); *)
-              if crit then
-                Ui.add_last_gameplay
-                  (draw_text "Critical Hit!" 40 true false);
+              (* TODO: TEXT BOX*)
+              (* if crit then Ui.add_last_gameplay (draw_text "Critical
+                 Hit!" 40 true false); *)
               damage
             end
             else 0.0
@@ -409,18 +396,11 @@ let exec_turn attacker defender brecord =
       updated_player_creatures brecord
     else updated_enemy_creatures brecord
   end
-  else begin
-    if attacker.active = false then
-      Ui.add_last_gameplay
-        (draw_text
-           (get_nickname attacker.creature ^ " fainted!")
-           40 true true);
-    if defender.active = false then
-      Ui.add_last_gameplay
-        (draw_text
-           (get_nickname defender.creature ^ " fainted!")
-           40 true true)
-  end
+(* TODO: TEXT BOX*)
+(* else begin if attacker.active = false then display_text_box
+   (get_nickname attacker.creature ^ " fainted!") 40 true true); if
+   defender.active = false then Ui.add_last_gameplay (draw_text
+   (get_nickname defender.creature ^ " fainted!") 40 true true) end *)
 
 let execute_turn brecord =
   if brecord.turn_pos = Pending then

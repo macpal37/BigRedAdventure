@@ -7,6 +7,7 @@ type sprite = {
   mutable color_palette : color list;
   base_palette : color list;
   dpi : int;
+  mutable active : bool;
 }
 
 type folder =
@@ -38,6 +39,7 @@ let empty_sprite =
     color_palette = [];
     base_palette = [];
     dpi = 1;
+    active = true;
   }
 
 let create_sprite pixels palette width height dpi =
@@ -48,6 +50,7 @@ let create_sprite pixels palette width height dpi =
     color_palette = palette;
     base_palette = palette;
     dpi;
+    active = true;
   }
 
 (* let blue = rgb 200 200 240 *)
@@ -126,16 +129,17 @@ let draw_pixel size x y () =
   fill_rect (x - (size / 2)) (y - (size / 2)) size size
 
 let draw_from_pixels sprite x y min_w min_h max_w max_h () =
-  for j = min_h / sprite.dpi to (max_h / sprite.dpi) - 1 do
-    for i = min_w / sprite.dpi to (max_w / sprite.dpi) - 1 do
-      let c = sprite.pixels.(i + (j * (sprite.width / sprite.dpi))) in
-      let tx, ty = (i * sprite.dpi, j * sprite.dpi) in
-      if c <> 0 && tx >= min_w && ty >= min_h then begin
-        set_color (List.nth sprite.color_palette (c - 1));
-        draw_pixel sprite.dpi (x + tx) (y + max_h - ty) ()
-      end
+  if sprite.active then
+    for j = min_h / sprite.dpi to (max_h / sprite.dpi) - 1 do
+      for i = min_w / sprite.dpi to (max_w / sprite.dpi) - 1 do
+        let c = sprite.pixels.(i + (j * (sprite.width / sprite.dpi))) in
+        let tx, ty = (i * sprite.dpi, j * sprite.dpi) in
+        if c <> 0 && tx >= min_w && ty >= min_h then begin
+          set_color (List.nth sprite.color_palette (c - 1));
+          draw_pixel sprite.dpi (x + tx) (y + max_h - ty) ()
+        end
+      done
     done
-  done
 
 let rec find x lst =
   match lst with
@@ -173,6 +177,7 @@ let load_image (image : Image.image) dpi =
     color_palette = new_pallette;
     base_palette = new_pallette;
     dpi;
+    active = true;
   }
 
 let load_sprite name folder dpi () =
@@ -254,6 +259,7 @@ let make_grayscale sprite () =
       sprite.color_palette
 
 let reset_rgb sprite () = sprite.color_palette <- sprite.base_palette
+let set_active (s : sprite) (flag : bool) = s.active <- flag
 
 let change_color sprite i c =
   let rec replace j = function

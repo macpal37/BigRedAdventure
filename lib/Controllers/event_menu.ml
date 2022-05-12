@@ -73,10 +73,9 @@ let rec run_tick () =
         (if List.length (Player.party (State.player ())) = 6 then
          match !target_creature with
          | Some creature ->
-             Ui.add_last_foreground
-               (draw_text
-                  (get_nickname creature ^ " was sent to your PC!")
-                  40 true true)
+             Animation.display_text_box
+               (get_nickname creature ^ " was sent to your PC!")
+               refresh ()
          | None -> ());
         menu_mode := Exit
       end
@@ -94,15 +93,13 @@ let rec run_tick () =
           | Some creature ->
               set_nickname creature !nickname;
               menu_mode := Exit;
-              Ui.add_last_foreground
-                (draw_text
-                   ("Welcome " ^ get_nickname creature ^ "!")
-                   40 true false);
+              Animation.display_text_box
+                ("Welcome " ^ get_nickname creature ^ "!")
+                refresh ();
               if List.length (Player.party (State.player ())) = 6 then
-                Ui.add_last_foreground
-                  (draw_text
-                     (get_nickname creature ^ " was sent to your PC!")
-                     40 true true)
+                Animation.display_text_box
+                  (get_nickname creature ^ " was sent to your PC!")
+                  refresh ()
           | None -> menu_mode := Exit)
       | c ->
           let c_to_string = Sdlkeycode.to_string c in
@@ -123,10 +120,9 @@ let init_capture creature () =
   target_creature := Some creature;
   nickname := "";
   refresh ();
-  Ui.add_last_foreground
-    (draw_text
-       ("Do you want to give " ^ get_nickname creature ^ " a name?")
-       40 true true);
+  Animation.display_text_box
+    ("Do you want to give " ^ get_nickname creature ^ " a name?")
+    refresh ();
 
   Ui.add_last_foreground draw_decision;
 

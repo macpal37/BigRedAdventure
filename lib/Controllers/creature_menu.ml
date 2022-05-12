@@ -2,7 +2,7 @@ open Draw
 open Creature
 open Animation
 open DrawText
-open Sdlkeycode
+open Input
 
 let creature_menu_bg = load_sprite "creature_menu" GUI_Folder 3 ()
 let menu_position = Util.new_point ()
@@ -176,7 +176,7 @@ let refresh () =
   | None -> ()
   | Some m ->
       Ui.add_first_foreground
-        (draw_text_string_pos 290 120 30 32 m.description text_color2));
+        (draw_text_string_pos 290 120 30 32 m.description));
   draw_moves ()
 
 let set_creature i =
@@ -218,33 +218,29 @@ let rec run_tick () =
   Input.sleep Draw.tick_rate ();
   let key =
     match Input.pop_key_option () with
-    | Some c -> c
-    | None -> Unknown
+    | Some c -> get_ctrl_key c
+    | None -> NoKey
   in
   if menu_position.x = -3 then menu_position.x <- -2;
 
   if menu_position.x <> -2 then begin
-    if key = W || key = Up then move_y (-1) ();
-    if key = S || key = Down then move_y 1 ();
-    if key = A || key = Left then move_x (-1) ();
-    if key = D || key = Right then move_x 1 ()
+    if key = Up then move_y (-1) ();
+    if key = Down then move_y 1 ();
+    if key = Left then move_x (-1) ();
+    if key = Right then move_x 1 ()
   end
   else begin
-    if key = A || key = Left then next_creature (-1);
-    if key = D || key = Right then next_creature 1
+    if key = Left then next_creature (-1);
+    if key = Right then next_creature 1
   end;
 
   (*====== Switch ====== *)
-  if
-    (key = E || key = Z)
-    && menu_position.x >= 0 && switch_position.x = -1
-  then begin
+  if key = Action && menu_position.x >= 0 && switch_position.x = -1 then begin
     switch_position.x <- menu_position.x + 0;
     switch_position.y <- menu_position.y + 0
   end
   else if
-    (key = E || key = Z)
-    && switch_position.x <> -1 && menu_position.x <> -2
+    key = Action && switch_position.x <> -1 && menu_position.x <> -2
   then begin
     switch_move ();
     menu_position.x <- switch_position.x + 0;
@@ -254,12 +250,12 @@ let rec run_tick () =
     refresh ()
   end;
 
-  if (key = E || key = Z) && menu_position.x = -2 then begin
+  if key = Action && menu_position.x = -2 then begin
     menu_position.x <- 0;
     refresh ();
     draw_moves ()
   end;
-  if (key = Q || key = X) && menu_position.x <> -2 then begin
+  if key = Back && menu_position.x <> -2 then begin
     menu_position.x <- -3;
     refresh ()
   end;
@@ -267,7 +263,7 @@ let rec run_tick () =
   refresh ();
 
   Ui.update_all ();
-  if (key <> Q && key <> X) || menu_position.x <> -2 then run_tick ()
+  if key <> Back || menu_position.x <> -2 then run_tick ()
 
 let init () =
   menu_position.x <- -2;

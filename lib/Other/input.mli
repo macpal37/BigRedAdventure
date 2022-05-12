@@ -24,6 +24,7 @@ type control_key =
   | Back
   | Start
   | Select
+  | Debug
   | NoKey
 
 val ( => ) : Sdlkeycode.t -> control_key -> bool

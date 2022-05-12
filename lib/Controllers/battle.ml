@@ -109,21 +109,21 @@ let draw_combat_hud
     draw_sprite sprite
       (width - sprite_width - 14)
       (360 - sprite_height) ();
-    draw_string_colored (width - 320) 316 1
+    draw_string_colored (width - 320) 312 0
       (String.uppercase_ascii name)
       white text_color ();
 
-    draw_string_colored (width - 100) 316 1
+    draw_string_colored (width - 100) 312 0
       ("Lv" ^ string_of_int level)
       white text_color ()
   end
   else begin
-    draw_sprite sprite 42 (height - 45 - sprite_height) ();
-    draw_string_colored 60 (height - 85) 1
+    draw_sprite sprite 42 (height - 49 - sprite_height) ();
+    draw_string_colored 60 (height - 85) 0
       (String.uppercase_ascii name)
       white text_color ();
 
-    draw_string_colored 280 (height - 85) 0
+    draw_string_colored 280 (height - 89) 0
       ("Lv" ^ string_of_int level)
       white text_color ()
   end;
@@ -143,12 +143,11 @@ let draw_combat_commands () =
     1 ">" white text_color ();
 
   (draw_text_string_pos 35 132 40 14
-     ("What will " ^ get_nickname ~!bs.player_battler.creature)
-     white)
+     ("What will " ^ get_nickname ~!bs.player_battler.creature))
     ()
 
 (* Refreshes *)
-let refresh_hud () =
+let draw_hud () =
   let player, opponent =
     (~!bs.player_battler.creature, ~!bs.enemy_battler.creature)
   in
@@ -239,6 +238,29 @@ let draw_level_up creature () =
 
   wait (-1) ()
 
+let refresh_battle () =
+  Ui.add_last_background (draw_sprite battle_bg1 0 0);
+
+  (* Draws the ally and enemy creature *)
+  if ~!bs.enemy_battler.active = true then
+    Ui.add_first_gameplay
+      (draw_creature
+         (get_front_sprite ~!bs.enemy_battler.creature)
+         false);
+  if ~!bs.player_battler.active = true then
+    Ui.add_first_gameplay
+      (draw_creature
+         (get_back_sprite ~!bs.player_battler.creature)
+         true);
+  Ui.add_last_foreground draw_hud;
+  Ui.add_last_foreground
+    (match !combat_mode with
+    | Commands -> clear_text battle_bot
+    (* draw_combat_commands *)
+    | Moves -> draw_moves
+    | Attack -> draw_combat_commands
+    | _ -> clear_text battle_bot)
+
 let handle_exp player_creature enemy_creature () =
   Ui.update_all ();
   let exp_gain =
@@ -254,11 +276,10 @@ let handle_exp player_creature enemy_creature () =
       let curr_level = get_level target in
       let exp_list = add_exp target exp_gain in
       add_ev_gain target (get_ev_gain enemy_creature);
-      Ui.add_last_foreground
-        (draw_text
-           (get_nickname target ^ " gained " ^ string_of_int exp_gain
-          ^ " EXP. Points!")
-           40 true false);
+      Animation.display_text_box
+        (get_nickname target ^ " gained " ^ string_of_int exp_gain
+       ^ " EXP. Points!")
+        refresh_battle ();
       let rec level_up_handler level = function
         | [] -> ()
         | h :: t ->
@@ -271,11 +292,11 @@ let handle_exp player_creature enemy_creature () =
                aft); *)
             if level <> lvl then begin
               (* Ui.add_last_foreground (level_up target); *)
-              Ui.add_last_foreground
-                (draw_text
-                   (get_nickname target ^ " grew to level "
-                  ^ string_of_int lvl ^ "!")
-                   40 true false);
+              Animation.display_text_box
+                (get_nickname target ^ " grew to level "
+               ^ string_of_int lvl ^ "!")
+                refresh_battle ();
+
               Ui.add_last_foreground (draw_level_up target)
             end;
             level_up_handler lvl t
@@ -356,12 +377,11 @@ let handle_item item () =
       Ui.update_all ();
       if ~!bs.battle_status = Catch then begin
         print_endline "Success";
-        Ui.add_last_foreground
-          (draw_text
-             ("You captured "
-             ^ get_nickname ~!bs.enemy_battler.creature
-             ^ "!")
-             0 true false);
+        display_text_box
+          ("You captured "
+          ^ get_nickname ~!bs.enemy_battler.creature
+          ^ "!")
+          refresh_battle ();
         handle_exp ~!bs.player_battler.creature
           ~!bs.enemy_battler.creature ();
         ~!bs.enemy_battler.active <- false;
@@ -370,34 +390,12 @@ let handle_item item () =
         combat_mode := End_Battle
       end
       else begin
-        Ui.add_last_foreground
-          (draw_text "Aw... So close!" 40 true false);
+        display_text_box "Aw... So close!" refresh_battle ();
         print_endline "Failure"
       end;
       Ui.update_all ();
       true
   | Item.Key -> false
-
-let refresh_battle () =
-  Ui.add_last_background (draw_sprite battle_bg1 0 0);
-  (* Draws the ally and enemy creature *)
-  if ~!bs.enemy_battler.active = true then
-    Ui.add_first_gameplay
-      (draw_creature
-         (get_front_sprite ~!bs.enemy_battler.creature)
-         false);
-  if ~!bs.player_battler.active = true then
-    Ui.add_first_gameplay
-      (draw_creature
-         (get_back_sprite ~!bs.player_battler.creature)
-         true);
-
-  Ui.add_last_foreground refresh_hud;
-  Ui.add_first_foreground
-    (match !combat_mode with
-    | Commands -> draw_combat_commands
-    | Moves -> draw_moves
-    | _ -> clear_text battle_bot)
 
 (* let refresh_battle1 () = Ui.add_first_foreground (clear_text
    battle_bot); Ui.add_last_background (draw_sprite battle_bg1 0 0); if
@@ -406,7 +404,7 @@ let refresh_battle () =
    if ~!bs.player_battler.active = true then Ui.add_first_gameplay
    (draw_creature (get_back_sprite ~!bs.player_battler.creature) true);
 
-   Ui.add_first_gameplay refresh_hud; Ui.add_first_foreground
+   Ui.add_first_gameplay draw_hud; Ui.add_first_foreground
    (draw_creature_exp ~!bs.player_battler.creature false);
    Ui.add_first_foreground draw_combat_commands *)
 
@@ -494,7 +492,29 @@ let selected_command () =
 let rec run_tick () =
   Input.sleep Draw.tick_rate ();
   let key =
-    match Input.poll_key_option () with
+    match Input.pop_key_option () with
+    | Some Sdlkeycode.F ->
+        display_text_box
+          "My name is Rushia, I'm 16 years old. My house is in the \
+           northern section of Akihabara, where all the weebs are, and \
+           I am not married. I work as an employee for Hololive, I'm \
+           at home everyday. I don't smoke, but I occasionally drink. \
+           I never sleep. After having beer and doing no stretches \
+           before going live, I usually have a lot of problem \
+           streaming. Just like a baby, I stream screaming and \
+           shouting. I was told, I am pettan. I'm trying to explain \
+           that I'm a person who is boing boing. I take care not to \
+           trouble myself with any pettan comments, like winning and \
+           losing, that would cause me to start screaming. That is how \
+           I deal with the pettan comments, and I know that is why I \
+           am boing boing. Although, if I were to kill I wouldn't miss \
+           the mark. Basically, fandead, you are a troublesome thing \
+           that would hinder my stream, therefor my enemy, Deadly \
+           Queen... is what I've named it. I'm going to kill you now \
+           before you have a chance to speak, so I can go back \
+           streaming."
+          refresh_battle ();
+        NoKey
     | Some c -> get_ctrl_key c
     | None -> NoKey
   in
@@ -504,45 +524,58 @@ let rec run_tick () =
   | Left -> move_x (-1) ()
   | Up -> move_y (-1) ()
   | Down -> move_y 1 ()
+  | Debug ->
+      (* print_endline "DEBUG?"; *)
+      run_animation
+        (make_animation refresh_battle
+           (animate_damage_render
+              (get_back_sprite ~!bs.player_battler.creature))
+           0);
+      (* run_animation (make_animation refresh_battle
+         (animate_health_bar 100. 100. 1. 500 500 100 30 true) 0) *)
+      run_animation
+        (make_animation refresh_battle
+           (animate_damage_render
+              (get_front_sprite ~!bs.enemy_battler.creature))
+           0);
+
+      display_text_box
+        "Hello mysterious sir, may I interest you in some seasonal \
+         coffee?"
+        refresh_battle ()
   | _ -> ());
 
   (match !combat_mode with
   | Commands -> (
       if key = Action then
         match selected_command () with
-        | Fight -> combat_mode := Moves
+        | Fight ->
+            combat_mode := Moves;
+            ignore (Input.poll_key_option ())
         | Bag -> handle_inventory ()
         | Party -> handle_party ()
         | Run ->
             Combat.run_away ~!bs;
             if ~!bs.battle_status = Combat.Flee then begin
-              Ui.add_first_foreground
-                (draw_text "You ran away!" 40 true true);
+              Animation.display_text_box "You ran away!" refresh_battle
+                ();
 
               combat_mode := End_Battle
             end
             else begin
-              Ui.add_first_foreground
-                (draw_text "You could not run away!" 40 true false);
+              Animation.display_text_box "You could not run away!"
+                refresh_battle ();
               Ui.update_all ();
               handle_combat None
             end)
   | Moves ->
-      if key = Action then begin
-        Ui.add_first_foreground (clear_text DrawText.battle_bot);
-        let move =
-          (get_move_i ~!bs.player_battler.creature)
-            (moves_position.x + (2 * moves_position.y))
-        in
-        Ui.update_all ();
-        combat_mode := Attack;
-        handle_combat move
-      end;
-      if key = Back then begin
-        Ui.clear_ui Ui.Foreground;
-        Ui.add_first_foreground draw_combat_commands;
-        combat_mode := Commands
-      end
+      if key = Action then print_endline "What you pressed Move?!"
+        (* Ui.add_first_foreground (clear_text DrawText.battle_bot); let
+           move = (get_move_i ~!bs.player_battler.creature)
+           (moves_position.x + (2 * moves_position.y)) in combat_mode :=
+           Attack; *)
+        (* handle_combat move *);
+      if key = Back then combat_mode := Commands
   | Attack ->
       Ui.add_first_gameplay (clear_text battle_right);
       if get_status ~!bs.player_battler.creature = Fainted then begin

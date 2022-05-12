@@ -6,6 +6,9 @@ type animation
 val make_animation :
   draw_func -> (animation -> unit -> unit) -> int -> animation
 
+val run_animation : animation -> unit
+val display_text_box : string -> draw_func -> unit -> unit
+
 val draw_health_bar :
   float -> float -> int -> int -> int -> int -> bool -> unit -> unit
 (** [draw_health_bar max_hp curr_hp x y width height is_hptext (_)]
@@ -86,7 +89,7 @@ val animate_faint : sprite -> bool -> animation -> unit -> unit
 (** [animate_faint sprite (_)] performs the fainting animation of the
     creature [sprite] *)
 
-val animate_damage_render : sprite -> bool -> animation -> unit -> unit
+val animate_damage_render : sprite -> animation -> unit -> unit
 (** [damage_render sprite is_player (_)] performs the damage animation
     of either the enemy or the player depedning on the [is_player]
     boolean *)

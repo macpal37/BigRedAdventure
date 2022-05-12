@@ -3,6 +3,7 @@ open Util
 open Spritesheet
 open DrawText
 open Ui
+open Input
 
 type animation = {
   refresh_func : draw_func;
@@ -10,7 +11,6 @@ type animation = {
   mutable frame : int;
   mutable finished : bool;
 }
-(** Represents a function of an animation.*)
 
 let make_animation
     (rf : draw_func)
@@ -23,12 +23,67 @@ let rec run_animation (anim : animation) : unit =
   anim.refresh_func ();
   anim.animation anim ();
   Ui.update_all ();
-  if anim.finished then () else anim.frame <- anim.frame + 1;
-  run_animation anim
+  if anim.finished then ()
+  else begin
+    anim.frame <- anim.frame + 1;
+    run_animation anim
+  end
 
-(* let draw_text_aniamtion (clear : unit -> unit) (anim : animation) =
-   let rec run_animation_rec frame = (* TODO *) run_animation_rec (frame
-   + 1) in run_animation_rec 0 *)
+let rec run_text_animation (t : string) (anim : animation) : unit =
+  Input.sleep Draw.tick_rate ();
+  let key =
+    match Input.pop_key_option () with
+    | Some c -> Input.get_ctrl_key c
+    | None -> Input.NoKey
+  in
+  anim.refresh_func ();
+  anim.animation anim ();
+  Ui.update_all ();
+
+  if anim.finished then ()
+  else begin
+    (match key with
+    | Action -> anim.frame <- String.length t
+    | _ -> anim.frame <- anim.frame + 1);
+    run_text_animation t anim
+  end
+
+let animate_text_box (t : string) (anim : animation) () : unit =
+  let frame = anim.frame in
+  let sx = 30 in
+  let sy = 128 in
+  let t' = String.sub t 0 frame in
+  Ui.add_last_foreground (draw_text_string_pos sx sy 0 box_cap t');
+  anim.finished <- frame >= String.length t
+
+let display_text_box (text : string) (refresh_func : draw_func) () :
+    unit =
+  let rec get_text_boxes text_box c boxes = function
+    | [] -> boxes @ [ text_box ]
+    | h :: t ->
+        if c < 3 then
+          get_text_boxes (text_box ^ " " ^ h) (c + 1) boxes t
+        else get_text_boxes "" 0 (boxes @ [ text_box ]) (h :: t)
+  in
+  let text_boxes =
+    get_text_boxes "" 0 [] (get_text_transcript text box_cap)
+  in
+
+  let rec run_text_rec = function
+    | [] -> ()
+    | h :: t ->
+        Input.sleep Draw.tick_rate ();
+        set_text_display "";
+
+        refresh_func ();
+        Ui.update_all ();
+        run_text_animation h
+          (make_animation refresh_func (animate_text_box h) 0);
+        run_text_rec t;
+        set_text_display h;
+        wait 175000 ()
+  in
+  run_text_rec text_boxes
 
 let hp_to_string (hp : float) =
   if hp < 10. then "  " ^ (hp |> int_of_float |> string_of_int)
@@ -40,11 +95,11 @@ let draw_hp_val x y (curr : float) (max : float) player () =
   else
     let combat_bg = white in
     set_color combat_bg;
-    fill_rect (current_x () - 2) (current_y () + 4) 100 24;
-    Ui.add_first_foreground
-      (DrawText.draw_string_colored x y 0
-         (hp_to_string curr ^ "/" ^ hp_to_string max)
-         white text_color)
+    fill_rect (current_x () - 2) (current_y () - 4) 100 24;
+    (DrawText.draw_string_colored x (y - 8) 0
+       (hp_to_string curr ^ "/" ^ hp_to_string max)
+       white text_color)
+      ()
 
 let draw_health_bar
     (max : float)
@@ -227,7 +282,10 @@ let switch_out
   | 2 ->
       let small2 = Draw.change_dpi switching_out 1 in
       draw_creature small2 player ()
-  | 3 -> draw_text ("Come back " ^ name_in ^ "!") 40 true false ()
+  | 3 ->
+      display_text_box
+        ("Come back " ^ name_in ^ "!")
+        anim.refresh_func ()
   | 4 ->
       let small3 = Draw.change_dpi switching_in 1 in
       add_rgb small3 255 255 255 ();
@@ -236,7 +294,7 @@ let switch_out
       let small4 = Draw.change_dpi switching_in 2 in
       add_rgb small4 255 255 255 ();
       draw_creature small4 player ()
-  | 6 -> draw_text ("Go " ^ name_out ^ "!") 40 true false ()
+  | 6 -> display_text_box ("Go " ^ name_out ^ "!") anim.refresh_func ()
   | 7 ->
       draw_creature switching_in player ();
       reset_rgb switching_out ();
@@ -350,7 +408,8 @@ let animate_faint sprite player (anim : animation) () =
     ();
   anim.finished <- frame = 20
 
-let animate_damage_render player_sprite player (anim : animation) () =
-  let frame = anim.frame in
-  if frame mod 2 = 0 then draw_creature player_sprite player ();
-  anim.finished <- frame = 8
+let animate_damage_render sprite (anim : animation) () =
+  let frame = anim.frame / 2 in
+  set_active sprite (frame mod 2 = 0);
+
+  anim.finished <- frame = 10

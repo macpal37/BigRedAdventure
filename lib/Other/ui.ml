@@ -64,18 +64,6 @@ let rec draw_all_foreground = function
       h ();
       draw_all_foreground t
 
-let update_background () =
-  draw_all_background !renderer.background;
-  present ()
-
-let update_gameplay () =
-  draw_all_gameplay !renderer.gameplay;
-  present ()
-
-let update_foreground () =
-  draw_all_foreground !renderer.foreground;
-  present ()
-
 let update_all () =
   draw_all_background !renderer.background;
   !renderer.background <- [];
