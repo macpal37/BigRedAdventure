@@ -1,6 +1,6 @@
 open CreatureGame
 
-let rec loop w r =
+let rec loop w r t =
   (match Sdlevent.poll_event () with
   | Some (Sdlevent.Quit _) ->
       Sdl.quit ();
@@ -17,20 +17,25 @@ let rec loop w r =
     (Sdlrect.make1
        (Random.int 50, Random.int 50, Random.int 150, Random.int 150));
   Sdlrender.render_present r;
-  Unix.sleepf 0.016;
-  loop w r
+  print_endline (string_of_float (Sys.time () -. t));
+  loop w r (Sys.time ())
 
 let main _ =
   Random.init 69;
   Sdl.init [ `VIDEO; `JOYSTICK ];
   let width, height = (300, 300) in
-  let window, renderer =
-    Sdlrender.create_window_and_renderer ~width ~height ~flags:[]
+  let window =
+    Sdlwindow.create2 ~title:"Big Red Adventure" ~x:`undefined
+      ~y:`undefined ~width ~height ~flags:[]
+  in
+  let renderer =
+    Sdlrender.create_renderer ~win:window ~index:(-1)
+      ~flags:[ PresentVSync ]
   in
   Sdlrender.set_viewport renderer (Sdlrect.make1 (100, 100, 300, 300));
 
   Sdlrender.set_viewport renderer (Sdlrect.make1 (50, 50, 300, 300));
-  loop window renderer
+  loop window renderer (Sys.time ())
 
 let _ =
   if true then Controller.main ();
