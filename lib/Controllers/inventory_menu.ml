@@ -9,8 +9,12 @@ open Input
 let display_queue = ref []
 let max_list_size = 10
 let max_items = ref 0
-let inventory_menu = load_sprite "inventory_menu" GUI_Folder 3 ()
+let inventory_menu = Util.null ()
 let selected_item = null ()
+
+let load_assets _ =
+  inventory_menu
+  *= Sprite_assets.get_sprite2 "inventory_menu" GUI_Folder
 
 type menu_mode =
   | Selecting
@@ -58,7 +62,7 @@ let draw_list () =
 let inventory_position = Util.new_point ()
 
 let draw_bag item_type () =
-  Ui.add_first_background (Draw.draw_sprite inventory_menu 0 0);
+  Ui.add_first_background (Draw.draw_sprite ~!inventory_menu 0 0);
   Ui.add_first_foreground
     (draw_string_colored 428 644 1
        (string_of_item_type item_type)

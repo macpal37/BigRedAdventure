@@ -4,12 +4,17 @@ open Util
 open DrawText
 open Input
 
-let event_menu = load_sprite "event_menu" GUI_Folder 3 ()
-let decision_menu = load_sprite "decision_menu" GUI_Folder 3 ()
-let nameholder = load_sprite "nameholder" GUI_Folder 3 ()
+let event_menu = Util.null ()
+let decision_menu = Util.null ()
+let nameholder = Util.null ()
 let minimenu_position = Util.new_point ()
 let target_creature = null ()
 let nickname = ref ""
+
+let load_assets _ =
+  event_menu *= Sprite_assets.get_sprite2 "event_menu" GUI_Folder;
+  decision_menu *= Sprite_assets.get_sprite2 "decision_menu" GUI_Folder;
+  nameholder *= Sprite_assets.get_sprite2 "nameholder" GUI_Folder
 
 type menu =
   | Captured_Creature
@@ -20,7 +25,7 @@ type menu =
 let menu_mode = ref Captured_Creature
 
 let refresh () =
-  Ui.add_first_background (draw_sprite event_menu 0 0);
+  Ui.add_first_background (draw_sprite ~!event_menu 0 0);
 
   match !target_creature with
   | Some creature ->
@@ -31,7 +36,7 @@ let refresh () =
 let draw_decision () =
   let x, y = (800 - 105, 216) in
 
-  draw_sprite decision_menu (x - 30) (y + 3) ();
+  draw_sprite ~!decision_menu (x - 30) (y + 3) ();
   draw_string_colored x
     (y + 60 - (40 * minimenu_position.y))
     0 ">" white text_color ();
@@ -39,7 +44,7 @@ let draw_decision () =
   draw_string_colored (x + 12) (y + 20) 0 "No" white text_color ()
 
 let draw_nickname () =
-  draw_sprite nameholder 240 (280 - 70) ();
+  draw_sprite ~!nameholder 240 (280 - 70) ();
   draw_string_colored (240 + 12) (280 - 62) 0 !nickname white text_color
     ()
 

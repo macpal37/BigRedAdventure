@@ -175,6 +175,43 @@ type creature = {
   shiny : bool;
 }
 
+let empty_stats =
+  {
+    max_hp = 0.;
+    attack = 0.;
+    defense = 0.;
+    sp_attack = 0.;
+    sp_defense = 0.;
+    speed = 0.;
+  }
+
+let null_creature =
+  {
+    nickname = "";
+    species = "";
+    level = -1;
+    current_hp = -1.;
+    exp = -1.;
+    base_stats = empty_stats;
+    current_stats = empty_stats;
+    iv_stats = empty_stats;
+    ev_stats = empty_stats;
+    current_status = Healthy;
+    etypes = (NoType, NoType);
+    nature = { name = ""; buff = HP; nerf = HP; id = -1 };
+    leveling_rate = Fast;
+    ev_gain = (HP, -1);
+    poke_id = -1;
+    catch_rate = -1;
+    base_exp = -1.;
+    friendship = -1;
+    learnset = [];
+    moves = [||];
+    front_sprite = Draw.empty_sprite;
+    back_sprite = Draw.empty_sprite;
+    shiny = false;
+  }
+
 let get_front_sprite creature = creature.front_sprite
 let set_front_sprite creature sprite = creature.front_sprite <- sprite
 let get_back_sprite creature = creature.back_sprite
@@ -384,16 +421,6 @@ let generate_ivs () =
     speed = Util.rand 32 () |> float_of_int;
   }
 
-let empty_stats =
-  {
-    max_hp = 0.;
-    attack = 0.;
-    defense = 0.;
-    sp_attack = 0.;
-    sp_defense = 0.;
-    speed = 0.;
-  }
-
 let generate_nature nat_rand =
   let nat_list =
     [
@@ -463,9 +490,8 @@ let create_creature name (level : int) =
   in
   let shiny_chance = Random.int 100 = 0 in
   let sprite_sheet =
-    Spritesheet.init_spritesheet
+    Sprite_assets.get_spritesheet
       ("assets/creature_sprites/" ^ String.lowercase_ascii name ^ ".png")
-      80 80 3
   in
   {
     nickname = name;

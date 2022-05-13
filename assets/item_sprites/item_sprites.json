@@ -1,0 +1,10 @@
+{
+  "spritesheets": [
+    {
+      "file": "pokeball_capture.png",
+      "w": 64,
+      "h": 64,
+      "dpi": 3
+    }
+  ]
+}

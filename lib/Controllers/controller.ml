@@ -3,12 +3,21 @@ type modes =
   | ModeBattle
   | ModeMenu
 
-let setup _ = ()
+let load_assets _ =
+  Play_assets.load ();
+  Sprite_assets.load ();
+  Creature_menu.load_assets ();
+  Overworld.load_assets ();
+  Battle.load_assets ();
+  Event_menu.load_assets ();
+  Inventory_menu.load_assets ();
+  Party_menu.load_assets ()
 
 let main _ =
   Sdl.init [ `VIDEO; `JOYSTICK ];
+  load_assets ();
   State.adhoc_init ();
-  setup ();
+
   Draw.open_window ();
 
   Overworld.run_overworld ()

@@ -50,12 +50,20 @@ let e_hud_stats : hud_stats pointer = null ()
 (*****************************************************************)
 
 (* let battle_bot = load_sprite "battle_bot" GUI_Folder 3 () *)
-let battle_right = load_sprite "battle_top" GUI_Folder 3 ()
-let moves_window = load_sprite "moves_window" GUI_Folder 3 ()
-let combat_hud = load_sprite "opponent_hud" GUI_Folder 3 ()
-let player_hud = load_sprite "player_hud" GUI_Folder 3 ()
-let battle_bg1 = load_sprite "battle-bg1" GUI_Folder 3 ()
-let level_up_screen = load_sprite "level_up" GUI_Folder 3 ()
+let battle_right = Util.null ()
+let moves_window = Util.null ()
+let combat_hud = Util.null ()
+let player_hud = Util.null ()
+let battle_bg1 = Util.null ()
+let level_up_screen = Util.null ()
+
+let load_assets _ =
+  battle_right *= Sprite_assets.get_sprite2 "battle_top" GUI_Folder;
+  moves_window *= Sprite_assets.get_sprite2 "moves_window" GUI_Folder;
+  combat_hud *= Sprite_assets.get_sprite2 "opponent_hud" GUI_Folder;
+  player_hud *= Sprite_assets.get_sprite2 "player_hud" GUI_Folder;
+  battle_bg1 *= Sprite_assets.get_sprite2 "battle-bg1" GUI_Folder;
+  level_up_screen *= Sprite_assets.get_sprite2 "level_up" GUI_Folder
 
 (* WIll be improved next sprint *)
 
@@ -63,9 +71,9 @@ let level_up_screen = load_sprite "level_up" GUI_Folder 3 ()
 (***************     Combat Drawing Commands     *********************)
 (*****************************************************************)
 
-let draw_moves () =
-  clear_text moves_window ();
-  let moves = get_moves ~!bs.player_battler.creature in
+let draw_moves creature () =
+  clear_text ~!moves_window ();
+  let moves = get_moves creature in
   let size = Array.length moves in
   let box_w, box_h = (370, 92) in
   let box_x, box_y = (28, 200 - box_h) in
@@ -154,7 +162,7 @@ let draw_combat_hud sprite name level player () =
 let draw_combat_commands () =
   let x, y = (465, 120) in
   set_color text_color;
-  clear_text battle_right ();
+  clear_text ~!battle_right ();
   draw_string_colored x y 1 "FIGHT" white text_color ();
   draw_string_colored x (y - 75) 1 "BAG" white text_color ();
   draw_string_colored (x + 175) y 1 "PARTY" white text_color ();
@@ -174,9 +182,9 @@ let draw_hud () =
     (~!bs.player_battler.creature, ~!bs.enemy_battler.creature)
   in
 
-  draw_combat_hud combat_hud (get_nickname opponent)
+  draw_combat_hud ~!combat_hud (get_nickname opponent)
     (get_level opponent) false ();
-  draw_combat_hud player_hud (get_nickname player) (get_level player)
+  draw_combat_hud ~!player_hud (get_nickname player) (get_level player)
     true ()
 
 (* let update_health creature before () = let curr, max =
@@ -205,7 +213,7 @@ let draw_level_up creature frame () =
     level_up creature ();
     let new_stats = get_stats creature in
 
-    draw_sprite level_up_screen (width - 300) 210 ();
+    draw_sprite ~!level_up_screen (width - 300) 210 ();
     draw_string_colored x y 0
       ("Level " ^ string_of_int (get_level creature))
       white text_color ();
@@ -235,7 +243,7 @@ let draw_level_up creature frame () =
   end
   else if frame = 1 then begin
     let new_stats = get_stats creature in
-    draw_sprite level_up_screen (width - 300) 210 ();
+    draw_sprite ~!level_up_screen (width - 300) 210 ();
     draw_string_colored x y 0
       ("Level " ^ string_of_int (get_level creature))
       white text_color ();
@@ -257,7 +265,7 @@ let draw_level_up creature frame () =
   end
 
 let refresh_battle state () =
-  Ui.add_last_background (draw_sprite battle_bg1 0 0);
+  Ui.add_last_background (draw_sprite ~!battle_bg1 0 0);
 
   (* Draws the ally and enemy creature *)
   (match state with
@@ -290,7 +298,7 @@ let refresh_battle state () =
   Ui.add_last_foreground
     (match !combat_mode with
     | Commands -> draw_combat_commands
-    | Moves -> draw_moves
+    | Moves -> draw_moves ~!bs.player_battler.creature
     | Attack -> clear_text battle_bot
     | _ -> clear_text battle_bot)
 

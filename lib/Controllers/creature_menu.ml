@@ -3,13 +3,19 @@ open Creature
 open Animation
 open DrawText
 open Input
+open Util
 
-let creature_menu_bg = load_sprite "creature_menu" GUI_Folder 3 ()
+let creature_menu_bg = Util.null ()
 let menu_position = Util.new_point ()
 let party_position = Util.new_point ()
-let current_creature = ref (create_creature "clefairy" 100)
+let current_creature = ref null_creature
 let switch_position = Util.new_point ()
-let faint = load_sprite "faint" GUI_Folder 3 ()
+let faint = Util.null ()
+
+let load_assets _ =
+  creature_menu_bg
+  *= Sprite_assets.get_sprite2 "creature_menu" GUI_Folder;
+  faint *= Sprite_assets.get_sprite2 "faint" GUI_Folder
 
 let move_x x () =
   if switch_position.x = -1 then begin
@@ -30,7 +36,7 @@ let move_y y () =
 let draw_status status () =
   let x, y = (56 - 20, 192 - 30) in
   match status with
-  | Fainted -> draw_sprite faint x y ()
+  | Fainted -> draw_sprite ~!faint x y ()
   | _ -> ()
 
 let draw_stats () =
@@ -120,7 +126,7 @@ let draw_moves () =
 let refresh () =
   Ui.add_first_foreground
     (draw_string_colored 24 605 1 "SUMMARY" (rgb 255 170 40) white);
-  Ui.add_last_background (draw_sprite creature_menu_bg 0 0);
+  Ui.add_last_background (draw_sprite ~!creature_menu_bg 0 0);
   Ui.add_first_gameplay
     (draw_sprite (get_front_sprite !current_creature) 9 318);
   Ui.add_first_gameplay

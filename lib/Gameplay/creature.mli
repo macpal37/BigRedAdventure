@@ -103,6 +103,11 @@ module Move : sig
       [move_name] from the move_list.json.*)
 end
 
+val null_creature : creature
+
+val empty_stats : stats
+(** Represents an emtpy set of stats*)
+
 (** {1 Creature Creation}*)
 
 val create_creature : string -> int -> creature
@@ -114,9 +119,6 @@ val create_creature : string -> int -> creature
 val mod_stat : stats -> stat -> float -> float
 (** [mod_stat stats stat power] returns the modified value of the [stat]
     by [power]*)
-
-val empty_stats : stats
-(** Represents an emtpy set of stats*)
 
 (** {1 String Formatting}*)
 

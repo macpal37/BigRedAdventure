@@ -19,6 +19,8 @@ type tile_type =
   | Grass of encounters
   | Obstacle  (** type representing the type of a tile on the map *)
 
+val null_map : t
+
 val load_map : string -> t
 (** [load_map file] is the map represented by [file]. Raises
     [Malformed_Json] if the json file is invalid *)

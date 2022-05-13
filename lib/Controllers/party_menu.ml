@@ -6,16 +6,22 @@ open DrawText
 open Input
 
 (* let max_creatures = 5 let max_creatures = ref 0 *)
-let party_menu_bg = load_sprite "party_menu" GUI_Folder 3 ()
-let active = load_sprite "active_party_creature" GUI_Folder 3 ()
-let minimenu1 = load_sprite "party_minimenu" GUI_Folder 3 ()
-let faint = load_sprite "faint" GUI_Folder 3 ()
+let party_menu_bg = Util.null ()
+let active = Util.null ()
+let minimenu1 = Util.null ()
+let faint = Util.null ()
 let menu_position = Util.new_point ()
 let switch_position = Util.new_point ()
 let minimenu_position = Util.new_point ()
 let current_item = null ()
 let set_current_item i = current_item := Some i
 let get_current_item = !current_item
+
+let load_assets _ =
+  party_menu_bg *= Sprite_assets.get_sprite2 "party_menu" GUI_Folder;
+  active *= Sprite_assets.get_sprite2 "active_party_creature" GUI_Folder;
+  minimenu1 *= Sprite_assets.get_sprite2 "party_minimenu" GUI_Folder;
+  faint *= Sprite_assets.get_sprite2 "faint" GUI_Folder
 
 type combat_mode =
   | OverworldMode
@@ -71,11 +77,11 @@ let move_y y () =
 
 let draw_status x y status () =
   match status with
-  | Fainted -> draw_sprite faint x y ()
+  | Fainted -> draw_sprite ~!faint x y ()
   | _ -> ()
 
 let draw_menu lead_creature () =
-  Ui.add_first_background (draw_sprite party_menu_bg 0 0);
+  Ui.add_first_background (draw_sprite ~!party_menu_bg 0 0);
 
   Ui.add_first_foreground
     (draw_string_colored 24 605 1 "PARTY" (rgb 255 170 40) white);
@@ -102,7 +108,7 @@ let draw_creature_status creature pos () =
     (draw_sprite
        (change_dpi (get_front_sprite creature) 1)
        (x + 11) (y + 11));
-  Ui.add_first_background (draw_sprite active x y);
+  Ui.add_first_background (draw_sprite ~!active x y);
   Ui.add_first_gameplay
     (draw_string_colored xx (yy + 26) 0 (get_nickname creature) white
        text_color);
@@ -203,7 +209,7 @@ let minimenu () =
     (draw_string_colored x
        (y - (dif * 3))
        f "Back" text_color2 text_color);
-  Ui.add_first_foreground (draw_sprite minimenu1 576 12)
+  Ui.add_first_foreground (draw_sprite ~!minimenu1 576 12)
 
 let get_party_index () =
   if menu_position.x = 0 then 0 else menu_position.y + 1
