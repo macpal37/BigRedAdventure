@@ -84,10 +84,8 @@ let draw_moves () =
   set_color text_color
 
 (* let draw_exp_bar_combat max curr () = let hwidth = 250 in let hheight
-   = 6 in
-
-   let xh, yh = (width - hwidth - 30, 240) in draw_exp_bar max curr xh
-   yh hwidth hheight () *)
+   = 6 in let xh, yh = (width - hwidth - 30, 240) in draw_exp_bar max
+   curr xh yh hwidth hheight () *)
 
 let draw_health_bar_combat (max : float) (curr : float) player () =
   let hwidth = 210 in
@@ -97,13 +95,16 @@ let draw_health_bar_combat (max : float) (curr : float) player () =
   in
   draw_health_bar max curr xh yh hwidth hheight player ()
 
-let draw_combat_hud
-    sprite
-    name
-    level
-    player
-    ((max, curr) : float * float)
-    () =
+type hud_stats = {
+  mutable max_hp : float;
+  mutable curr_hp : float;
+  mutable status : status;
+}
+
+let p_hud_stats : hud_stats pointer = null ()
+let e_hud_stats : hud_stats pointer = null ()
+
+let draw_combat_hud sprite name level player () =
   let sprite_width, sprite_height = get_dimension sprite in
   if player then begin
     draw_sprite sprite
@@ -115,19 +116,21 @@ let draw_combat_hud
 
     draw_string_colored (width - 100) 312 0
       ("Lv" ^ string_of_int level)
-      white text_color ()
+      white text_color ();
+    draw_health_bar_combat ~!p_hud_stats.max_hp ~!p_hud_stats.curr_hp
+      player ()
   end
   else begin
     draw_sprite sprite 42 (height - 49 - sprite_height) ();
     draw_string_colored 60 (height - 85) 0
       (String.uppercase_ascii name)
       white text_color ();
-
     draw_string_colored 280 (height - 89) 0
       ("Lv" ^ string_of_int level)
-      white text_color ()
-  end;
-  draw_health_bar_combat max curr player ()
+      white text_color ();
+    draw_health_bar_combat ~!e_hud_stats.max_hp ~!e_hud_stats.curr_hp
+      player ()
+  end
 
 let draw_combat_commands () =
   let x, y = (465, 120) in
@@ -154,15 +157,11 @@ let draw_hud () =
 
   (* Ui.add_first_gameplay *)
   draw_combat_hud combat_hud (get_nickname opponent)
-    (get_level opponent) false
-    ((get_stats opponent).max_hp, get_current_hp opponent)
-    ();
+    (get_level opponent) false ();
 
   (* Ui.add_first_gameplay *)
   draw_combat_hud player_hud (get_nickname player) (get_level player)
-    true
-    ((get_stats player).max_hp, get_current_hp player)
-    ()
+    true ()
 
 (* let update_health creature before () = let curr, max =
    (get_current_hp creature, (get_stats creature).max_hp) in
@@ -255,11 +254,22 @@ let refresh_battle () =
   Ui.add_last_foreground draw_hud;
   Ui.add_last_foreground
     (match !combat_mode with
-    | Commands -> clear_text battle_bot
-    (* draw_combat_commands *)
+    | Commands -> draw_combat_commands
     | Moves -> draw_moves
-    | Attack -> draw_combat_commands
+    | Attack -> clear_text battle_bot
     | _ -> clear_text battle_bot)
+(* let animate_exp_bar_combat max bef aft () = let hwidth = 250 in let
+   hheight = 6 in let xh, yh = (width - hwidth - 30, 240) in
+   animate_exp_bar max bef aft xh yh hwidth hheight refresh_battle *)
+
+let animate_health_bar_combat max bef aft player () =
+  let hwidth = 210 in
+  let hheight = 6 in
+  let xh, yh =
+    if player then (width - hwidth - 31 - 10, 296) else (130, 615)
+  in
+  animate_health_bar max bef aft xh yh hwidth hheight player
+    refresh_battle
 
 let handle_exp player_creature enemy_creature () =
   Ui.update_all ();
@@ -317,18 +327,45 @@ let handle_exp player_creature enemy_creature () =
   rest_exp_events ~!bs.creatures_switched
 
 let handle_combat move =
-  Ui.update_all ();
   if ~!bs.battle_status = Ongoing then begin
-    Combat.turn_builder ~!bs move;
     let player, enemy =
       (~!bs.player_battler.creature, ~!bs.enemy_battler.creature)
     in
     (***=============First Half =============***)
-    Combat.battle_sim_fh ~!bs;
-    Ui.update_all ();
-    (***=============Second Half =============***)
-    Combat.battle_sim_sh ~!bs;
-    Ui.update_all ();
+    Combat.battle_sim ~!bs move;
+    let all_actions = List.rev !Combat.battle_actions in
+
+    for i = 0 to List.length all_actions - 1 do
+      let affected, action, text = List.nth all_actions i in
+      let sprite, is_player, hud =
+        if affected.is_player then
+          (get_back_sprite affected.creature, true, p_hud_stats)
+        else (get_front_sprite affected.creature, false, e_hud_stats)
+      in
+
+      match action with
+      | ChooseMove _ -> display_text_box text refresh_battle ()
+      | Damage (dmg, _, crit) ->
+          animate_damage_render sprite refresh_battle;
+          display_text_box text refresh_battle ();
+          let max, curr = get_hp_status affected.creature in
+          animate_health_bar_combat max curr (curr -. dmg) is_player ();
+          ~!hud.curr_hp <- curr -. dmg;
+          if crit then
+            display_text_box "It was a critical hit!" refresh_battle ()
+      | Heal _ -> ()
+      | StatusGain (_, _) -> ()
+      | StatusEffect (_, _) -> ()
+      | MaxStat -> display_text_box text refresh_battle ()
+      | StatGain stages ->
+          if stages > 0 then
+            animate_raise_stat_effect sprite is_player refresh_battle
+          else if stages < 0 then
+            animate_lower_stat_effect sprite is_player refresh_battle
+      | Switch _ -> ()
+      | Fainted -> ()
+    done;
+    Combat.battle_actions := [];
     (***============= Resolution =============***)
     if ~!bs.enemy_battler.active = false then (
       combat_mode := End_Battle;
@@ -526,18 +563,12 @@ let rec run_tick () =
   | Down -> move_y 1 ()
   | Debug ->
       (* print_endline "DEBUG?"; *)
-      run_animation
-        (make_animation refresh_battle
-           (animate_damage_render
-              (get_back_sprite ~!bs.player_battler.creature))
-           0);
-      (* run_animation (make_animation refresh_battle
-         (animate_health_bar 100. 100. 1. 500 500 100 30 true) 0) *)
-      run_animation
-        (make_animation refresh_battle
-           (animate_damage_render
-              (get_front_sprite ~!bs.enemy_battler.creature))
-           0);
+      animate_damage_render
+        (get_back_sprite ~!bs.player_battler.creature)
+        refresh_battle;
+      animate_damage_render
+        (get_front_sprite ~!bs.enemy_battler.creature)
+        refresh_battle;
 
       display_text_box
         "Hello mysterious sir, may I interest you in some seasonal \
@@ -569,24 +600,22 @@ let rec run_tick () =
               handle_combat None
             end)
   | Moves ->
-      if key = Action then print_endline "What you pressed Move?!"
-        (* Ui.add_first_foreground (clear_text DrawText.battle_bot); let
-           move = (get_move_i ~!bs.player_battler.creature)
-           (moves_position.x + (2 * moves_position.y)) in combat_mode :=
-           Attack; *)
-        (* handle_combat move *);
+      if key = Action then begin
+        let move =
+          (get_move_i ~!bs.player_battler.creature)
+            (moves_position.x + (2 * moves_position.y))
+        in
+        combat_mode := Attack;
+        handle_combat move
+      end;
       if key = Back then combat_mode := Commands
   | Attack ->
-      Ui.add_first_gameplay (clear_text battle_right);
       if get_status ~!bs.player_battler.creature = Fainted then begin
-        Ui.update_all ();
         Party_menu.init FaintedSwitch ();
         match !Combat.switching_pending with
         | Some c ->
-            Ui.add_first_foreground (clear_text DrawText.battle_bot);
             Combat.switch_player ~!bs c (Player.party (State.player ()));
-            refresh_battle ();
-            Ui.update_all ();
+
             combat_mode := Commands;
             Combat.switching_pending := None;
             cmd_pos.x <- 0;
@@ -624,6 +653,18 @@ let start_wild_battle c =
   in
 
   bs *= Combat.wild_init (Player.party (State.player ())) [ c ];
+  p_hud_stats
+  *= {
+       max_hp = get_stat ~!bs.player_battler.creature HP;
+       curr_hp = get_current_hp ~!bs.player_battler.creature;
+       status = get_status ~!bs.player_battler.creature;
+     };
+  e_hud_stats
+  *= {
+       max_hp = get_stat ~!bs.enemy_battler.creature HP;
+       curr_hp = get_current_hp ~!bs.enemy_battler.creature;
+       status = get_status ~!bs.enemy_battler.creature;
+     };
 
   Player.set_party
     (battle_party [] (Player.party (State.player ())))

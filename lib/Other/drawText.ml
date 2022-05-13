@@ -72,7 +72,7 @@ let draw_text_string_pos x y f_size char_cap (text : string) () =
 
 let text_display = ref ""
 let set_text_display (s : string) = text_display := s
-let box_cap = 32
+let box_cap = 40
 
 let clear_text clear_sprite () =
   let sx = 30 in

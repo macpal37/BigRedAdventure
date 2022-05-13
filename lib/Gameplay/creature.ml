@@ -29,9 +29,9 @@ type learnset_moves = {
 
 type status =
   | Healthy
-  | Sleep of int
-  | Freeze of int
-  | Poison of int
+  | Sleep of int ref
+  | Poison of int ref
+  | Freeze
   | Paralyze
   | Burn
   | Fainted
@@ -185,7 +185,7 @@ let string_of_status stat_var =
   | Sleep _ -> "Sleep"
   | Poison _ -> "Posion"
   | Burn -> "Burn"
-  | Freeze _ -> "Freeze"
+  | Freeze -> "Freeze"
   | Paralyze -> "Paralyze"
   | Healthy -> "Healthy"
   | Fainted -> "Fainted"

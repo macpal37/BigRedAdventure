@@ -221,10 +221,14 @@ let draw_creature sprite player () =
       ()
 
 let rec wait timer () =
-  if timer = 0 then () else Input.sleep 1. ();
-  match Input.pop_key_option () with
-  | Some _ -> ()
-  | None -> wait (timer - 1) ()
+  if timer = 0 then ()
+  else begin
+    Util.print_int "Timer: " timer;
+    Input.sleep 0.016 ();
+    match Input.pop_key_option () with
+    | Some _ -> ()
+    | None -> wait (timer - 1) ()
+  end
 
 let draw_gradient w h =
   for y = 0 to h - 1 do

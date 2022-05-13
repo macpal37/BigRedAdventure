@@ -27,8 +27,7 @@ val animate_health_bar :
   int ->
   int ->
   bool ->
-  animation ->
-  unit ->
+  draw_func ->
   unit
 (** [draw_health_bar max_hp before_curr_hp after_curr_hp x y width height is_hptext is_animated(_)]
     performs the health bar gain/loss animation. *)
@@ -41,55 +40,36 @@ val animate_exp_bar :
   int ->
   int ->
   int ->
-  animation ->
-  unit ->
+  draw_func ->
   unit
 (** [draw_exp_bar max_xp before_curr_xp after_curr_xp x y width height(_)]
     performs the xp gain animation*)
 
-val animate_effect :
-  sprite ->
-  bool ->
-  int ->
-  int ->
-  int ->
-  int ->
-  animation ->
-  unit ->
-  unit
+(* val animate_effect : sprite -> bool -> int -> int -> int -> int ->
+   draw_func -> unit *)
 
-val animate_lower_stat_effect :
-  sprite -> bool -> animation -> unit -> unit
+val animate_lower_stat_effect : sprite -> bool -> draw_func -> unit
 (** Cool Random Effects :)*)
 
-val animate_raise_stat_effect :
-  sprite -> bool -> animation -> unit -> unit
+val animate_raise_stat_effect : sprite -> bool -> draw_func -> unit
 (** Cool Random Effects :)*)
 
-val switch_out :
-  sprite ->
-  sprite ->
-  bool ->
-  string ->
-  string ->
-  animation ->
-  unit ->
-  unit
+val animate_switch :
+  sprite -> sprite -> bool -> string -> string -> draw_func -> unit
 
 val animate_capture :
   Spritesheet.sprite_sheet ->
   sprite ->
   bool list ->
   int ->
-  animation ->
-  unit ->
+  draw_func ->
   unit
 
-val animate_faint : sprite -> bool -> animation -> unit -> unit
+val animate_faint : sprite -> bool -> draw_func -> unit
 (** [animate_faint sprite (_)] performs the fainting animation of the
     creature [sprite] *)
 
-val animate_damage_render : sprite -> animation -> unit -> unit
+val animate_damage_render : sprite -> draw_func -> unit
 (** [damage_render sprite is_player (_)] performs the damage animation
     of either the enemy or the player depedning on the [is_player]
     boolean *)

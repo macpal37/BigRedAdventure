@@ -28,9 +28,9 @@ type stats = {
 
 type status =
   | Healthy
-  | Sleep of int
-  | Freeze of int
-  | Poison of int
+  | Sleep of int ref
+  | Poison of int ref
+  | Freeze
   | Paralyze
   | Burn
   | Fainted
