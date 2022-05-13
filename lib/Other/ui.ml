@@ -1,6 +1,9 @@
 open Draw
 
-let tail () = ()
+type draw_func = unit -> unit
+
+(* FALSE: Continue Animation TRUE: End Animation *)
+type animation = int -> unit -> bool
 
 type layer =
   | Background
@@ -8,18 +11,12 @@ type layer =
   | Foreground
 
 type render_view = {
-  mutable foreground : (unit -> unit) list;
-  mutable gameplay : (unit -> unit) list;
-  mutable background : (unit -> unit) list;
+  mutable foreground : draw_func list;
+  mutable gameplay : draw_func list;
+  mutable background : draw_func list;
 }
 
-let renderer =
-  ref
-    {
-      foreground = [ tail ];
-      gameplay = [ tail ];
-      background = [ tail ];
-    }
+let renderer = ref { foreground = []; gameplay = []; background = [] }
 
 let clear_all () =
   !renderer.background <- [];
@@ -69,22 +66,18 @@ let rec draw_all_foreground = function
       draw_all_foreground t
 
 let update_background () =
-  sync true ();
   draw_all_background !renderer.background;
-  sync false ()
+  present ()
 
 let update_gameplay () =
-  sync true ();
   draw_all_gameplay !renderer.gameplay;
-  sync false ()
+  present ()
 
 let update_foreground () =
-  sync true ();
   draw_all_foreground !renderer.foreground;
-  sync false ()
+  present ()
 
 let update_all () =
-  sync false ();
   draw_all_background !renderer.background;
   !renderer.background <- [];
 
@@ -93,4 +86,5 @@ let update_all () =
 
   draw_all_foreground !renderer.foreground;
   !renderer.foreground <- [];
-  sync true ()
+
+  present ()

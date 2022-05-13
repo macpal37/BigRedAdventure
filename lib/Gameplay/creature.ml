@@ -1,6 +1,5 @@
 open Yojson.Basic.Util
 open Util
-open Graphics
 
 exception NoEffect
 exception MalformedJson
@@ -465,7 +464,7 @@ let create_creature name level =
   let shiny_chance = Random.int 100 = 0 in
   let sprite_sheet =
     Spritesheet.init_spritesheet
-      ("assets/creature_sprites/" ^ name ^ ".png")
+      ("assets/creature_sprites/" ^ String.lowercase_ascii name ^ ".png")
       80 80 3
   in
   curr_hp_cache := curr_stats.max_hp;
@@ -728,24 +727,24 @@ let set_nickname creature nickname = creature.nickname <- nickname
 
 let get_color_from_etype etype =
   match etype with
-  | Normal -> rgb 196 196 196
-  | Fire -> rgb 239 128 48
-  | Water -> rgb 103 144 240
-  | Grass -> rgb 120 200 79
-  | Fairy -> rgb 238 153 172
-  | Ghost -> rgb 102 46 145
-  | Rock -> rgb 184 160 56
-  | Dark -> rgb 112 88 72
-  | Steel -> rgb 184 184 208
-  | Electric -> rgb 248 207 48
-  | Poison -> rgb 160 64 159
-  | Psychic -> rgb 248 87 135
-  | Ground -> rgb 224 192 104
-  | Dragon -> rgb 112 56 248
-  | Bug -> rgb 168 184 31
-  | Ice -> rgb 152 216 216
-  | Fighting -> rgb 192 48 40
-  | _ -> rgb 0 0 0
+  | Normal -> Draw.rgb 196 196 196
+  | Fire -> Draw.rgb 239 128 48
+  | Water -> Draw.rgb 103 144 240
+  | Grass -> Draw.rgb 120 200 79
+  | Fairy -> Draw.rgb 238 153 172
+  | Ghost -> Draw.rgb 102 46 145
+  | Rock -> Draw.rgb 184 160 56
+  | Dark -> Draw.rgb 112 88 72
+  | Steel -> Draw.rgb 184 184 208
+  | Electric -> Draw.rgb 248 207 48
+  | Poison -> Draw.rgb 160 64 159
+  | Psychic -> Draw.rgb 248 87 135
+  | Ground -> Draw.rgb 224 192 104
+  | Dragon -> Draw.rgb 112 56 248
+  | Bug -> Draw.rgb 168 184 31
+  | Ice -> Draw.rgb 152 216 216
+  | Fighting -> Draw.rgb 192 48 40
+  | _ -> Draw.rgb 0 0 0
 
 (* let get_color_from_etype etype = match etype with | Neutral -> rgb
    196 196 196 | Fire -> rgb 239 128 48 | Water -> rgb 103 144 240 |
