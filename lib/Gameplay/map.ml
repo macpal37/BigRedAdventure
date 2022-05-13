@@ -28,6 +28,9 @@ type t = {
   spritesheet : Spritesheet.sprite_sheet;
 }
 
+let null_map =
+  { tiles = [||]; spritesheet = Spritesheet.empty_spritesheet }
+
 let json_val json f key = json |> member key |> f
 let json_list json f key = json |> member key |> to_list |> List.map f
 
@@ -183,9 +186,7 @@ let json_spritesheet json =
       sprite_sheet
 
 let load_map map_name =
-  let json =
-    Yojson.Basic.from_file ("assets/maps/" ^ map_name ^ ".json")
-  in
+  let json = Yojson.Basic.from_file ("assets/maps/" ^ map_name) in
   let w, _ = read_dim json in
   match build_id_arrays json w with
   | [ tile_id_m; encounter_id_m ] -> (

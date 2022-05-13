@@ -67,7 +67,12 @@ let open_window _ =
   renderer :=
     Some
       (Sdlrender.create_renderer ~win:w ~index:(-1)
-         ~flags:[ PresentVSync; Accelerated ])
+         ~flags:[ PresentVSync; Accelerated ]);
+  Sdlrender.set_draw_blend_mode
+    (match !renderer with
+    | Some r -> r
+    | None -> failwith "impossible")
+    Blend
 (* let window _ = match !window with | Some w -> w | None -> failwith
    "Window not initialized"*)
 
@@ -94,8 +99,8 @@ let present_draw draw () =
   draw ();
   present ()
 
-let set_draw_color r g b =
-  Sdlrender.set_draw_color3 (renderer ()) ~r ~g ~b ~a:255
+let set_draw_color ?(a = 255) r g b =
+  Sdlrender.set_draw_color3 (renderer ()) ~r ~g ~b ~a
 
 let set_color c =
   let r, g, b = color_to_rgb c in
@@ -184,14 +189,15 @@ let load_image (image : Image.image) dpi =
     dpi;
   }
 
+let sprite_path name folder =
+  match folder with
+  | Creature_Folder -> "assets/creature_sprites/" ^ name ^ ".png"
+  | GUI_Folder -> "assets/gui_sprites/" ^ name ^ ".png"
+  | Item_Folder -> "assets/item_sprites/" ^ name ^ ".png"
+  | Tile_Folder -> "assets/tile_sprites/" ^ name ^ ".png"
+
 let load_sprite name folder dpi () =
-  let filename =
-    match folder with
-    | Creature_Folder -> "assets/creature_sprites/" ^ name ^ ".png"
-    | GUI_Folder -> "assets/gui_sprites/" ^ name ^ ".png"
-    | Item_Folder -> "assets/item_sprites/" ^ name ^ ".png"
-    | Tile_Folder -> "assets/tile_sprites/" ^ name ^ ".png"
-  in
+  let filename = sprite_path name folder in
   let image = ImageLib_unix.openfile filename in
   load_image image dpi
 

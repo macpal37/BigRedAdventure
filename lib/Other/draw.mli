@@ -53,7 +53,7 @@ val present : unit -> unit
 val rgb : int -> int -> int -> color
 (** mirrors Graphics.rgb*)
 
-val set_draw_color : int -> int -> int -> unit
+val set_draw_color : ?a:int -> int -> int -> int -> unit
 val set_color : color -> unit
 
 val fill_rect : int -> int -> int -> int -> unit
@@ -88,6 +88,8 @@ val wait : int -> unit -> unit
 val present_draw : (unit -> unit) -> unit -> unit
 
 (** {1 Loading Sprites}*)
+
+val sprite_path : string -> folder -> string
 
 val load_creature : string -> unit -> sprite
 (** [load_creature name ()] Creates a sprite from the given [name.png]

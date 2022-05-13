@@ -25,12 +25,20 @@ let captured_creature : creature pointer = null ()
 (*****************************************************************)
 
 (* let battle_bot = load_sprite "battle_bot" GUI_Folder 3 () *)
-let battle_right = load_sprite "battle_top" GUI_Folder 3 ()
-let moves_window = load_sprite "moves_window" GUI_Folder 3 ()
-let combat_hud = load_sprite "opponent_hud" GUI_Folder 3 ()
-let player_hud = load_sprite "player_hud" GUI_Folder 3 ()
-let battle_bg1 = load_sprite "battle-bg1" GUI_Folder 3 ()
-let level_up_screen = load_sprite "level_up" GUI_Folder 3 ()
+let battle_right = Util.null ()
+let moves_window = Util.null ()
+let combat_hud = Util.null ()
+let player_hud = Util.null ()
+let battle_bg1 = Util.null ()
+let level_up_screen = Util.null ()
+
+let load_assets _ =
+  battle_right *= Sprite_assets.get_sprite2 "battle_top" GUI_Folder;
+  moves_window *= Sprite_assets.get_sprite2 "moves_window" GUI_Folder;
+  combat_hud *= Sprite_assets.get_sprite2 "opponent_hud" GUI_Folder;
+  player_hud *= Sprite_assets.get_sprite2 "player_hud" GUI_Folder;
+  battle_bg1 *= Sprite_assets.get_sprite2 "battle-bg1" GUI_Folder;
+  level_up_screen *= Sprite_assets.get_sprite2 "level_up" GUI_Folder
 
 (* WIll be improved next sprint *)
 
@@ -39,7 +47,7 @@ let level_up_screen = load_sprite "level_up" GUI_Folder 3 ()
 (*****************************************************************)
 
 let draw_moves creature () =
-  clear_text moves_window ();
+  clear_text ~!moves_window ();
   let moves = get_moves creature in
   let size = Array.length moves in
   let box_w, box_h = (370, 92) in
@@ -133,7 +141,7 @@ let draw_combat_hud
 let draw_combat_commands () =
   let x, y = (465, 120) in
   set_color text_color;
-  clear_text battle_right ();
+  clear_text ~!battle_right ();
   draw_string_colored x y 1 "FIGHT" white text_color ();
   draw_string_colored x (y - 75) 1 "BAG" white text_color ();
   draw_string_colored (x + 175) y 1 "PARTY" white text_color ();
@@ -155,7 +163,7 @@ let refresh_hud () =
   in
 
   (* Ui.add_first_gameplay *)
-  draw_combat_hud combat_hud (get_nickname opponent)
+  draw_combat_hud ~!combat_hud (get_nickname opponent)
     (get_level opponent) false
     ( (get_stats opponent).max_hp,
       get_current_hp opponent,
@@ -163,7 +171,7 @@ let refresh_hud () =
     true ();
 
   (* Ui.add_first_gameplay *)
-  draw_combat_hud player_hud (get_nickname player) (get_level player)
+  draw_combat_hud ~!player_hud (get_nickname player) (get_level player)
     true
     ( (get_stats player).max_hp,
       get_current_hp player,
@@ -191,7 +199,7 @@ let draw_level_up creature () =
   level_up creature ();
   let new_stats = get_stats creature in
   let x, y, dif, x2 = (width - 300 + 30, 200 + 250, 35, width - 140) in
-  draw_sprite level_up_screen (width - 300) 210 ();
+  draw_sprite ~!level_up_screen (width - 300) 210 ();
   draw_string_colored x y 0
     ("Level " ^ string_of_int (get_level creature))
     white text_color ();
@@ -228,7 +236,7 @@ let draw_level_up creature () =
   done;
   present ();
   wait (-1) ();
-  draw_sprite level_up_screen (width - 300) 210 ();
+  draw_sprite ~!level_up_screen (width - 300) 210 ();
   draw_string_colored x y 1
     ("Level " ^ string_of_int (get_level creature))
     white text_color ();
@@ -425,7 +433,7 @@ let handle_item item () =
   | Item.Key -> false
 
 let refresh_battle () =
-  Ui.add_last_background (draw_sprite battle_bg1 0 0);
+  Ui.add_last_background (draw_sprite ~!battle_bg1 0 0);
   if ~!bs.enemy_battler.active = true then
     Ui.add_first_gameplay
       (draw_creature
@@ -451,15 +459,15 @@ let clear_battle p_hp e_hp state () =
   let player, opponent =
     (~!bs.player_battler.creature, ~!bs.enemy_battler.creature)
   in
-  (draw_sprite battle_bg1 0 0) ();
+  (draw_sprite ~!battle_bg1 0 0) ();
 
-  draw_combat_hud combat_hud (get_nickname opponent)
+  draw_combat_hud ~!combat_hud (get_nickname opponent)
     (get_level opponent) false
     ((get_stats opponent).max_hp, e_hp, e_hp)
     true ();
 
   (* Ui.add_first_gameplay *)
-  draw_combat_hud player_hud (get_nickname player) (get_level player)
+  draw_combat_hud ~!player_hud (get_nickname player) (get_level player)
     true
     ((get_stats player).max_hp, p_hp, p_hp)
     true ();
@@ -606,7 +614,7 @@ let rec run_tick () =
         combat_mode := Commands
       end
   | Attack ->
-      Ui.add_first_gameplay (clear_text battle_right);
+      Ui.add_first_gameplay (clear_text ~!battle_right);
       if get_status ~!bs.player_battler.creature = Fainted then begin
         Ui.update_all ();
         Party_menu.init FaintedSwitch ();
@@ -646,7 +654,7 @@ let start_wild_battle c =
   Combat.health_bar := draw_health_bar_combat;
   combat_mode := Commands;
 
-  Ui.add_last_background (clear_text battle_right);
+  Ui.add_last_background (clear_text ~!battle_right);
 
   (* ========= Start the Battle ========= *)
   let rec battle_party fainted = function

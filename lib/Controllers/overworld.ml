@@ -1,42 +1,42 @@
+open Util
+
 let tile_size = 64
 let tile_resolution = 16
 let tile_dpi = tile_size / tile_resolution
+let player_spritesheet = Util.null ()
 
-let player_spritesheet =
-  Sprite_assets.get_spritesheet
-    "assets/gui_sprites/player_sprite_overworld.png"
+let load_assets _ =
+  player_spritesheet
+  *= Sprite_assets.get_spritesheet
+       "assets/entity_sprites/player_sprite_overworld.png"
 
-let player_sprite_n_walk =
-  Util.list_index_fun
-    [
-      Spritesheet.get_sprite player_spritesheet 7;
-      Spritesheet.get_sprite player_spritesheet 8;
-      Spritesheet.get_sprite player_spritesheet 6;
-    ]
+let player_sprite_n_walk i =
+  match i with
+  | 0 -> Spritesheet.get_sprite ~!player_spritesheet 7
+  | 1 -> Spritesheet.get_sprite ~!player_spritesheet 8
+  | 2 -> Spritesheet.get_sprite ~!player_spritesheet 6
+  | _ -> failwith ("Out of bounds: " ^ string_of_int i)
 
-let player_sprite_s_walk =
-  Util.list_index_fun
-    [
-      Spritesheet.get_sprite player_spritesheet 1;
-      Spritesheet.get_sprite player_spritesheet 2;
-      Spritesheet.get_sprite player_spritesheet 0;
-    ]
+let player_sprite_s_walk i =
+  match i with
+  | 0 -> Spritesheet.get_sprite ~!player_spritesheet 1
+  | 1 -> Spritesheet.get_sprite ~!player_spritesheet 2
+  | 2 -> Spritesheet.get_sprite ~!player_spritesheet 0
+  | _ -> failwith ("Out of bounds: " ^ string_of_int i)
 
-let player_sprite_e_walk =
-  Util.list_index_fun
-    [
-      Spritesheet.get_sprite player_spritesheet 10;
-      Spritesheet.get_sprite player_spritesheet 9;
-      Spritesheet.get_sprite player_spritesheet 11;
-    ]
+let player_sprite_e_walk i =
+  match i with
+  | 0 -> Spritesheet.get_sprite ~!player_spritesheet 10
+  | 1 -> Spritesheet.get_sprite ~!player_spritesheet 9
+  | 2 -> Spritesheet.get_sprite ~!player_spritesheet 11
+  | _ -> failwith ("Out of bounds: " ^ string_of_int i)
 
-let player_sprite_w_walk =
-  Util.list_index_fun
-    [
-      Spritesheet.get_sprite player_spritesheet 4;
-      Spritesheet.get_sprite player_spritesheet 5;
-      Spritesheet.get_sprite player_spritesheet 3;
-    ]
+let player_sprite_w_walk i =
+  match i with
+  | 0 -> Spritesheet.get_sprite ~!player_spritesheet 4
+  | 1 -> Spritesheet.get_sprite ~!player_spritesheet 5
+  | 2 -> Spritesheet.get_sprite ~!player_spritesheet 3
+  | _ -> failwith ("Out of bounds: " ^ string_of_int i)
 
 (** draw_tiles tx ty gx gy draws the tiles centered at (tx,ty) within
     [Draw.width / (tile_size * 2) + 1] tiles with graphical offset of

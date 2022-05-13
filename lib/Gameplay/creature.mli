@@ -94,6 +94,8 @@ type move = {
 }
 (** Loads and handles all the moves performed during combat*)
 
+val null_creature : creature
+
 val empty_stats : stats
 (** Represents an emtpy set of stats*)
 

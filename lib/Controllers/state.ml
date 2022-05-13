@@ -2,12 +2,11 @@ open Inventory
 
 type state = {
   player : Player.player;
-  map : Map.t;
+  mutable map : Map.t;
 }
 
 let current_state =
-  ref
-    { player = Player.new_player "Red"; map = Map.load_map "test_map" }
+  ref { player = Player.new_player "Red"; map = Map.null_map }
 
 let get_state _ = !current_state
 let player _ = !current_state.player
@@ -16,10 +15,9 @@ let player_y _ = Player.y !current_state.player
 let map _ = !current_state.map
 
 let adhoc_init () =
-  Play_assets.load ();
-  Sprite_assets.load ();
   Player.set_x 4 (player ());
   Player.set_y 4 (player ());
+  !current_state.map <- Play_assets.get_map "test_map.json";
   let chumpi = Creature.create_creature "chumpi" 10 in
   let rafu = Creature.create_creature "rafu" 10 in
   Creature.set_current_hp chumpi 20;

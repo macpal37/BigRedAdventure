@@ -51,37 +51,6 @@ let refresh_battle = ref (fun _ _ _ () -> ())
 let health_bar = ref (fun _ _ _ _ _ () -> ())
 let player_first = ref false
 
-let empty_battle =
-  {
-    player_creatures = [];
-    enemy_creatures = [];
-    battle_type = Wild;
-    battle_status = Ongoing;
-    catch_attempts = 0;
-    escape_attempts = 0;
-    player_battler =
-      {
-        creature = create_creature "missingno" 1;
-        current_move = None;
-        stat_changes = empty_stats;
-        status_effect = Healthy;
-        is_player = true;
-        active = false;
-      };
-    enemy_battler =
-      {
-        creature = create_creature "missingno" 1;
-        current_move = None;
-        stat_changes = empty_stats;
-        status_effect = Healthy;
-        is_player = false;
-        active = false;
-      };
-    turn_counter = 0;
-    turn_pos = Choosing;
-    creatures_switched = [];
-  }
-
 let generate_battler creature player =
   {
     creature;
