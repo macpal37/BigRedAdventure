@@ -65,7 +65,9 @@ let open_window _ =
   in
   window := Some w;
   renderer :=
-    Some (Sdlrender.create_renderer ~win:w ~index:(-1) ~flags:[])
+    Some
+      (Sdlrender.create_renderer ~win:w ~index:(-1)
+         ~flags:[ PresentVSync; Accelerated ])
 (* let window _ = match !window with | Some w -> w | None -> failwith
    "Window not initialized"*)
 
@@ -74,7 +76,10 @@ let renderer _ =
   | Some r -> r
   | None -> failwith "Window not initialized"
 
-let present _ = Sdlrender.render_present (renderer ())
+let present _ =
+  Sdlrender.render_present (renderer ());
+  Sdlrender.clear (renderer ())
+
 let get_dimension sprite = (sprite.width, sprite.height)
 
 let change_dpi sprite dpi =
