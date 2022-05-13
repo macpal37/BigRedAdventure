@@ -1,4 +1,3 @@
-open Item
 open Inventory
 
 type state = {
@@ -17,6 +16,8 @@ let player_y _ = Player.y !current_state.player
 let map _ = !current_state.map
 
 let adhoc_init () =
+  Play_assets.load ();
+  Sprite_assets.load ();
   Player.set_x 4 (player ());
   Player.set_y 4 (player ());
   let chumpi = Creature.create_creature "chumpi" 10 in
@@ -30,27 +31,27 @@ let adhoc_init () =
 
   let inventory = Player.inventory !current_state.player in
 
-  add_item inventory (create_item "repel");
-  add_item inventory (create_item "super repel");
-  add_item inventory (create_item "max repel");
+  add_item inventory (Play_assets.get_item "repel");
+  add_item inventory (Play_assets.get_item "super repel");
+  add_item inventory (Play_assets.get_item "max repel");
   for _ = 1 to 20 do
-    add_item inventory (create_item "poke ball")
+    add_item inventory (Play_assets.get_item "poke ball")
   done;
 
   for _ = 1 to 20 do
-    add_item inventory (create_item "great ball")
+    add_item inventory (Play_assets.get_item "great ball")
   done;
   for _ = 1 to 20 do
-    add_item inventory (create_item "ultra ball")
+    add_item inventory (Play_assets.get_item "ultra ball")
   done;
-  add_item inventory (create_item "potion");
-  add_item inventory (create_item "potion");
-  add_item inventory (create_item "potion");
-  add_item inventory (create_item "potion");
-  add_item inventory (create_item "super potion");
-  add_item inventory (create_item "hyper potion");
-  add_item inventory (create_item "max potion");
-  add_item inventory (create_item "ether");
-  add_item inventory (create_item "max ether");
-  add_item inventory (create_item "revive");
-  add_item inventory (create_item "max revive")
+  add_item inventory (Play_assets.get_item "potion");
+  add_item inventory (Play_assets.get_item "potion");
+  add_item inventory (Play_assets.get_item "potion");
+  add_item inventory (Play_assets.get_item "potion");
+  add_item inventory (Play_assets.get_item "super potion");
+  add_item inventory (Play_assets.get_item "hyper potion");
+  add_item inventory (Play_assets.get_item "max potion");
+  add_item inventory (Play_assets.get_item "ether");
+  add_item inventory (Play_assets.get_item "max ether");
+  add_item inventory (Play_assets.get_item "revive");
+  add_item inventory (Play_assets.get_item "max revive")

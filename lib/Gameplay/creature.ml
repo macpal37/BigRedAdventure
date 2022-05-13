@@ -463,9 +463,8 @@ let create_creature name level =
   in
   let shiny_chance = Random.int 100 = 0 in
   let sprite_sheet =
-    Spritesheet.init_spritesheet
+    Sprite_assets.get_spritesheet
       ("assets/creature_sprites/" ^ String.lowercase_ascii name ^ ".png")
-      80 80 3
   in
   curr_hp_cache := curr_stats.max_hp;
   {

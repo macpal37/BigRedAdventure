@@ -159,6 +159,8 @@ let set_encounters tile_m encounter_m e =
     done
   done
 
+let spritesheet_cache = Hashtbl.create 16
+
 let json_spritesheet json =
   let src_path = json |> member "source" |> to_string in
   let png_path =
@@ -166,10 +168,19 @@ let json_spritesheet json =
     ^ String.sub src_path 3 (String.length src_path - 8)
     ^ ".png"
   in
-  let t_json = Yojson.Basic.from_file (tileset_path_parser src_path) in
-  let tilewidth = t_json |> member "tilewidth" |> to_int in
-  let tileheight = t_json |> member "tileheight" |> to_int in
-  Spritesheet.init_spritesheet png_path tilewidth tileheight 4
+  match Hashtbl.find_opt spritesheet_cache png_path with
+  | Some s -> s
+  | None ->
+      let t_json =
+        Yojson.Basic.from_file (tileset_path_parser src_path)
+      in
+      let tilewidth = t_json |> member "tilewidth" |> to_int in
+      let tileheight = t_json |> member "tileheight" |> to_int in
+      let sprite_sheet =
+        Spritesheet.init_spritesheet png_path tilewidth tileheight 4
+      in
+      Hashtbl.add spritesheet_cache png_path sprite_sheet;
+      sprite_sheet
 
 let load_map map_name =
   let json =
