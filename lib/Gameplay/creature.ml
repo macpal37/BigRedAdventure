@@ -154,7 +154,7 @@ type creature = {
   species : string;
   mutable level : int;
   mutable current_hp : float;
-  mutable exp : int;
+  mutable exp : float;
   base_stats : stats;
   mutable current_stats : stats;
   iv_stats : stats;
@@ -166,7 +166,7 @@ type creature = {
   ev_gain : stat * int;
   poke_id : int;
   catch_rate : int;
-  base_exp : int;
+  base_exp : float;
   mutable friendship : int;
   learnset : learnset_moves list;
   moves : move option array;
@@ -433,14 +433,15 @@ let generate_nature nat_rand =
   }
 
 let exp_calc level rate =
+  let level = float_of_int level in
   match rate with
-  | Fast -> 4 * level * level * level / 5
-  | MediumFast -> level * level * level
+  | Fast -> 4. *. level *. level *. level /. 5.
+  | MediumFast -> level *. level *. level
   | MediumSlow ->
-      (6 * level * level * level / 5)
-      - (15 * level * level)
-      + (100 * level) - 140
-  | Slow -> 5 * level * level * level / 4
+      (6. *. level *. level *. level /. 5.)
+      -. (15. *. level *. level)
+      +. (100. *. level) -. 140.
+  | Slow -> 5. *. level *. level *. level /. 4.
 
 let create_creature name (level : int) =
   let json =
@@ -485,7 +486,7 @@ let create_creature name (level : int) =
         json |> member "ev_amount" |> to_int );
     poke_id = json |> member "poke_id" |> to_int;
     catch_rate = json |> member "catch_rate" |> to_int;
-    base_exp = json |> member "base_exp" |> to_int;
+    base_exp = json |> member "base_exp" |> to_int |> float_of_int;
     friendship = 70;
     learnset;
     moves = generate_moves learnset level;
@@ -567,7 +568,9 @@ let add_ev_gain creature (stat, amount) =
       creature.ev_stats.speed <- creature.ev_stats.speed +. amount
   | _ -> ()
 
-let get_exp_gain creature = (creature.level * creature.base_exp / 5) + 1
+let get_exp_gain creature =
+  (float_of_int creature.level *. creature.base_exp /. 5. *. 10.) +. 1.
+
 let get_current_hp creature = creature.current_hp
 let get_specias creature = creature.species
 let set_current_hp creature amount = creature.current_hp <- amount
@@ -610,10 +613,9 @@ let get_stab_mod creature etype =
 let get_level creature = creature.level
 
 let get_exp creature =
-  ( float_of_int creature.exp,
-    float_of_int (exp_calc creature.level creature.leveling_rate),
-    float_of_int (exp_calc (creature.level + 1) creature.leveling_rate)
-  )
+  ( creature.exp,
+    exp_calc creature.level creature.leveling_rate,
+    exp_calc (creature.level + 1) creature.leveling_rate )
 
 let level_up creature () =
   let before_hp = creature.current_stats.max_hp in
@@ -628,7 +630,7 @@ let level_up creature () =
     [creature]*)
 let add_exp creature amount =
   let cap_exp = exp_calc (creature.level + 1) creature.leveling_rate in
-  let exp_dif = cap_exp - creature.exp in
+  let exp_dif = cap_exp -. creature.exp in
 
   let rec levelup_check amount dif lst lvl =
     if amount > dif then begin
@@ -640,14 +642,14 @@ let add_exp creature amount =
 
       let lvl = lvl + 1 in
       (* print_endline ("LEVEL: " ^ string_of_int lvl); *)
-      creature.exp <- creature.exp + dif;
+      creature.exp <- creature.exp +. dif;
 
       (* level_up creature (); *)
       let new_dif =
-        exp_calc (lvl + 1) creature.leveling_rate - creature.exp
+        exp_calc (lvl + 1) creature.leveling_rate -. creature.exp
       in
-      levelup_check (amount - dif) new_dif
-        ((max - min, c - min, max - min, lvl) :: lst)
+      levelup_check (amount -. dif) new_dif
+        ((max -. min, c -. min, max -. min, lvl) :: lst)
         lvl
     end
     else
@@ -656,8 +658,8 @@ let add_exp creature amount =
           exp_calc lvl creature.leveling_rate,
           exp_calc (lvl + 1) creature.leveling_rate )
       in
-      creature.exp <- creature.exp + amount;
-      (max - min, c - min, c - min + amount, lvl) :: lst
+      creature.exp <- creature.exp +. amount;
+      (max -. min, c -. min, c -. min +. amount, lvl) :: lst
   in
   levelup_check amount exp_dif [] creature.level
 

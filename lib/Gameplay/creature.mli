@@ -166,7 +166,7 @@ val get_ivs : creature -> stats
 val get_evs : creature -> stats
 val get_ev_gain : creature -> stat * float
 val add_ev_gain : creature -> stat * float -> unit
-val get_exp_gain : creature -> int
+val get_exp_gain : creature -> float
 val add_hp : creature -> float -> unit
 
 val get_type_mod : etype -> creature -> float
@@ -209,7 +209,7 @@ val get_exp : creature -> float * float * float
 (** [get_exp creature] returns a tuple that represents the creautre's
     exp [curr,min,max]*)
 
-val add_exp : creature -> int -> (int * int * int * int) list
+val add_exp : creature -> float -> (float * float * float * int) list
 (** [add_exp creature amount] add [amount] to the current exp of
     [creature]. Returns a report of adding the exp as a ruple
     [max, before, after, level]*)

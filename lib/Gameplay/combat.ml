@@ -23,11 +23,6 @@ type damage_type =
   | NotEffective
   | Immune
 
-type turn_status =
-  | Choosing
-  | Pending
-  | Halfway
-  | Finished
 (*BRECORD VARIANTS END*)
 
 type combat_status =
@@ -48,10 +43,10 @@ type battle_creature = {
 (** Type of Action taken by a creature *)
 type action =
   | ChooseMove of move
-  | Damage of float * damage_type * bool
+  | Damage of float * float * float * damage_type * bool
   | Heal of float
   | StatusGain of bool * combat_status
-  | StatusEffect of combat_status * float
+  | StatusEffect of combat_status * float * float * float
   | MaxStat
   | StatGain of int
   | Switch of creature
@@ -67,7 +62,6 @@ type battle_record = {
   mutable player_battler : battle_creature;
   mutable enemy_battler : battle_creature;
   mutable turn_counter : int;
-  mutable turn_pos : turn_status;
   mutable creatures_switched : creature list;
 }
 
@@ -108,7 +102,6 @@ let wild_init plist elist =
     player_battler = generate_battler player true;
     enemy_battler = generate_battler enemy false;
     turn_counter = 0;
-    turn_pos = Choosing;
     creatures_switched = [ player ];
   }
 
@@ -124,7 +117,6 @@ let trainer_init plist elist =
     player_battler = generate_battler player true;
     enemy_battler = generate_battler enemy false;
     turn_counter = 0;
-    turn_pos = Choosing;
     creatures_switched = [ player ];
   }
 
@@ -321,10 +313,29 @@ let handle_effects move attacker defender () =
 (* ==============================================================*)
 
 (* ==============================================================*)
-(* ================ Stat Changes Handler END=====================*)
+(* ================ Status Changes Handler END=====================*)
 (* ==============================================================*)
+let check_active_status brecord =
+  if get_current_hp brecord.player_battler.creature <= 0. then begin
+    updated_player_creatures brecord;
+
+    apply_status brecord.player_battler.creature Fainted;
+    add_action
+      ( brecord.player_battler,
+        Fainted,
+        get_nickname brecord.player_battler.creature ^ " fainted!" )
+  end;
+  if get_current_hp brecord.enemy_battler.creature <= 0. then begin
+    updated_enemy_creatures brecord;
+    apply_status brecord.enemy_battler.creature Fainted;
+    add_action (brecord.enemy_battler, Fainted, "")
+  end
+
 let exec_turn attacker defender brecord =
-  if attacker.active && defender.active then begin
+  if
+    get_status attacker.creature <> Fainted
+    && get_status defender.creature <> Fainted
+  then begin
     let damage_pte =
       match attacker.current_move with
       | None -> 0.0
@@ -346,7 +357,9 @@ let exec_turn attacker defender brecord =
                     ^ get_nickname defender.creature
                 | _ -> ""
               in
-              add_action (defender, Damage (dmg, d_mod, crit), str);
+              let max, curr = get_hp_status defender.creature in
+              add_action
+                (defender, Damage (dmg, max, curr, d_mod, crit), str);
               dmg
             end
             else 0.0
@@ -357,14 +370,8 @@ let exec_turn attacker defender brecord =
     set_current_hp defender.creature
       (get_current_hp defender.creature -. damage_pte);
 
-    if get_current_hp defender.creature > 0. then ()
-    else if defender.is_player then updated_player_creatures brecord
-    else updated_enemy_creatures brecord
-  end;
-  if attacker.active = false then
-    add_action
-      (attacker, Fainted, get_nickname attacker.creature ^ " fainted!")
-  else if defender.active = false then add_action (defender, Fainted, "")
+    check_active_status brecord
+  end
 
 (* let exec_resolution _ = failwith "" *)
 
@@ -375,14 +382,6 @@ let exec_turn attacker defender brecord =
    brecord.player_battler.current_move with | None -> exec_turn
    brecord.enemy_battler brecord.player_battler brecord | Some _ ->
    exec_turn brecord.player_battler brecord.enemy_battler brecord *)
-
-(* let check_active_status brecord = if get_current_hp
-   brecord.player_battler.creature <= 0. then begin
-   brecord.player_battler.active <- false; apply_status
-   brecord.player_battler.creature Fainted end; if get_current_hp
-   brecord.enemy_battler.creature <= 0. then begin
-   brecord.enemy_battler.active <- false; apply_status
-   brecord.enemy_battler.creature Fainted end *)
 
 (*BATTLE SIM HELPERS END so many damn*)
 
@@ -419,25 +418,6 @@ let battle_sim brecord player_move =
   exec_turn second first brecord;
   (* exec_resolution brecord; *)
   ()
-(* let battle_sim_fh brecord = let res = player_faster brecord in
-   player_first := res; brecord.turn_pos <- Pending;
-
-   execute_turn brecord;
-
-   if res then begin brecord.player_battler.current_move <- None;
-   brecord.turn_pos <- Halfway end else begin
-   brecord.enemy_battler.current_move <- None; brecord.turn_pos <-
-   Halfway end; check_active_status brecord
-
-   let battle_sim_sh brecord = if brecord.battle_status <> Victory then
-   begin execute_turn brecord;
-
-   brecord.player_battler.current_move <- None;
-
-   brecord.enemy_battler.current_move <- None; brecord.turn_pos <-
-   Finished end; check_active_status brecord *)
-
-(*IGNORE THESE FOR NOW, WILL POLISH IMPLEMENTATION LATER*)
 
 let run_away brecord =
   let pspeed = (get_stats brecord.player_battler.creature).speed in

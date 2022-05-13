@@ -12,12 +12,6 @@ type btype =
   | Trainer
   | Wild
 
-type turn_status =
-  | Choosing
-  | Pending
-  | Halfway
-  | Finished
-
 type damage_type =
   | SuperEffective
   | Effective
@@ -33,13 +27,13 @@ type combat_status =
 
 type action =
   | ChooseMove of move
-  | Damage of float * damage_type * bool
+  | Damage of float * float * float * damage_type * bool
       (** Damage: [damage, damage_type,
         is_critical_hit].*)
   | Heal of float  (** Heal: [heal_amount]*)
   | StatusGain of bool * combat_status
       (** StatusGain: [gain_or_remove,status]*)
-  | StatusEffect of combat_status * float
+  | StatusEffect of combat_status * float * float * float
       (** StatusEffect: [status,damage]*)
   | MaxStat
   | StatGain of int  (** StatGain: [stat,stages_gained]*)
@@ -65,7 +59,6 @@ type battle_record = {
   mutable player_battler : battle_creature;
   mutable enemy_battler : battle_creature;
   mutable turn_counter : int;
-  mutable turn_pos : turn_status;
   mutable creatures_switched : creature list;
 }
 (** The abstract type that represents the standing data of a Pokemon

@@ -343,7 +343,6 @@ let rec run_tick () =
   if !menu_mode <> Exit then run_tick ()
 
 let init bm () =
-  Ui.clear_all ();
   menu_mode := MainMenu;
   Combat.switching_pending := None;
   battle_mode := bm;
@@ -351,6 +350,5 @@ let init bm () =
   minimenu_position.y <- 0;
   switch_position.x <- 0;
   switch_position.y <- 0;
-  refresh ();
   ignore (Input.poll_key_option ());
   run_tick ()

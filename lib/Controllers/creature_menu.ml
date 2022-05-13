@@ -268,6 +268,5 @@ let rec run_tick () =
 let init () =
   menu_position.x <- -2;
   switch_position.x <- -1;
-
-  refresh ();
+  ignore (Input.poll_key_option ());
   run_tick ()
