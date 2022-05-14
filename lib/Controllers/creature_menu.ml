@@ -120,7 +120,7 @@ let draw_moves () =
 let refresh () =
   Ui.add_first_foreground
     (draw_string_colored 24 605 1 "SUMMARY" (rgb 255 170 40) white);
-  Ui.add_last_background (draw_sprite creature_menu_bg 0 0);
+  Ui.add_last_background (draw_sprite creature_menu_bg 0 (-3));
   Ui.add_first_gameplay
     (draw_sprite (get_front_sprite !current_creature) 9 318);
   Ui.add_first_gameplay

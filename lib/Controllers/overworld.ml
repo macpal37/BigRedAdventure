@@ -3,8 +3,8 @@ let tile_resolution = 16
 let tile_dpi = tile_size / tile_resolution
 
 let player_spritesheet =
-  Spritesheet.init_spritesheet
-    "assets/gui_sprites/player_sprite_overworld.png" 64 64 1
+  Spritesheet.init_spritesheet "assets/gui_sprites/player_sprite.png" 64
+    64 1
 
 let player_sprite_n = Spritesheet.get_sprite player_spritesheet 6
 

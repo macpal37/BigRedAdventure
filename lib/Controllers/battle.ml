@@ -109,9 +109,9 @@ let draw_moves () =
   set_color text_color
 
 let draw_exp_bar_combat () =
-  let hwidth = 250 in
+  let hwidth = 256 in
   let hheight = 6 in
-  let xh, yh = (width - hwidth - 30, 240) in
+  let xh, yh = (width - hwidth - 30, 244) in
   draw_exp_bar ~!p_hud_stats.max_exp ~!p_hud_stats.curr_exp xh yh hwidth
     hheight ()
 
@@ -119,7 +119,7 @@ let draw_health_bar_combat (max : float) (curr : float) player () =
   let hwidth = 210 in
   let hheight = 6 in
   let xh, yh =
-    if player then (width - hwidth - 31 - 10, 296) else (130, 615)
+    if player then (width - hwidth - 38, 302) else (130, 612)
   in
   draw_health_bar max curr xh yh hwidth hheight player ()
 
@@ -141,10 +141,10 @@ let draw_combat_hud sprite name level player () =
   end
   else begin
     draw_sprite sprite 42 (height - 49 - sprite_height) ();
-    draw_string_colored 60 (height - 85) 0
+    draw_string_colored 60 (height - 97) 0
       (String.uppercase_ascii name)
       white text_color ();
-    draw_string_colored 280 (height - 89) 0
+    draw_string_colored 280 (height - 101) 0
       ("Lv" ^ string_of_int level)
       white text_color ();
     draw_health_bar_combat ~!e_hud_stats.max_hp ~!e_hud_stats.curr_hp
@@ -152,20 +152,21 @@ let draw_combat_hud sprite name level player () =
   end
 
 let draw_combat_commands () =
-  let x, y = (465, 120) in
+  let x, y = (465, 108) in
+  let hdif = 80 in
   set_color text_color;
   clear_text battle_right ();
   draw_string_colored x y 1 "FIGHT" white text_color ();
-  draw_string_colored x (y - 75) 1 "BAG" white text_color ();
+  draw_string_colored x (y - hdif) 1 "BAG" white text_color ();
   draw_string_colored (x + 175) y 1 "PARTY" white text_color ();
-  draw_string_colored (x + 175) (y - 75) 1 "RUN" white text_color ();
+  draw_string_colored (x + 175) (y - hdif) 1 "RUN" white text_color ();
   draw_string_colored
     (x - 35 + (175 * cmd_pos.x))
-    (y - (75 * cmd_pos.y))
+    (y - (hdif * cmd_pos.y))
     1 ">" white text_color ();
 
-  (draw_text_string_pos 35 132 40 14
-     ("What will " ^ get_nickname ~!bs.player_battler.creature))
+  draw_text_string_pos 35 132 40 20
+    ("What will " ^ get_nickname ~!bs.player_battler.creature ^ " do?")
     ()
 
 (* Refreshes *)
@@ -178,15 +179,6 @@ let draw_hud () =
     (get_level opponent) false ();
   draw_combat_hud player_hud (get_nickname player) (get_level player)
     true ()
-
-(* let update_health creature before () = let curr, max =
-   (get_current_hp creature, (get_stats creature).max_hp) in
-   draw_health_bar_combat max before curr false true () *)
-
-(* let draw_creature_exp creature () = let curr_exp, min_exp, max_exp =
-   get_exp creature in let curr_exp = if curr_exp >= max_exp then
-   min_exp else curr_exp in Ui.add_first_foreground (draw_exp_bar_combat
-   (max_exp -. min_exp) (curr_exp -. min_exp)) *)
 
 let draw_level_up creature frame () =
   let x, y, dif, x2 = (width - 300 + 30, 200 + 250, 35, width - 140) in
@@ -257,7 +249,7 @@ let draw_level_up creature frame () =
   end
 
 let refresh_battle state () =
-  Ui.add_last_background (draw_sprite battle_bg1 0 0);
+  Ui.add_last_background (draw_sprite battle_bg1 0 (-3));
 
   (* Draws the ally and enemy creature *)
   (match state with
@@ -295,16 +287,16 @@ let refresh_battle state () =
     | _ -> clear_text battle_bot)
 
 let animate_exp_bar_combat max bef aft () =
-  let hwidth = 250 in
+  let hwidth = 256 in
   let hheight = 6 in
-  let xh, yh = (width - hwidth - 30, 240) in
+  let xh, yh = (width - hwidth - 30, 244) in
   animate_exp_bar max bef aft xh yh hwidth hheight (refresh_battle 2)
 
 let animate_health_bar_combat max bef aft player () =
   let hwidth = 210 in
   let hheight = 6 in
   let xh, yh =
-    if player then (width - hwidth - 31 - 10, 296) else (130, 615)
+    if player then (width - hwidth - 38, 302) else (130, 612)
   in
   animate_health_bar max bef aft xh yh hwidth hheight player
     (refresh_battle 2)
