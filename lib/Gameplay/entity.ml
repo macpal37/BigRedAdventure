@@ -1,5 +1,6 @@
 open Creature
 open Draw
+open Yojson.Basic.Util
 
 type coord = float * float
 
@@ -51,13 +52,12 @@ type t = {
   mutable orie : orientation;
   mutable pos : coord;
   dialogue : string;
-  mutable interval_frac : float;
-  (* fields for movement/animation *)
-  animations : (sprite_step, sprite Loopq.t) Hashtbl.t;
-  mutable stop : stop_time;
-  priority_queue : step Queue.t;
-  passable: bool;
   path : movement;
+  animations : (sprite_step, sprite array) Hashtbl.t;
+  obstacle: bool;
+  (* fields for movement/animation *)
+  mutable interval_frac : float;
+  priority_queue : step Queue.t;
 }
 
 (* [increment] is how far this entity moves when update is called, also
@@ -76,6 +76,17 @@ let step_to_sprite step orie =
   | Pause _ -> STurn orie
   | Turn o -> STurn o
 
+let get_adjacent_coords (x, y) = [(x +. 1.0, y); (x -. 1.0, y); (x, y +. 1.0); (x, y -. 1.0)]
+
+let randomelement arr =
+  let n = Random.int (Array.length arr) in
+  Array.get arr n;;
+
+let random_coord s pos = get_adjacent_coords pos |> List.filter (Hashtbl.mem s) |> Array.of_list |> randomelement
+
+let coord_to_step (posx, posy) (x, y) = 
+  if posx -. 1.0 = Step ()
+
 let get_step e =
   let open Queue in
   let p_queue = e.priority_queue in
@@ -83,12 +94,13 @@ let get_step e =
   else
     match e.path with
     | Path loop -> Loopq.peek loop
-    | Area _ -> failwith "Invariant violated"
+    | Area a -> push (random_coord a e.pos) p_queue; peek p_queue
     | MNone -> Pause 1
 
 (** [get_step_sprite e s] is the sprite representing the step [s] of
     entity [e]. Raises [Not_found] if the sprite doesn't exist *)
-let get_step_sprite e s = Hashtbl.find e.animations s |> Loopq.pop
+let get_step_sprite e s = let index = int_of_float (e.interval_frac /. increment) in
+  Hashtbl.find e.animations s |> Array.get index
 
 let get_sprite e =
   try step_to_sprite (get_step e) e.orie |> get_step_sprite e
@@ -125,7 +137,6 @@ let incr_int e = e.interval_frac <- e.interval_frac +. increment
 let reset_int e = e.interval_frac <- 0.0
 
 let update e =
-  (** Implement random push here *)
   match get_step e with
   | Step (_, i) | Pause i ->
       if e.interval_frac > float_of_int i then (
@@ -150,5 +161,4 @@ let correct_step d n =
 let go e d n = e.priority_queue |> Queue.push (correct_step d n)
 let turn e d = e.priority_queue |> Queue.push (Turn d)
 let wait e t = e.priority_queue |> Queue.push (Pause t)
-let restart_loop = failwith "Unimplemented"
 let is_static entity = entity.path = MNone

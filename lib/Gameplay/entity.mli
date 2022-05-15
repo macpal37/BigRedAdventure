@@ -21,7 +21,7 @@ type orientation =
   | W  (** Type representing the four orientations *)
 
 val load_entity : string -> t
-(** [load_npc file] is the npc represented by [file]. Raises
+(** [load_entity file] is the entity represented by [file]. Raises
     [Malformed_Json] if the json file is invalid *)
 
 val get_trigger : t -> entity_trigger
@@ -51,9 +51,6 @@ val turn : t -> orientation -> unit
 
 val wait : t -> int -> unit
 (** [wait e t] makes [e] wait for [t] intervals *)
-
-val restart_loop : t -> unit
-(** *)
 
 val is_static : t -> bool
 (** [is_static e] returns whether e has a preset movement loop or not *)
