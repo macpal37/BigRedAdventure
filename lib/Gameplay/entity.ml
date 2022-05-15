@@ -44,7 +44,7 @@ type movement =
 type entity_interaction =
   | Trainer of string
   | Sign
-  | Item of string * bool * bool
+  | Item of {mutable name:string; mutable given:bool; mutable disappear:bool}
   | Grass of int
   | Heal
   | Merchant
@@ -116,9 +116,16 @@ let get_sprite e = e.sprite
 (* Each entity must at least have a forward (south) facing sprite *)
 
 let get_dialogue n = n.dialogue
+
+let give_item name given disappear = 
+  let item = Play_assets.get_item name in
+  let inventory = State.player () |> Player.inventory
+in Inventory.add_item inventory item
+
 let interact e =
-
-
+  match e.e_type with
+  | Item {name; given; disappear} -> give_item name given disappear
+  | _ -> failwith "Unimplemented"
 
 let update = failwith "Unimplemented"
 
