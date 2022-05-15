@@ -20,10 +20,9 @@ type damage_type =
 
 type combat_status =
   | Status of status
-  | Confused of int ref * combat_status
-  | Flinch of combat_status
-  | LeechSeed of combat_status
-      (** Type of Action taken by a creature *)
+  | Confused of int ref
+  | Flinch
+  | LeechSeed  (** Type of Action taken by a creature *)
 
 type action =
   | ChooseMove of move
@@ -44,7 +43,7 @@ type battle_creature = {
   mutable creature : creature;
   mutable current_move : move option;
   mutable stat_changes : stats;
-  mutable status_cond : combat_status;
+  mutable status_cond : (string * combat_status) list;
   mutable active : bool;
   is_player : bool;
 }

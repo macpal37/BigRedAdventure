@@ -74,34 +74,35 @@ let display_text_box
     (sticky : bool)
     (refresh_func : draw_func)
     () : unit =
-  let rec get_text_boxes text_box c boxes = function
-    | [] -> boxes @ [ text_box ]
-    | h :: t ->
-        if c < 3 then
-          if text_box = "" then get_text_boxes h (c + 1) boxes t
-          else get_text_boxes (text_box ^ " " ^ h) (c + 1) boxes t
-        else get_text_boxes "" 0 (boxes @ [ text_box ]) (h :: t)
-  in
-  let text_boxes =
-    get_text_boxes "" 0 [] (get_text_transcript text box_cap)
-  in
+  (if text <> "" then
+   let rec get_text_boxes text_box c boxes = function
+     | [] -> boxes @ [ text_box ]
+     | h :: t ->
+         if c < 3 then
+           if text_box = "" then get_text_boxes h (c + 1) boxes t
+           else get_text_boxes (text_box ^ " " ^ h) (c + 1) boxes t
+         else get_text_boxes "" 0 (boxes @ [ text_box ]) (h :: t)
+   in
+   let text_boxes =
+     get_text_boxes "" 0 [] (get_text_transcript text box_cap)
+   in
 
-  let rec run_text_rec = function
-    | [] -> ()
-    | h :: t ->
-        Input.sleep Draw.tick_rate ();
-        set_text_display "";
+   let rec run_text_rec = function
+     | [] -> ()
+     | h :: t ->
+         Input.sleep Draw.tick_rate ();
+         set_text_display "";
 
-        refresh_func ();
-        Ui.update_all ();
-        run_text_animation h
-          (make_animation refresh_func (animate_text_box h) 0)
-          sticky;
-        run_text_rec t;
-        set_text_display h
-  in
+         refresh_func ();
+         Ui.update_all ();
+         run_text_animation h
+           (make_animation refresh_func (animate_text_box h) 0)
+           sticky;
+         run_text_rec t;
+         set_text_display h
+   in
 
-  run_text_rec text_boxes;
+   run_text_rec text_boxes);
   if sticky = false then set_text_display ""
 
 let hp_to_string (hp : float) =

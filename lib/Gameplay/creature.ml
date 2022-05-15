@@ -608,7 +608,7 @@ let add_ev_gain creature (stat, amount) =
   | _ -> ()
 
 let get_exp_gain creature =
-  (float_of_int creature.level *. creature.base_exp /. 5. *. 25.) +. 1.
+  (float_of_int creature.level *. creature.base_exp /. 5. *. 5.) +. 1.
 
 let get_current_hp creature = creature.current_hp
 let get_specias creature = creature.species

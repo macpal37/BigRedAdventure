@@ -3,13 +3,13 @@ open Creature
 open Animation
 open Util
 open DrawText
+open Creature_menu
 open Input
 
 (* let max_creatures = 5 let max_creatures = ref 0 *)
 let party_menu_bg = Util.null ()
 let active = Util.null ()
 let minimenu1 = Util.null ()
-let faint = Util.null ()
 let menu_position = Util.new_point ()
 let switch_position = Util.new_point ()
 let minimenu_position = Util.new_point ()
@@ -22,7 +22,7 @@ let load_assets _ =
   party_menu_bg *= Sprite_assets.get_sprite2 "party_menu" GUI_Folder;
   active *= Sprite_assets.get_sprite2 "active_party_creature" GUI_Folder;
   minimenu1 *= Sprite_assets.get_sprite2 "party_minimenu" GUI_Folder;
-  faint *= Sprite_assets.get_sprite2 "faint" GUI_Folder;
+
   move_menu *= Sprite_assets.get_sprite2 "level_up" GUI_Folder
 
 type combat_mode =
@@ -77,11 +77,6 @@ let move_y y () =
       then switch_position.y <- switch_position.y + y
   | _ -> ()
 
-let draw_status x y status () =
-  match status with
-  | Fainted -> draw_sprite ~!faint x y ()
-  | _ -> ()
-
 let draw_menu lead_creature () =
   Ui.add_first_background (draw_sprite ~!party_menu_bg 0 (-3));
 
@@ -99,8 +94,7 @@ let draw_menu lead_creature () =
        white text_color);
   let max, curr = get_hp_status lead_creature in
   Ui.add_first_gameplay (draw_health_bar max curr 56 192 180 6 true);
-  Ui.add_first_gameplay
-    (draw_status (56 - 20) (192 - 30) (get_status lead_creature))
+  Ui.add_first_gameplay (draw_status 50 162 (get_status lead_creature))
 
 let draw_creature_status creature pos () =
   let x, y = (276, 577 - (112 * pos)) in

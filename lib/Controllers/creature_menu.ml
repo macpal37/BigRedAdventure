@@ -10,12 +10,22 @@ let menu_position = Util.new_point ()
 let party_position = Util.new_point ()
 let current_creature = ref null_creature
 let switch_position = Util.new_point ()
-let faint = Util.null ()
+let icon_faint = Util.null ()
+let icon_brn = Util.null ()
+let icon_frz = Util.null ()
+let icon_par = Util.null ()
+let icon_psn = Util.null ()
+let icon_slp = Util.null ()
 
 let load_assets _ =
   creature_menu_bg
   *= Sprite_assets.get_sprite2 "creature_menu" GUI_Folder;
-  faint *= Sprite_assets.get_sprite2 "faint" GUI_Folder
+  icon_faint *= Sprite_assets.get_sprite2 "faint" GUI_Folder;
+  icon_brn *= Sprite_assets.get_sprite2 "icon_brn" GUI_Folder;
+  icon_frz *= Sprite_assets.get_sprite2 "icon_frz" GUI_Folder;
+  icon_par *= Sprite_assets.get_sprite2 "icon_par" GUI_Folder;
+  icon_psn *= Sprite_assets.get_sprite2 "icon_psn" GUI_Folder;
+  icon_slp *= Sprite_assets.get_sprite2 "icon_slp" GUI_Folder
 
 let move_x x () =
   if switch_position.x = -1 then begin
@@ -33,10 +43,14 @@ let move_y y () =
   else if switch_position.y + y >= 0 && switch_position.y + y <= 1 then
     switch_position.y <- switch_position.y + y
 
-let draw_status status () =
-  let x, y = (56 - 20, 192 - 30) in
+let draw_status x y status () =
   match status with
-  | Fainted -> draw_sprite ~!faint x y ()
+  | Fainted -> draw_sprite ~!icon_faint x y ()
+  | Burn -> draw_sprite ~!icon_brn x y ()
+  | Freeze -> draw_sprite ~!icon_frz x y ()
+  | Poison _ -> draw_sprite ~!icon_psn x y ()
+  | Paralyze -> draw_sprite ~!icon_par x y ()
+  | Sleep _ -> draw_sprite ~!icon_slp x y ()
   | _ -> ()
 
 let draw_stats () =
@@ -138,18 +152,18 @@ let refresh () =
        ("LVL: " ^ string_of_int (get_level !current_creature))
        white text_color);
   let max, aft = get_hp_status !current_creature in
-  Ui.add_first_gameplay (draw_health_bar max aft 56 196 180 6 true);
-  Ui.add_first_gameplay (draw_status (get_status !current_creature));
+  Ui.add_first_gameplay (draw_health_bar max aft 56 192 180 6 true);
+
+  Ui.add_first_gameplay
+    (draw_status 50 162 (get_status !current_creature));
   let curr_exp, min_exp, max_exp = get_exp !current_creature in
   Ui.add_first_gameplay
-    (draw_string_colored 20 148 Small "EXP:" white text_color);
+    (draw_string_colored 20 123 Small "EXP:" white text_color);
   Ui.add_first_gameplay
-    (draw_exp_bar (max_exp -. min_exp) (curr_exp -. min_exp) 20 136 210
-       8);
+    (draw_exp_bar (max_exp -. min_exp) (curr_exp -. min_exp) 76 137
+       (210 - 54) 8);
   Ui.add_first_gameplay
-    (draw_string_colored 20
-       (104 - 21 + 16)
-       Small
+    (draw_string_colored 76 100 Small
        (Util.string_of_intf (curr_exp -. min_exp)
        ^ "/"
        ^ Util.string_of_intf (max_exp -. min_exp))
@@ -158,35 +172,34 @@ let refresh () =
   let type1, type2 = get_types !current_creature in
 
   Ui.add_first_gameplay
-    (draw_string_colored 20 (53 + 16) Small "TYPE: " white text_color);
+    (draw_string_colored 20 (53 + 15) Small "TYPE: " white text_color);
 
   let type_str =
     string_of_etype type1 ^ if type2 = NoType then "" else "/"
   in
   Ui.add_first_gameplay
-    (draw_string_colored 116 (56 + 16) Small type_str
+    (draw_string_colored 116 (56 + 15) Small type_str
        (Creature.get_color_from_etype type1)
        text_color);
   draw_stats ();
   let nature, _, _ = get_nature !current_creature in
   if type2 <> NoType then begin
     Ui.add_first_gameplay
-      (draw_string_colored 116 (28 + 16) Small (string_of_etype type2)
+      (draw_string_colored 116 (28 + 14) Small (string_of_etype type2)
          (Creature.get_color_from_etype type2)
          text_color);
     draw_stats ();
     Ui.add_first_gameplay
-      (draw_string_colored 20 20 Small ("NATURE: " ^ nature) white
+      (draw_string_colored 20 18 Small ("NATURE: " ^ nature) white
          text_color)
   end
   else
     Ui.add_first_gameplay
-      (draw_string_colored 20 (24 + 16) Small ("NATURE: " ^ nature)
+      (draw_string_colored 20 (24 + 14) Small ("NATURE: " ^ nature)
          white text_color);
 
   draw_stats ();
-  (* Ui.add_first_gameplay (draw_string_colored 20 100 1 24 type_str
-     white); *)
+
   Ui.add_first_foreground
     (draw_string_colored 482 383 Medium "Moves" white text_color);
   Ui.add_first_foreground

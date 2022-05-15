@@ -146,6 +146,9 @@ let draw_combat_hud sprite name level player () =
       white text_color ();
     draw_health_bar_combat ~!p_hud_stats.max_hp ~!p_hud_stats.curr_hp
       player ();
+
+    let xh, yh = (width - 248, 302 - 30) in
+    Creature_menu.draw_status xh yh ~!p_hud_stats.status ();
     draw_exp_bar_combat ()
   end
   else begin
@@ -157,18 +160,20 @@ let draw_combat_hud sprite name level player () =
       ("Lv" ^ string_of_int level)
       white text_color ();
     draw_health_bar_combat ~!e_hud_stats.max_hp ~!e_hud_stats.curr_hp
-      player ()
+      player ();
+    let xh, yh = (130 + 78, 612 + 20) in
+    Creature_menu.draw_status xh yh ~!e_hud_stats.status ()
   end
 
 let draw_combat_commands () =
-  let x, y = (465, 108) in
-  let hdif = 80 in
+  let x, y = (450, 108) in
+  let hdif, wdif = (80, 185) in
   set_color text_color;
   clear_text ~!battle_right ();
   draw_string_colored x y Large "FIGHT" white text_color ();
   draw_string_colored x (y - hdif) Large "BAG" white text_color ();
-  draw_string_colored (x + 175) y Large "PARTY" white text_color ();
-  draw_string_colored (x + 175) (y - hdif) Large "RUN" white text_color
+  draw_string_colored (x + wdif) y Large "PARTY" white text_color ();
+  draw_string_colored (x + wdif) (y - hdif) Large "RUN" white text_color
     ();
   draw_string_colored
     (x - 35 + (175 * cmd_pos.x))
@@ -491,7 +496,8 @@ let handle_combat move =
       in
       let state = if is_player then 1 else 0 in
       match action with
-      | ChooseMove _ -> display_text_box text true (refresh_battle 2) ()
+      | ChooseMove _ ->
+          display_text_box text false (refresh_battle 2) ()
       | Damage (dmg, max, curr, _, crit) ->
           animate_damage_render sprite is_player (refresh_battle state);
           display_text_box text true (refresh_battle 2) ();
@@ -506,8 +512,13 @@ let handle_combat move =
             (if gained then
              match cstatus with
              | Status s ->
-                 animate_status sprite is_player s (refresh_battle 2)
-             | _ -> ());
+                 animate_status sprite is_player s (refresh_battle 2);
+                 ~!hud.status <- s
+             | _ -> ()
+            else
+              match cstatus with
+              | Status _ -> ~!hud.status <- Healthy
+              | _ -> ());
             display_text_box text false (refresh_battle 2) ()
           end
       | StatusEffect (cstatus, max, bef, aft) ->
@@ -517,8 +528,10 @@ let handle_combat move =
                 animate_status sprite is_player s (refresh_battle 2)
             | _ -> ());
             display_text_box text true (refresh_battle 2) ();
-            animate_health_bar_combat max bef aft is_player ();
-            ~!hud.curr_hp <- aft
+            if max <> 0. then begin
+              animate_health_bar_combat max bef aft is_player ();
+              ~!hud.curr_hp <- aft
+            end
           end
       | MaxStat -> display_text_box text false (refresh_battle 2) ()
       | StatGain stages ->
