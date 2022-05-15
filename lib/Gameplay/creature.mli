@@ -188,7 +188,7 @@ val apply_status : creature -> status -> unit
     the [Healthy] status.*)
 
 val remove_status : creature -> status -> unit
-(** [remove creature status] Removes a status effect frok a creture.
+(** [remove creature status] Removes a status effect from a creture.
     Raises No_Effect exception if the [creature] already has the
     [Healthy] status.*)
 

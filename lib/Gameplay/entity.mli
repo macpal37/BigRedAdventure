@@ -7,15 +7,17 @@ type coord = float * float
 (** type representing the coordinate of a tile on a map. (0, 0) is the
     bottom left corner of the map *)
 
+    type item_props = {mutable name:string; mutable given:bool; mutable disappear:bool}
+
 type entity_interaction =
-| Trainer of string
-| Sign
-| GiveItem of string
-| Grass
-| Heal
-| Merchant
-| Door of string
-| None
+  | Trainer of string
+  | Sign
+  | Item of item_props
+  | Grass
+  | Heal
+  | Merchant
+  | Door of string
+  | None
 
 type orientation =
   | N

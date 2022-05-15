@@ -1,5 +1,4 @@
 open Draw
-open Animation
 (* open Yojson.Basic.Util *)
 
 type coord = float * float
@@ -41,11 +40,13 @@ type movement =
   | Path of step Loopq.t
   | MNone *)
 
+type item_props = {mutable name:string; mutable given:bool; mutable disappear:bool}
+
 type entity_interaction =
   | Trainer of string
   | Sign
-  | Item of {mutable name:string; mutable given:bool; mutable disappear:bool}
-  | Grass of int
+  | Item of item_props
+  | Grass
   | Heal
   | Merchant
   | Door of string
@@ -117,14 +118,29 @@ let get_sprite e = e.sprite
 
 let get_dialogue n = n.dialogue
 
-let give_item name given disappear = 
-  let item = Play_assets.get_item name in
+let give_item item = 
+if(item.given = false) then (
+  let item = Play_assets.get_item item.name in
   let inventory = State.player () |> Player.inventory
-in Inventory.add_item inventory item
+in Inventory.add_item inventory item); item.given <- true (* check if disappear is true and if it is, remove from map *)
+
+let heal c = 
+  let max_hp = (Creature.get_stats c).max_hp in
+  let status = Creature.get_status c in
+  Creature.set_current_hp c max_hp;
+  if status <> Healthy then Creature.remove_status c status
+
+let heal_party () = 
+  let party = State.player () |> Player.party in 
+  List.iter heal party
 
 let interact e =
   match e.e_type with
-  | Item {name; given; disappear} -> give_item name given disappear
+  | Item a -> give_item a
+  | Heal -> heal_party ()
+  | Merchant -> failwith "Unimplemented"
+  | Door _ -> failwith "Unimplemented"
+  | Trainer _ -> failwith "Unimplemented"
   | _ -> failwith "Unimplemented"
 
 let update = failwith "Unimplemented"
