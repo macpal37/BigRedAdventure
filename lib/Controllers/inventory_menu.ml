@@ -9,8 +9,12 @@ open Input
 let display_queue = ref []
 let max_list_size = 10
 let max_items = ref 0
-let inventory_menu = load_sprite "inventory_menu" GUI_Folder 3 ()
+let inventory_menu = Util.null ()
 let selected_item = null ()
+
+let load_assets _ =
+  inventory_menu
+  *= Sprite_assets.get_sprite2 "inventory_menu" GUI_Folder
 
 type menu_mode =
   | Selecting
@@ -36,7 +40,7 @@ let draw_list () =
         Ui.add_first_gameplay
           (draw_string_colored sx
              (sy - (i * 40))
-             1
+             0
              (Util.captilize_all_string (get_name item))
              white text_color);
         let s = string_of_int amount in
@@ -44,7 +48,7 @@ let draw_list () =
           (draw_string_colored
              (sx + dif - (16 * String.length s))
              (sy - (i * 40))
-             1 (s ^ "x") white text_color);
+             0 (s ^ "x") white text_color);
         draw_list_rec (i + 1) t
   in
   let index = draw_list_rec 0 !display_queue in
@@ -52,13 +56,13 @@ let draw_list () =
     Ui.add_first_gameplay
       (draw_string_colored sx
          (sy - (index * 40))
-         1 "     - - - - - - -     " white text_color)
+         0 "     - - - - - - -     " white text_color)
   else ()
 
 let inventory_position = Util.new_point ()
 
 let draw_bag item_type () =
-  Ui.add_first_background (Draw.draw_sprite inventory_menu 0 0);
+  Ui.add_first_background (Draw.draw_sprite ~!inventory_menu 0 0);
   Ui.add_first_foreground
     (draw_string_colored 428 644 1
        (string_of_item_type item_type)
@@ -99,7 +103,6 @@ let refresh () =
 
     Ui.add_first_foreground
       (draw_text_string_pos 35 142 40 30 (get_description item))
-(* else Ui.add_first_foreground (clear_text inventory_text_bg); *)
 
 let rec run_tick () =
   Input.sleep 0.016 ();
@@ -124,11 +127,7 @@ let rec run_tick () =
         inventory_position.x <- num_item_types - 1
       else ();
 
-      if key = Right || key = Left then begin
-        inventory_position.y <- 0;
-        refresh ()
-      end;
-      if key = Up || key = Down then refresh ();
+      if key = Right || key = Left then inventory_position.y <- 0;
       if key = Action then begin
         minimenu_position.y <- 0;
         let item = get_selected_item () in
@@ -147,12 +146,13 @@ let rec run_tick () =
         minimenu_position.y <- 0;
         mode := Selecting
       end);
-
+  refresh ();
   Ui.update_all ();
   if key <> Back && !selected_item = None then run_tick ()
 
 let init () =
   mode := Selecting;
   selected_item := None;
+  Ui.clear_all ();
   refresh ();
   run_tick ()

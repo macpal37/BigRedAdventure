@@ -116,7 +116,7 @@
     ],
     "effect_chance": 50
   },
-  "Draining Kiss Voice": {
+  "Draining Kiss": {
     "power": 50,
     "accuracy": 100,
     "priority": 1,

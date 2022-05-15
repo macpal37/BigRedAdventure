@@ -1,0 +1,68 @@
+{
+  "sprites": [
+    {
+      "name": "active_party_creature.png",
+      "dpi": 3
+    },
+    {
+      "name": "battle_bot.png",
+      "dpi": 3
+    },
+    {
+      "name": "battle_top.png",
+      "dpi": 3
+    },
+    {
+      "name": "battle-bg1.png",
+      "dpi": 3
+    },
+    {
+      "name": "creature_menu.png",
+      "dpi": 3
+    },
+    {
+      "name": "decision_menu.png",
+      "dpi": 3
+    },
+    {
+      "name": "event_menu.png",
+      "dpi": 3
+    },
+    {
+      "name": "faint.png",
+      "dpi": 3
+    },
+    {
+      "name": "inventory_menu.png",
+      "dpi": 3
+    },
+    {
+      "name": "level_up.png",
+      "dpi": 3
+    },
+    {
+      "name": "moves_window.png",
+      "dpi": 3
+    },
+    {
+      "name": "nameholder.png",
+      "dpi": 3
+    },
+    {
+      "name": "opponent_hud.png",
+      "dpi": 3
+    },
+    {
+      "name": "party_menu.png",
+      "dpi": 3
+    },
+    {
+      "name": "party_minimenu.png",
+      "dpi": 3
+    },
+    {
+      "name": "player_hud.png",
+      "dpi": 3
+    }
+  ]
+}

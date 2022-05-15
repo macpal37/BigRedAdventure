@@ -50,22 +50,32 @@ let e_hud_stats : hud_stats pointer = null ()
 (*****************************************************************)
 
 (* let battle_bot = load_sprite "battle_bot" GUI_Folder 3 () *)
-let battle_right = load_sprite "battle_top" GUI_Folder 3 ()
-let moves_window = load_sprite "moves_window" GUI_Folder 3 ()
-let combat_hud = load_sprite "opponent_hud" GUI_Folder 3 ()
-let player_hud = load_sprite "player_hud" GUI_Folder 3 ()
-let battle_bg1 = load_sprite "battle-bg1" GUI_Folder 3 ()
-let level_up_screen = load_sprite "level_up" GUI_Folder 3 ()
+let battle_right = Util.null ()
+let moves_window = Util.null ()
+let combat_hud = Util.null ()
+let player_hud = Util.null ()
+let battle_bg1 = Util.null ()
+let level_up_screen = Util.null ()
+let ball_anim = Util.null ()
 
-(* WIll be improved next sprint *)
+let load_assets _ =
+  battle_right *= Sprite_assets.get_sprite2 "battle_top" GUI_Folder;
+  moves_window *= Sprite_assets.get_sprite2 "moves_window" GUI_Folder;
+  combat_hud *= Sprite_assets.get_sprite2 "opponent_hud" GUI_Folder;
+  player_hud *= Sprite_assets.get_sprite2 "player_hud" GUI_Folder;
+  battle_bg1 *= Sprite_assets.get_sprite2 "battle-bg1" GUI_Folder;
+  level_up_screen *= Sprite_assets.get_sprite2 "level_up" GUI_Folder;
+  ball_anim
+  *= Sprite_assets.get_spritesheet
+       "assets/item_sprites/pokeball_capture.png"
 
 (*****************************************************************)
 (***************     Combat Drawing Commands     *********************)
 (*****************************************************************)
 
-let draw_moves () =
-  clear_text moves_window ();
-  let moves = get_moves ~!bs.player_battler.creature in
+let draw_moves creature () =
+  clear_text ~!moves_window ();
+  let moves = get_moves creature in
   let size = Array.length moves in
   let box_w, box_h = (370, 92) in
   let box_x, box_y = (28, 200 - box_h) in
@@ -155,7 +165,7 @@ let draw_combat_commands () =
   let x, y = (465, 108) in
   let hdif = 80 in
   set_color text_color;
-  clear_text battle_right ();
+  clear_text ~!battle_right ();
   draw_string_colored x y 1 "FIGHT" white text_color ();
   draw_string_colored x (y - hdif) 1 "BAG" white text_color ();
   draw_string_colored (x + 175) y 1 "PARTY" white text_color ();
@@ -175,9 +185,9 @@ let draw_hud () =
     (~!bs.player_battler.creature, ~!bs.enemy_battler.creature)
   in
 
-  draw_combat_hud combat_hud (get_nickname opponent)
+  draw_combat_hud ~!combat_hud (get_nickname opponent)
     (get_level opponent) false ();
-  draw_combat_hud player_hud (get_nickname player) (get_level player)
+  draw_combat_hud ~!player_hud (get_nickname player) (get_level player)
     true ()
 
 let draw_level_up creature frame () =
@@ -193,15 +203,24 @@ let draw_level_up creature frame () =
     ]
   in
   if frame = 0 then begin
-    let old_stats = get_stats creature in
+    let s = get_stats creature in
+    let old_stats =
+      {
+        max_hp = s.max_hp;
+        attack = s.attack;
+        defense = s.defense;
+        sp_attack = s.sp_attack;
+        sp_defense = s.sp_defense;
+        speed = s.speed;
+      }
+    in
     level_up creature ();
     let new_stats = get_stats creature in
 
-    draw_sprite level_up_screen (width - 300) 210 ();
+    draw_sprite ~!level_up_screen (width - 300) 210 ();
     draw_string_colored x y 0
       ("Level " ^ string_of_int (get_level creature))
       white text_color ();
-
     for i = 0 to 5 do
       let s = List.nth stat_lst i in
 
@@ -219,15 +238,13 @@ let draw_level_up creature frame () =
       draw_string_colored (x2 + 80)
         (y - (dif * (i + 1)))
         0
-        ("+"
-        ^ string_of_intf (get_stat2 new_stats s -. get_stat2 old_stats s)
-        )
+        ("+" ^ string_of_intf (get_stat2 new_stats s))
         white text_color ()
     done
   end
   else if frame = 1 then begin
     let new_stats = get_stats creature in
-    draw_sprite level_up_screen (width - 300) 210 ();
+    draw_sprite ~!level_up_screen (width - 300) 210 ();
     draw_string_colored x y 0
       ("Level " ^ string_of_int (get_level creature))
       white text_color ();
@@ -249,7 +266,7 @@ let draw_level_up creature frame () =
   end
 
 let refresh_battle state () =
-  Ui.add_last_background (draw_sprite battle_bg1 0 (-3));
+  Ui.add_last_background (draw_sprite ~!battle_bg1 0 (-3));
 
   (* Draws the ally and enemy creature *)
   (match state with
@@ -282,7 +299,7 @@ let refresh_battle state () =
   Ui.add_last_foreground
     (match !combat_mode with
     | Commands -> draw_combat_commands
-    | Moves -> draw_moves
+    | Moves -> draw_moves ~!bs.player_battler.creature
     | Attack -> clear_text battle_bot
     | _ -> clear_text battle_bot)
 
@@ -301,6 +318,92 @@ let animate_health_bar_combat max bef aft player () =
   animate_health_bar max bef aft xh yh hwidth hheight player
     (refresh_battle 2)
 
+let moves_ptr = Util.new_point ()
+
+let draw_replace_moves creature () =
+  let x, y, dif = (width - 300 + 30, 200 + 250, 40) in
+  draw_sprite ~!level_up_screen (width - 300) 210 ();
+  draw_string_colored x y 0 "Moves " white text_color ();
+
+  draw_string_colored x
+    (y - (dif * (moves_ptr.y + 1)))
+    0 ">" white text_color ();
+  for i = 0 to 3 do
+    let m = !!(get_move_i creature i) in
+
+    draw_string_colored (x + 30)
+      (y - (dif * (i + 1)))
+      0 m.move_name white text_color ()
+  done
+
+let handle_learn_move creature =
+  let x = try Some (level_up_move creature) with Not_found -> None in
+
+  for i = 0 to 3 do
+    match get_move_i creature i with
+    | Some m -> print_endline ("Move: " ^ m.move_name)
+    | None -> print_endline "-NONE-"
+  done;
+
+  match x with
+  | Some m ->
+      if num_moves creature < 4 then begin
+        Animation.display_text_box
+          (get_nickname creature ^ " learned " ^ m.move_name ^ "!")
+          false (refresh_battle 2) ();
+        add_move creature m
+      end
+      else begin
+        Animation.display_text_box
+          (get_nickname creature ^ " wants to learn " ^ m.move_name
+         ^ ". But " ^ get_nickname creature ^ " already knows 4 moves!"
+          )
+          false (refresh_battle 2) ();
+
+        Animation.display_text_box
+          ("Which move should " ^ get_nickname creature ^ " forget?")
+          true (refresh_battle 2) ();
+
+        let rec learn_move_event () =
+          Input.sleep Draw.tick_rate ();
+          let key =
+            match Input.pop_key_option () with
+            | Some c -> get_ctrl_key c
+            | None -> NoKey
+          in
+
+          if key = Up then
+            if moves_ptr.y > 0 then moves_ptr.y <- moves_ptr.y - 1;
+          if key = Down then
+            if moves_ptr.y < 3 then moves_ptr.y <- moves_ptr.y + 1;
+
+          refresh_battle 2 ();
+          Ui.add_last_foreground (draw_replace_moves creature);
+          Ui.update_all ();
+
+          if key = Action || key = Back then
+            match key with
+            | Action ->
+                Animation.display_text_box "1, 2, and ... Poof!" false
+                  (refresh_battle 2) ();
+                Animation.display_text_box
+                  (get_nickname creature ^ " forgot "
+                 ^ !!(get_move_i creature moves_ptr.y).move_name
+                 ^ " and learned " ^ m.move_name ^ "!")
+                  false (refresh_battle 2) ();
+                add_move_i creature m moves_ptr.y
+            | Back ->
+                Animation.display_text_box
+                  (get_nickname creature ^ " did not learn "
+                 ^ m.move_name ^ ".")
+                  false (refresh_battle 2) ()
+            | _ -> ()
+          else learn_move_event ()
+        in
+        learn_move_event ()
+      end
+  | None -> print_endline "Sad:("
+
 let handle_exp player_creature enemy_creature () =
   let exp_gain =
     get_exp_gain enemy_creature
@@ -311,7 +414,7 @@ let handle_exp player_creature enemy_creature () =
                ~!bs.creatures_switched))
   in
 
-  let exp_event target player =
+  let exp_event target mc =
     if get_status target <> Fainted then begin
       let curr_level = get_level target in
       let exp_list = add_exp target exp_gain in
@@ -326,12 +429,13 @@ let handle_exp player_creature enemy_creature () =
             (* let max, bef, aft, lvl = h in *)
             let max, bef, aft, lvl = h in
 
-            if player then ();
-            animate_exp_bar_combat max bef aft ();
-            ~!p_hud_stats.curr_exp <- aft;
+            if mc then begin
+              animate_exp_bar_combat max bef aft ();
+              ~!p_hud_stats.curr_exp <- aft;
+              ~!p_hud_stats.max_exp <- max
+            end;
 
             if level <> lvl then begin
-              level_up target ();
               Animation.display_text_box
                 (get_nickname target ^ " grew to level "
                ^ string_of_int lvl ^ "!")
@@ -344,7 +448,8 @@ let handle_exp player_creature enemy_creature () =
               refresh_battle 2 ();
               Ui.add_last_foreground (draw_level_up target 1);
               Ui.update_all ();
-              wait (-1) ()
+              wait (-1) ();
+              handle_learn_move target
             end;
             level_up_handler lvl t
       in
@@ -400,7 +505,8 @@ let handle_combat move =
               (refresh_battle 2)
           else if stages < 0 then
             animate_lower_stat_effect sprite is_player
-              (refresh_battle 2)
+              (refresh_battle 2);
+          display_text_box text true (refresh_battle 2) ()
       | Switch _ -> ()
       | Fainted ->
           affected.active <- false;
@@ -411,19 +517,11 @@ let handle_combat move =
     (***============= Resolution =============***)
     if ~!bs.enemy_battler.active = false then (
       combat_mode := End_Battle;
-
-      (* (TODO: Faint Animation) *)
-      (* Ui.add_last_gameplay (animate_faint (get_front_sprite enemy)
-         false); *)
       ~!bs.enemy_battler.active <- false;
       Ui.add_last_gameplay (Input.sleep 0.5);
 
-      handle_exp player enemy ();
-      Ui.update_all ());
+      handle_exp player enemy ());
     if ~!bs.player_battler.active = false then combat_mode := Attack
-    (* (TODO: Faint Animation) *)
-    (* Ui.add_last_gameplay (animate_faint (get_back_sprite player)
-       true) *)
   end
 
 let handle_item item () =
@@ -445,31 +543,37 @@ let handle_item item () =
         | _ -> 1.0
       in
 
-      let _ = Combat.capture ~!bs modifier in
-      Ui.update_all ();
-      (* Ui.add_last_gameplay (Animation.capture_animation
-         pokeball_spritesheet (get_front_sprite
-         ~!bs.enemy_battler.creature) catch_results ball_type
-         (!Combat.refresh_battle (get_current_hp
-         ~!bs.player_battler.creature) (get_current_hp
-         ~!bs.enemy_battler.creature))); *)
-      Ui.update_all ();
+      let catch_results = Combat.capture ~!bs modifier in
+
+      Animation.animate_capture ~!ball_anim
+        (get_front_sprite ~!bs.enemy_battler.creature)
+        catch_results ball_type (refresh_battle 0);
+
       if ~!bs.battle_status = Catch then begin
         display_text_box
           ("You captured "
           ^ get_nickname ~!bs.enemy_battler.creature
           ^ "!")
-          false (refresh_battle 0) ();
+          false
+          (fun () ->
+            refresh_battle 0 ();
+            Ui.add_last_gameplay
+              (draw_sprite
+                 (Spritesheet.get_sprite ~!ball_anim
+                    (((5 + 27) * (~!ball_anim.columns - 1)) + ball_type))
+                 540 396))
+          ();
+        ~!bs.enemy_battler.active <- false;
+
         handle_exp ~!bs.player_battler.creature
           ~!bs.enemy_battler.creature ();
-        ~!bs.enemy_battler.active <- false;
+
         captured_creature *= ~!bs.enemy_battler.creature;
 
         combat_mode := End_Battle
       end
       else
         display_text_box "Aw... So close!" false (refresh_battle 2) ();
-      Ui.update_all ();
       true
   | Item.Key -> false
 
@@ -484,14 +588,29 @@ let handle_item item () =
    (draw_creature_exp ~!bs.player_battler.creature false);
    Ui.add_first_foreground draw_combat_commands *)
 
+let switch_creatures a b player =
+  let sprite_a, sprite_b =
+    if player then (get_back_sprite a, get_back_sprite b)
+    else (get_front_sprite a, get_front_sprite b)
+  in
+  let name_a, name_b = (get_nickname a, get_nickname b) in
+
+  display_text_box
+    ("Come back " ^ name_a ^ "!")
+    true (refresh_battle 2) ();
+  animate_switch_out sprite_a player (refresh_battle 1);
+
+  display_text_box ("Go " ^ name_b ^ "!") true (refresh_battle 1) ();
+  update_player p_hud_stats b;
+  animate_switch_in sprite_b player (refresh_battle 1)
+
 let handle_party () =
   Party_menu.init BattleSwitch ();
   match !Combat.switching_pending with
   | Some c ->
       combat_mode := Attack;
       let b = ~!bs.player_battler.creature in
-      animate_switch (get_back_sprite b) (get_back_sprite c) true
-        (get_nickname b) (get_nickname c) (refresh_battle 1);
+      switch_creatures b c true;
       Combat.switch_player ~!bs c (Player.party (State.player ()));
       Combat.switching_pending := None;
       handle_combat None;
@@ -508,6 +627,7 @@ let rec handle_inventory () =
       let valid_item = handle_item i () in
       if valid_item then begin
         Inventory.consume_item (Player.inventory (State.player ())) i;
+        update_player p_hud_stats ~!bs.player_battler.creature;
         handle_combat None
       end
       else handle_inventory ()
@@ -550,32 +670,6 @@ let rec run_tick () =
   Input.sleep Draw.tick_rate ();
   let key =
     match Input.pop_key_option () with
-    | Some Sdlkeycode.F ->
-        display_text_box
-          "Hey guys, did you know that in terms of male human and \
-           female Pokémon breeding, Vaporeon is the most compatible \
-           Pokémon for humans? Not only are they in the field egg \
-           group, which is mostly comprised of mammals, Vaporeon are \
-           an average of 3”03’ tall and 63.9 pounds, this means \
-           they’re large enough to be able handle human dicks, and \
-           with their impressive Base Stats for HP and access to Acid \
-           Armor, you can be rough with one. Due to their mostly water \
-           based biology, there’s no doubt in my mind that an aroused \
-           Vaporeon would be incredibly wet, so wet that you could \
-           easily have sex with one for hours without getting sore. \
-           They can also learn the moves Attract, Baby-Doll Eyes, \
-           Captivate, Charm, and Tail Whip, along with not having fur \
-           to hide nipples, so it’d be incredibly easy for one to get \
-           you in the mood. With their abilities Water Absorb and \
-           Hydration, they can easily recover from fatigue with enough \
-           water. No other Pokémon comes close to this level of \
-           compatibility. Also, fun fact, if you pull out enough, you \
-           can make your Vaporeon turn white. Vaporeon is literally \
-           built for human dick. Ungodly defense stat+high HP \
-           pool+Acid Armor means it can take cock all day, all shapes \
-           and sizes and still come for more"
-          false (refresh_battle 2) ();
-        NoKey
     | Some c -> get_ctrl_key c
     | None -> NoKey
   in
@@ -616,16 +710,15 @@ let rec run_tick () =
         | Party -> handle_party ()
         | Run ->
             Combat.run_away ~!bs;
-            if ~!bs.battle_status = Combat.Flee then begin
+            combat_mode := End_Battle;
+            if ~!bs.battle_status = Combat.Flee then
               Animation.display_text_box "You ran away!" false
-                (refresh_battle 2) ();
-
-              combat_mode := End_Battle
-            end
+                (refresh_battle 2) ()
             else begin
+              combat_mode := Attack;
               Animation.display_text_box "You could not run away!" false
                 (refresh_battle 2) ();
-              Ui.update_all ();
+
               handle_combat None
             end)
   | Moves ->
@@ -644,8 +737,7 @@ let rec run_tick () =
         Party_menu.init FaintedSwitch ();
         match !Combat.switching_pending with
         | Some c ->
-            animate_switch (get_back_sprite b) (get_back_sprite c) true
-              (get_nickname b) (get_nickname c) (refresh_battle 1);
+            switch_creatures b c true;
             Combat.switch_player ~!bs c (Player.party (State.player ()));
             combat_mode := Commands;
             Combat.switching_pending := None;
@@ -662,7 +754,8 @@ let rec run_tick () =
       | None -> ()
       | Some c ->
           Event_menu.init_capture c ();
-          Player.add_creature c (State.player ()));
+          Player.add_creature c (State.player ());
+          captured_creature := None);
       combat_mode := Exit;
       wait 240 ()
   | Exit -> ());

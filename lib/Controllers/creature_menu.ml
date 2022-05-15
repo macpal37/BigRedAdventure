@@ -3,13 +3,19 @@ open Creature
 open Animation
 open DrawText
 open Input
+open Util
 
-let creature_menu_bg = load_sprite "creature_menu" GUI_Folder 3 ()
+let creature_menu_bg = Util.null ()
 let menu_position = Util.new_point ()
 let party_position = Util.new_point ()
-let current_creature = ref (create_creature "clefairy" 100)
+let current_creature = ref null_creature
 let switch_position = Util.new_point ()
-let faint = load_sprite "faint" GUI_Folder 3 ()
+let faint = Util.null ()
+
+let load_assets _ =
+  creature_menu_bg
+  *= Sprite_assets.get_sprite2 "creature_menu" GUI_Folder;
+  faint *= Sprite_assets.get_sprite2 "faint" GUI_Folder
 
 let move_x x () =
   if switch_position.x = -1 then begin
@@ -30,7 +36,7 @@ let move_y y () =
 let draw_status status () =
   let x, y = (56 - 20, 192 - 30) in
   match status with
-  | Fainted -> draw_sprite faint x y ()
+  | Fainted -> draw_sprite ~!faint x y ()
   | _ -> ()
 
 let draw_stats () =
@@ -120,7 +126,7 @@ let draw_moves () =
 let refresh () =
   Ui.add_first_foreground
     (draw_string_colored 24 605 1 "SUMMARY" (rgb 255 170 40) white);
-  Ui.add_last_background (draw_sprite creature_menu_bg 0 (-3));
+  Ui.add_last_background (draw_sprite ~!creature_menu_bg 0 (-3));
   Ui.add_first_gameplay
     (draw_sprite (get_front_sprite !current_creature) 9 318);
   Ui.add_first_gameplay
@@ -141,27 +147,42 @@ let refresh () =
     (draw_exp_bar (max_exp -. min_exp) (curr_exp -. min_exp) 20 128 210
        8);
   Ui.add_first_gameplay
-    (draw_string_colored 20 104 0
+    (draw_string_colored 20 (104 - 21) 0
        (Util.string_of_intf (curr_exp -. min_exp)
        ^ "/"
        ^ Util.string_of_intf (max_exp -. min_exp))
        white text_color);
 
   let type1, type2 = get_types !current_creature in
-  let type_str =
-    string_of_etype type1
-    ^ if type2 = NoType then "" else "/" ^ string_of_etype type2
-  in
 
   Ui.add_first_gameplay
-    (draw_string_colored 20 (132 - 56) 0 ("TYPE: " ^ type_str) white
+    (draw_string_colored 20 (132 - 56 - 21) 0 "TYPE: " white text_color);
+
+  let type_str =
+    string_of_etype type1 ^ if type2 = NoType then "" else "/"
+  in
+  Ui.add_first_gameplay
+    (draw_string_colored (20 + 96)
+       (132 - 56 - 21)
+       0 type_str
+       (Creature.get_color_from_etype type1)
        text_color);
+  draw_stats ();
+
+  if type2 <> NoType then
+    Ui.add_first_gameplay
+      (draw_string_colored (20 + 96)
+         (102 - 56 - 21)
+         0 (string_of_etype type2)
+         (Creature.get_color_from_etype type2)
+         text_color);
   draw_stats ();
 
   let nature, _, _ = get_nature !current_creature in
   Ui.add_first_gameplay
-    (draw_string_colored 20 (102 - 56) 0 ("NATURE: " ^ nature) white
-       text_color);
+    (draw_string_colored 20
+       (72 - 56 - 21)
+       0 ("NATURE: " ^ nature) white text_color);
   draw_stats ();
   (* Ui.add_first_gameplay (draw_string_colored 20 100 1 24 type_str
      white); *)

@@ -53,7 +53,7 @@ val present : unit -> unit
 val rgb : int -> int -> int -> color
 (** mirrors Graphics.rgb*)
 
-val set_draw_color : int -> int -> int -> unit
+val set_draw_color : ?a:int -> int -> int -> int -> unit
 val set_color : color -> unit
 
 val fill_rect : int -> int -> int -> int -> unit
@@ -91,6 +91,8 @@ val wait : int -> unit -> unit
 
 (** {1 Loading Sprites}*)
 
+val sprite_path : string -> folder -> string
+
 val load_creature : string -> unit -> sprite
 (** [load_creature name ()] Creates a sprite from the given [name.png]
     file from the creature_sprites folder.*)
@@ -112,6 +114,10 @@ val draw_pixel : int -> int -> int -> unit -> unit
 val draw_sprite : sprite -> int -> int -> unit -> unit
 (** [draw_creature_pos sprite x y (_)] draws the [sprite] at the given
     position [x] [y] *)
+
+val draw_sprite_centered : sprite -> int -> int -> unit -> unit
+(** [draw_creature_pos sprite x y (_)] draws the [sprite] centered at
+    [x] [y] *)
 
 val draw_creature : sprite -> bool -> unit -> unit
 (** [draw_creature_pos sprite is_player (_)] draws the [sprite] at

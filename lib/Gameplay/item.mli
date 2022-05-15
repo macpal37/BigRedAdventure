@@ -21,7 +21,7 @@ val string_of_item_type : item_type -> string
 (** [string_of_item_type item_type] returns the string representation of
     the item_type*)
 
-val create_item : string -> item
+val create_item : string -> Yojson.Basic.t -> item
 
 val new_item : string -> item_type -> int -> string -> int -> item
 (** [new_item s t i] is an item with name [s], class [t], id [i]*)

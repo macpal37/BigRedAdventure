@@ -8,6 +8,7 @@ type font = {
 }
 
 val box_cap : int
+val text_display : string ref
 val battle_bot : sprite
 val set_text_display : string -> unit
 

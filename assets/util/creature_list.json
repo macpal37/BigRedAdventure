@@ -24,142 +24,6 @@
     },
     "learnset": []
   },
-  "clefa": {
-    "name": "Clefa",
-    "poke_id": 10,
-    "catch_rate": 150,
-    "base_exp": 44,
-    "level_rate": "Fast",
-    "type1": "Fairy",
-    "type2": "None",
-    "base_stats": {
-      "hp": 50,
-      "attack": 25,
-      "defense": 28,
-      "sp_attack": 45,
-      "sp_defense": 55,
-      "speed": 15
-    },
-    "ev_stat": "hp",
-    "ev_amount": 1,
-    "evolution": {
-      "name": "Clefairy",
-      "poke_id": 11,
-      "level_up": 12
-    },
-    "learnset": [
-      {
-        "move": "Pound",
-        "move_id": 1,
-        "level": 1,
-        "max_pp": 20
-      },
-      {
-        "move": "Growl",
-        "move_id": 2,
-        "level": 3,
-        "max_pp": 20
-      },
-      {
-        "move": "Disarming Voice",
-        "move_id": 3,
-        "level": 6,
-        "max_pp": 20
-      }
-    ]
-  },
-  "clefairy": {
-    "name": "Clefairy",
-    "poke_id": 11,
-    "catch_rate": 150,
-    "base_exp": 113,
-    "level_rate": "Fast",
-    "type1": "Fairy",
-    "type2": "None",
-    "base_stats": {
-      "hp": 70,
-      "attack": 45,
-      "defense": 48,
-      "sp_attack": 60,
-      "sp_defense": 65,
-      "speed": 35
-    },
-    "ev_stat": "hp",
-    "ev_amount": 2,
-    "evolution": {
-      "name": "Clefable",
-      "poke_id": 12,
-      "level_up": 35
-    },
-    "learnset": [
-      {
-        "move": "Pound",
-        "level": 1
-      },
-      {
-        "move": "Growl",
-        "level": 3
-      },
-      {
-        "move": "Disarming Voice",
-        "level": 6
-      },
-      {
-        "move": "Flamethrower",
-        "level": 35
-      }
-    ]
-  },
-  "clefable": {
-    "name": "Clefable",
-    "poke_id": 12,
-    "catch_rate": 25,
-    "base_exp": 217,
-    "level_rate": "Fast",
-    "type1": "Fairy",
-    "type2": "None",
-    "base_stats": {
-      "hp": 95,
-      "attack": 70,
-      "defense": 73,
-      "sp_attack": 95,
-      "sp_defense": 90,
-      "speed": 60
-    },
-    "ev_stat": "hp",
-    "ev_amount": 3,
-    "evolution": {
-      "name": "None",
-      "poke_id": 0,
-      "level_up": -1
-    },
-    "learnset": [
-      {
-        "move": "Pound",
-        "move_id": 1,
-        "level": 1,
-        "max_pp": 20
-      },
-      {
-        "move": "Growl",
-        "move_id": 2,
-        "level": 3,
-        "max_pp": 20
-      },
-      {
-        "move": "Disarming Voice",
-        "move_id": 3,
-        "level": 6,
-        "max_pp": 20
-      },
-      {
-        "move": "Meteor Mash",
-        "move_id": 4,
-        "level": 20,
-        "max_pp": 20
-      }
-    ]
-  },
   "rafu": {
     "name": "Rafu",
     "poke_id": 13,
@@ -203,37 +67,6 @@
       {
         "move": "Mystical Power",
         "level": 15
-      }
-    ]
-  },
-  "rayquaza": {
-    "name": "Rayquaza",
-    "poke_id": 151,
-    "catch_rate": 45,
-    "base_exp": 206,
-    "level_rate": "Slow",
-    "type1": "Dragon",
-    "type2": "Flying",
-    "base_stats": {
-      "hp": 105,
-      "attack": 150,
-      "defense": 90,
-      "sp_attack": 150,
-      "sp_defense": 90,
-      "speed": 95
-    },
-    "ev_stat": "sp_attack",
-    "ev_amount": 1,
-    "evolution": {
-      "name": "None",
-      "poke_id": -1,
-      "level_up": -1
-    },
-    "learnset": [
-      {
-        "move": "Air Slash",
-        "move_id": 4,
-        "level": 1
       }
     ]
   },
@@ -360,6 +193,10 @@
       {
         "move": "Bite",
         "level": 10
+      },
+      {
+        "move": "Flamethrower",
+        "level": 11
       }
     ]
   },
