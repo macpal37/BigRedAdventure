@@ -15,7 +15,6 @@ type encounters = encounter list
 
 type tile_type =
   | Path
-  | Grass of encounters
   | Obstacle
 
 type tile = {
@@ -46,11 +45,6 @@ let encounter_of_json json =
     rate = json_val json to_float "encounter_rate";
     levels = json_val json to_string "level_range" |> string_to_range;
   }
-(* let encounters_of_json json = json |> to_list |> List.map
-   encounter_of_json *)
-
-(* let all_encounters_of_json json = json_list json encounters_of_json
-   "encounters" |> Array.of_list *)
 
 let encounters =
   let json = Yojson.Basic.from_file "assets/util/encounters.json" in
@@ -61,26 +55,9 @@ let encounters =
   |> List.map (fun j -> j |> to_list |> List.map encounter_of_json)
 
 let encounter_of_id = Util.list_index_fun encounters
-(* let sprites_of_json json = json_list json to_string "tile_sprites" |>
-   Array.of_list *)
-(* let list_to_tile_type encounters (s : string) = let type_code =
-   String.get s 0 in if type_code = 'p' then Path else if type_code =
-   'o' then Obstacle else Grass (String.sub s 1 (String.length s - 1) |>
-   int_of_string |> Array.get encounters) *)
-(* let code_to_tile graphics encounters (s : string) = match
-   String.split_on_char '|' s with | [ h; t ] -> { graphic =
-   int_of_string t |> Array.get graphics; ttype = list_to_tile_type
-   encounters h; } | _ -> raise (Malformed_Json "Invalid map tile") *)
-
 let ll_to_matrix ll = Array.of_list (List.map Array.of_list ll)
 let matrix_map f m = Array.(map (map f) m)
-(* let matrix_process f m = for i = 0 to Array.length m - 1 do let sub_m
-   = Array.get m i in for j = 0 to Array.length sub_m - 1 do let e =
-   Array.get sub_m j in Array.set sub_m j (f e) done done *)
-
 let matrix_get i j m = Array.get (Array.get m i) j
-(* let codes_of_json json = json |> to_string |> String.split_on_char
-   ',' *)
 
 let read_dim json =
   (json |> member "width" |> to_int, json |> member "height" |> to_int)
