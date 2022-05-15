@@ -7,18 +7,56 @@ type font = {
   vspacing : int;
 }
 
-let f1 = init_spritesheet "assets/gui_sprites/text-font.png" 20 36 1
-let f2 = init_spritesheet "assets/gui_sprites/text-font.png" 20 36 2
+let f1 =
+  {
+    font_sprite =
+      init_spritesheet "assets/gui_sprites/text-font-small.png" 18 32 1;
+    hspacing = 14;
+    vspacing = 32;
+  }
+
+let f2 =
+  {
+    font_sprite =
+      init_spritesheet "assets/gui_sprites/text-font-medium.png" 20 40 1;
+    hspacing = 16;
+    vspacing = 40;
+  }
+
+let f3 =
+  {
+    font_sprite =
+      init_spritesheet "assets/gui_sprites/text-font-large.png" 32 64 1;
+    hspacing = 28;
+    vspacing = 64;
+  }
+
+let f4 =
+  {
+    font_sprite =
+      init_spritesheet "assets/gui_sprites/text-font-medium.png" 20 40 2;
+    hspacing = 30;
+    vspacing = 80;
+  }
+
+type font_size =
+  | Small
+  | Medium
+  | Large
+  | Huge
 
 let get_font i =
   match i with
-  | 0 -> f1
-  | 1 -> f2
-  | _ -> f1
+  | Small -> f1
+  | Medium -> f2
+  | Large -> f3
+  | Huge -> f4
+(* let get_font i = match i with | 0 -> f2 | 1 -> f4 | 2 -> f3 | 3 -> f1
+   | _ -> f2 *)
 
 (* let font = Util.malloc f1 *)
 
-let spacing = 16
+(* let spacing = 16 *)
 let draw_pt = Util.new_point ()
 let battle_bot = load_sprite "battle_bot" GUI_Folder 3 ()
 
@@ -27,12 +65,12 @@ let draw_char c font () =
   let x, y = (draw_pt.x, draw_pt.y) in
   draw_sprite (Spritesheet.get_sprite font v) x y ()
 
-let draw_string x y font (t : string) () =
+let draw_string x y (font : font) (t : string) () =
   draw_pt.x <- x;
   draw_pt.y <- y;
   for i = 0 to String.length t - 1 do
-    draw_char t.[i] font ();
-    draw_pt.x <- draw_pt.x + spacing
+    draw_char t.[i] font.font_sprite ();
+    draw_pt.x <- draw_pt.x + font.hspacing
   done
 
 let moveto x y =
@@ -45,8 +83,8 @@ let moveto x y =
 let draw_string_colored x y f_size text cust_c shdw_c () =
   let font = get_font f_size in
   moveto x y;
-  set_text_color font 1 shdw_c;
-  set_text_color font 0 cust_c;
+  set_text_color font.font_sprite 1 shdw_c;
+  set_text_color font.font_sprite 0 cust_c;
   draw_string x y font text ()
 
 let get_text_transcript (t : string) (cc : int) : string list =
@@ -64,10 +102,12 @@ let get_text_transcript (t : string) (cc : int) : string list =
 
 let draw_text_string_pos x y f_size char_cap (text : string) () =
   let font = get_font f_size in
-  set_text_color font 0 white;
+  set_text_color font.font_sprite 0 white;
   let transcript = get_text_transcript text char_cap in
   for i = 0 to List.length transcript - 1 do
-    draw_string x (y - (40 * i)) font (List.nth transcript i) ()
+    draw_string x
+      (y - (font.vspacing * i))
+      font (List.nth transcript i) ()
   done
 
 let text_display = ref ""
@@ -78,4 +118,4 @@ let clear_text clear_sprite () =
   let sx = 46 in
   let sy = 128 in
   draw_sprite clear_sprite 3 0 ();
-  draw_text_string_pos sx sy 0 box_cap !text_display ()
+  draw_text_string_pos sx sy Medium box_cap !text_display ()

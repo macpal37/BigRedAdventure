@@ -66,7 +66,7 @@ let animate_text_box (t : string) (anim : animation) () : unit =
   let sx = 46 in
   let sy = 128 in
   let t' = String.sub t 0 frame in
-  Ui.add_last_foreground (draw_text_string_pos sx sy 0 box_cap t');
+  Ui.add_last_foreground (draw_text_string_pos sx sy Medium box_cap t');
   anim.finished <- frame >= String.length t
 
 let display_text_box
@@ -115,7 +115,7 @@ let draw_hp_val x y (curr : float) (max : float) player () =
     let combat_bg = white in
     set_color combat_bg;
     fill_rect (current_x () - 2) (current_y () - 4) 100 24;
-    (DrawText.draw_string_colored x (y - 8) 0
+    (DrawText.draw_string_colored x (y - 8) Small
        (hp_to_string curr ^ "/" ^ hp_to_string max)
        white text_color)
       ()
@@ -141,7 +141,7 @@ let draw_health_bar
   draw_rect xh yh hwidth hheight;
   if hp_text && !show_hp_val then
     draw_hp_val
-      (xh + (hwidth / 2))
+      (xh + (hwidth / 2) - 10)
       (yh - hheight - 5 - 22)
       curr max hp_text ();
   set_color blank;
@@ -325,6 +325,56 @@ let raise_stat_effect sprite player (anim : animation) () =
 let animate_raise_stat_effect sprite player (refresh_func : draw_func) =
   run_animation
     (make_animation refresh_func (raise_stat_effect sprite player) 0)
+
+let burn_effect sprite player (anim : animation) () =
+  let frame = anim.frame in
+  if anim.frame = 0 then make_grayscale sprite ();
+  (match frame with
+  | 0 ->
+      run_animation
+        (make_animation anim.refresh_func
+           (animate_effect sprite player 252 78 30 16)
+           0);
+      run_animation
+        (make_animation anim.refresh_func
+           (animate_effect sprite player (-50) (-78) (-30) 16)
+           0)
+  | 1 ->
+      Ui.add_first_gameplay (fun () ->
+          reset_rgb sprite ();
+          draw_creature sprite player ())
+  | _ -> ());
+  anim.finished <- frame >= 1
+
+let poison_effect sprite player (anim : animation) () =
+  let frame = anim.frame in
+  if anim.frame = 0 then make_grayscale sprite ();
+  (match frame with
+  | 0 ->
+      run_animation
+        (make_animation anim.refresh_func
+           (animate_effect sprite player 185 30 252 16)
+           0);
+      run_animation
+        (make_animation anim.refresh_func
+           (animate_effect sprite player (-100) (-30) (-50) 16)
+           0)
+  | 1 ->
+      Ui.add_first_gameplay (fun () ->
+          reset_rgb sprite ();
+          draw_creature sprite player ())
+  | _ -> ());
+  anim.finished <- frame >= 1
+
+let animate_status sprite player status (refresh_func : draw_func) =
+  match status with
+  | Creature.Burn ->
+      run_animation
+        (make_animation refresh_func (burn_effect sprite player) 0)
+  | Poison _ ->
+      run_animation
+        (make_animation refresh_func (poison_effect sprite player) 0)
+  | _ -> ()
 
 let switch_in
     (switching_in : sprite)

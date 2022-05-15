@@ -179,7 +179,7 @@ type creature = {
   shiny : bool;
 }
 
-let empty_stats =
+let empty_stats () =
   {
     max_hp = 0.;
     attack = 0.;
@@ -300,7 +300,6 @@ let string_of_etype etype_var =
 (**=============== JSON Parsing ============**)
 let parse_learn_set json =
   let name = json |> member "move" |> to_string in
-  print_endline ("MOVE: " ^ name);
 
   (json |> member "level" |> to_int, create_move name)
 
@@ -486,7 +485,7 @@ let create_creature_mod n (level : int) normal shiny =
   let ivs = generate_ivs () in
   let random_nature = generate_nature (rand 25 ()) in
   let curr_stats =
-    calculate_stats level bstats ivs empty_stats random_nature
+    calculate_stats level bstats ivs (empty_stats ()) random_nature
   in
   let lev_rate = level_rate_from_json json in
   let learnset =
@@ -510,7 +509,7 @@ let create_creature_mod n (level : int) normal shiny =
     base_stats = bstats;
     current_stats = curr_stats;
     iv_stats = ivs;
-    ev_stats = empty_stats;
+    ev_stats = empty_stats ();
     current_status = Healthy;
     etypes = (etype_from_json json 1, etype_from_json json 2);
     leveling_rate = lev_rate;

@@ -16,12 +16,14 @@ let minimenu_position = Util.new_point ()
 let current_item = null ()
 let set_current_item i = current_item := Some i
 let get_current_item = !current_item
+let move_menu = null ()
 
 let load_assets _ =
   party_menu_bg *= Sprite_assets.get_sprite2 "party_menu" GUI_Folder;
   active *= Sprite_assets.get_sprite2 "active_party_creature" GUI_Folder;
   minimenu1 *= Sprite_assets.get_sprite2 "party_minimenu" GUI_Folder;
-  faint *= Sprite_assets.get_sprite2 "faint" GUI_Folder
+  faint *= Sprite_assets.get_sprite2 "faint" GUI_Folder;
+  move_menu *= Sprite_assets.get_sprite2 "level_up" GUI_Folder
 
 type combat_mode =
   | OverworldMode
@@ -84,15 +86,15 @@ let draw_menu lead_creature () =
   Ui.add_first_background (draw_sprite ~!party_menu_bg 0 (-3));
 
   Ui.add_first_foreground
-    (draw_string_colored 24 605 1 "PARTY" (rgb 255 170 40) white);
+    (draw_string_colored 18 590 Huge "PARTY" (rgb 255 170 40) white);
   Ui.add_first_gameplay
     (draw_sprite (get_front_sprite lead_creature) 9 318);
   Ui.add_first_gameplay
-    (draw_string_colored 20 246 0
+    (draw_string_colored 20 246 Medium
        (get_nickname lead_creature)
        white text_color);
   Ui.add_first_gameplay
-    (draw_string_colored 20 220 0
+    (draw_string_colored 20 220 Small
        ("LVL: " ^ string_of_int (get_level lead_creature))
        white text_color);
   let max, curr = get_hp_status lead_creature in
@@ -110,10 +112,10 @@ let draw_creature_status creature pos () =
        (x + 11) (y + 11));
   Ui.add_first_background (draw_sprite ~!active x y);
   Ui.add_first_gameplay
-    (draw_string_colored xx (yy + 26) 0 (get_nickname creature) white
-       text_color);
+    (draw_string_colored xx (yy + 20) Medium (get_nickname creature)
+       white text_color);
   Ui.add_first_gameplay
-    (draw_string_colored xx yy 0
+    (draw_string_colored xx (yy - 6) Small
        ("LVL: " ^ string_of_int (get_level creature))
        white text_color);
   let max, curr = get_hp_status creature in
@@ -158,8 +160,57 @@ let refresh () =
   draw_menu (Player.party_i (State.player ()) 0) ();
   if !battle_mode <> InventoryMode then
     Ui.add_first_foreground
-      (draw_string_colored 40 36 1 "Choose a CREATURE" text_color2
+      (draw_string_colored 36 32 Large "Choose a CREATURE" text_color2
          text_color)
+
+let moves_ptr = Util.new_point ()
+
+let draw_replace_moves creature () =
+  let x, y, dif = (width - 300 + 30, 200 + 250, 40) in
+  draw_sprite ~!move_menu (width - 300) 210 ();
+  draw_string_colored x y Medium "Moves " white text_color ();
+
+  draw_string_colored x
+    (y - (dif * (moves_ptr.y + 1)))
+    Medium ">" white text_color ();
+  for i = 0 to 3 do
+    match get_move_i creature i with
+    | Some m ->
+        draw_string_colored (x + 30)
+          (y - (dif * (i + 1)))
+          Medium m.move_name white text_color ()
+    | None ->
+        draw_string_colored (x + 30)
+          (y - (dif * (i + 1)))
+          Medium "---------------" white text_color ()
+  done
+
+let choose_move creature =
+  let rec learn_move_event () =
+    Input.sleep Draw.tick_rate ();
+    let key =
+      match Input.pop_key_option () with
+      | Some c -> get_ctrl_key c
+      | None -> NoKey
+    in
+
+    if key = Up then
+      if moves_ptr.y > 0 then moves_ptr.y <- moves_ptr.y - 1;
+    if key = Down then
+      if moves_ptr.y < 3 then moves_ptr.y <- moves_ptr.y + 1;
+
+    refresh ();
+    Ui.add_last_foreground (draw_replace_moves creature);
+    Ui.update_all ();
+
+    if key = Action || key = Back then
+      match key with
+      | Action -> get_move_i creature moves_ptr.y
+      | Back -> None
+      | _ -> None
+    else learn_move_event ()
+  in
+  learn_move_event ()
 
 let use_item creature item =
   print_endline "Hello?";
@@ -170,29 +221,43 @@ let use_item creature item =
     | 2 -> Creature.add_hp creature 50.
     | 3 -> Creature.add_hp creature 120.
     | 4 -> Creature.add_hp creature (get_stat creature HP)
+    | 5 -> (
+        match choose_move creature with
+        | Some m -> add_pp creature m.move_name 10
+        | None -> ())
+    | 6 -> (
+        match choose_move creature with
+        | Some m -> add_pp creature m.move_name 100
+        | None -> ())
     | 7 ->
         Creature.remove_status creature Fainted;
         Creature.add_hp creature (get_stat creature HP /. 2.)
     | 8 ->
         Creature.remove_status creature Fainted;
         Creature.add_hp creature (get_stat creature HP)
+    | 9 -> Creature.remove_status creature (Poison (ref 1))
+    | 10 -> Creature.remove_status creature Burn
+    | 11 -> Creature.remove_status creature Freeze
+    | 12 -> Creature.remove_status creature Paralyze
+    | 13 -> Creature.remove_status creature (Sleep (ref 1))
+    | 14 -> Creature.apply_status creature Healthy
     | _ -> print_endline "NICE ITEM BRO :)");
     current_item := None;
     menu_mode := Exit
   with NoEffect ->
     refresh ();
     Ui.add_first_foreground
-      (draw_string_colored 40 36 1 "It has no effect" text_color2
+      (draw_string_colored 36 32 Large "It has no effect" text_color2
          text_color);
     ();
     menu_mode := MainMenu
 
 let minimenu () =
-  let x, y, dif, f = (630, 166, 44, 40) in
+  let x, y, dif, f = (630, 166, 44, Medium) in
   Ui.add_first_foreground
     (draw_string_colored (x - 30)
        (y - 5 - (dif * minimenu_position.y))
-       50 ">" text_color2 text_color);
+       Large ">" text_color2 text_color);
   Ui.add_first_foreground
     (draw_string_colored x
        (y - (dif * 0))

@@ -103,5 +103,6 @@ val capture : battle_record -> float -> bool list
    creature. If so, return battle_record with victory status set as
    Catch*)
 
+val reset_battler : battle_creature -> unit
 val switch_player : battle_record -> creature -> creature list -> unit
 val switching_pending : creature option ref

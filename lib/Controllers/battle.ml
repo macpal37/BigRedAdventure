@@ -49,7 +49,6 @@ let e_hud_stats : hud_stats pointer = null ()
 (***************     Loading Some Assets     *********************)
 (*****************************************************************)
 
-(* let battle_bot = load_sprite "battle_bot" GUI_Folder 3 () *)
 let battle_right = Util.null ()
 let moves_window = Util.null ()
 let combat_hud = Util.null ()
@@ -93,15 +92,15 @@ let draw_moves creature () =
       (match move with
       | None -> ()
       | Some m ->
-          draw_string_colored x y 40 m.move_name
+          draw_string_colored x y Medium m.move_name
             (get_color_from_etype m.etype)
             text_color ();
-          draw_string_colored x (y - 40) 30
+          draw_string_colored x (y - 40) Small
             (string_of_etype m.etype)
             (get_color_from_etype m.etype)
             text_color ();
 
-          draw_string_colored (x + 110) (y - 40) 30
+          draw_string_colored (x + 110) (y - 40) Small
             ("PP:" ^ string_of_int m.curr_pp ^ "/"
            ^ string_of_int m.max_pp)
             white text_color ());
@@ -139,10 +138,10 @@ let draw_combat_hud sprite name level player () =
     draw_sprite sprite
       (width - sprite_width - 14)
       (360 - sprite_height) ();
-    draw_string_colored (width - 320) 312 0
+    draw_string_colored (width - 320) 312 Medium
       (String.uppercase_ascii name)
       white text_color ();
-    draw_string_colored (width - 100) 312 0
+    draw_string_colored (width - 100) 312 Medium
       ("Lv" ^ string_of_int level)
       white text_color ();
     draw_health_bar_combat ~!p_hud_stats.max_hp ~!p_hud_stats.curr_hp
@@ -151,10 +150,10 @@ let draw_combat_hud sprite name level player () =
   end
   else begin
     draw_sprite sprite 42 (height - 49 - sprite_height) ();
-    draw_string_colored 60 (height - 97) 0
+    draw_string_colored 60 (height - 97) Medium
       (String.uppercase_ascii name)
       white text_color ();
-    draw_string_colored 280 (height - 101) 0
+    draw_string_colored 280 (height - 101) Medium
       ("Lv" ^ string_of_int level)
       white text_color ();
     draw_health_bar_combat ~!e_hud_stats.max_hp ~!e_hud_stats.curr_hp
@@ -166,16 +165,17 @@ let draw_combat_commands () =
   let hdif = 80 in
   set_color text_color;
   clear_text ~!battle_right ();
-  draw_string_colored x y 1 "FIGHT" white text_color ();
-  draw_string_colored x (y - hdif) 1 "BAG" white text_color ();
-  draw_string_colored (x + 175) y 1 "PARTY" white text_color ();
-  draw_string_colored (x + 175) (y - hdif) 1 "RUN" white text_color ();
+  draw_string_colored x y Large "FIGHT" white text_color ();
+  draw_string_colored x (y - hdif) Large "BAG" white text_color ();
+  draw_string_colored (x + 175) y Large "PARTY" white text_color ();
+  draw_string_colored (x + 175) (y - hdif) Large "RUN" white text_color
+    ();
   draw_string_colored
     (x - 35 + (175 * cmd_pos.x))
     (y - (hdif * cmd_pos.y))
-    1 ">" white text_color ();
+    Huge ">" white text_color ();
 
-  draw_text_string_pos 35 132 40 20
+  draw_text_string_pos 35 132 Medium 20
     ("What will " ^ get_nickname ~!bs.player_battler.creature ^ " do?")
     ()
 
@@ -191,7 +191,9 @@ let draw_hud () =
     true ()
 
 let draw_level_up creature frame () =
-  let x, y, dif, x2 = (width - 300 + 30, 200 + 250, 35, width - 140) in
+  let x, y, dif, x2 =
+    (width - 300 + 30, 200 + 250 - 8, 35, width - 140)
+  in
   let stat_lst =
     [
       Creature.HP;
@@ -217,8 +219,8 @@ let draw_level_up creature frame () =
     level_up creature ();
     let new_stats = get_stats creature in
 
-    draw_sprite ~!level_up_screen (width - 300) 210 ();
-    draw_string_colored x y 0
+    draw_sprite ~!level_up_screen (width - 300 + 8) 210 ();
+    draw_string_colored x y Medium
       ("Level " ^ string_of_int (get_level creature))
       white text_color ();
     for i = 0 to 5 do
@@ -226,18 +228,18 @@ let draw_level_up creature frame () =
 
       draw_string_colored x
         (y - (dif * (i + 1)))
-        0
+        Medium
         (string_of_stat_short s)
         white text_color ();
 
       draw_string_colored x2
         (y - (dif * (i + 1)))
-        0
+        Medium
         (string_of_intf (get_stat2 old_stats s))
         white text_color ();
       draw_string_colored (x2 + 80)
         (y - (dif * (i + 1)))
-        0
+        Medium
         ("+"
         ^ string_of_int
             (int_of_float (get_stat2 new_stats s)
@@ -247,8 +249,8 @@ let draw_level_up creature frame () =
   end
   else if frame = 1 then begin
     let new_stats = get_stats creature in
-    draw_sprite ~!level_up_screen (width - 300) 210 ();
-    draw_string_colored x y 0
+    draw_sprite ~!level_up_screen (width - 300 + 8) 210 ();
+    draw_string_colored x y Medium
       ("Level " ^ string_of_int (get_level creature))
       white text_color ();
     for i = 0 to 5 do
@@ -256,13 +258,13 @@ let draw_level_up creature frame () =
 
       draw_string_colored x
         (y - (dif * (i + 1)))
-        0
+        Medium
         (string_of_stat_short s)
         white text_color ();
 
       draw_string_colored x2
         (y - (dif * (i + 1)))
-        0
+        Medium
         (string_of_intf (get_stat2 new_stats s))
         white text_color ()
     done
@@ -326,17 +328,17 @@ let moves_ptr = Util.new_point ()
 let draw_replace_moves creature () =
   let x, y, dif = (width - 300 + 30, 200 + 250, 40) in
   draw_sprite ~!level_up_screen (width - 300) 210 ();
-  draw_string_colored x y 0 "Moves " white text_color ();
+  draw_string_colored x y Medium "Moves " white text_color ();
 
   draw_string_colored x
     (y - (dif * (moves_ptr.y + 1)))
-    0 ">" white text_color ();
+    Medium ">" white text_color ();
   for i = 0 to 3 do
     let m = !!(get_move_i creature i) in
 
     draw_string_colored (x + 30)
       (y - (dif * (i + 1)))
-      0 m.move_name white text_color ()
+      Medium m.move_name white text_color ()
   done
 
 let handle_learn_move creature =
@@ -496,12 +498,29 @@ let handle_combat move =
           animate_health_bar_combat max curr (curr -. dmg) is_player ();
           ~!hud.curr_hp <- curr -. dmg;
           if crit then
-            display_text_box "It was a critical hit!" true
+            display_text_box "It was a critical hit!" false
               (refresh_battle 2) ()
       | Heal _ -> ()
-      | StatusGain (_, _) -> ()
-      | StatusEffect (_, _, _, _) -> ()
-      | MaxStat -> display_text_box text true (refresh_battle 2) ()
+      | StatusGain (gained, cstatus) ->
+          if affected.active then begin
+            (if gained then
+             match cstatus with
+             | Status s ->
+                 animate_status sprite is_player s (refresh_battle 2)
+             | _ -> ());
+            display_text_box text false (refresh_battle 2) ()
+          end
+      | StatusEffect (cstatus, max, bef, aft) ->
+          if affected.active then begin
+            (match cstatus with
+            | Status s ->
+                animate_status sprite is_player s (refresh_battle 2)
+            | _ -> ());
+            display_text_box text true (refresh_battle 2) ();
+            animate_health_bar_combat max bef aft is_player ();
+            ~!hud.curr_hp <- aft
+          end
+      | MaxStat -> display_text_box text false (refresh_battle 2) ()
       | StatGain stages ->
           if stages > 0 then
             animate_raise_stat_effect sprite is_player
@@ -509,12 +528,12 @@ let handle_combat move =
           else if stages < 0 then
             animate_lower_stat_effect sprite is_player
               (refresh_battle 2);
-          display_text_box text true (refresh_battle 2) ()
+          display_text_box text false (refresh_battle 2) ()
       | Switch _ -> ()
       | Fainted ->
           affected.active <- false;
           animate_faint sprite is_player (refresh_battle 2);
-          display_text_box text true (refresh_battle 2) ()
+          display_text_box text false (refresh_battle 2) ()
     done;
     Combat.battle_actions := [];
     (***============= Resolution =============***)
@@ -579,17 +598,6 @@ let handle_item item () =
         display_text_box "Aw... So close!" false (refresh_battle 2) ();
       true
   | Item.Key -> false
-
-(* let refresh_battle1 () = Ui.add_first_foreground (clear_text
-   battle_bot); Ui.add_last_background (draw_sprite battle_bg1 0 0); if
-   ~!bs.enemy_battler.active = true then Ui.add_first_gameplay
-   (draw_creature (get_front_sprite ~!bs.enemy_battler.creature) false);
-   if ~!bs.player_battler.active = true then Ui.add_first_gameplay
-   (draw_creature (get_back_sprite ~!bs.player_battler.creature) true);
-
-   Ui.add_first_gameplay draw_hud; Ui.add_first_foreground
-   (draw_creature_exp ~!bs.player_battler.creature false);
-   Ui.add_first_foreground draw_combat_commands *)
 
 let switch_creatures a b player =
   let sprite_a, sprite_b =
@@ -760,6 +768,10 @@ let rec run_tick () =
           Player.add_creature c (State.player ());
           captured_creature := None);
       combat_mode := Exit;
+
+      Combat.reset_battler ~!bs.player_battler;
+      Combat.reset_battler ~!bs.enemy_battler;
+
       wait 240 ();
       for i = 0 to List.length (Player.party (State.player ())) - 1 do
         let c = Player.party_i (State.player ()) i in

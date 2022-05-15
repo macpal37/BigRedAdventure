@@ -105,7 +105,7 @@ end
 
 val null_creature : creature
 
-val empty_stats : stats
+val empty_stats : unit -> stats
 (** Represents an emtpy set of stats*)
 
 (** {1 Creature Creation}*)
@@ -234,7 +234,7 @@ val get_back_sprite : creature -> Draw.sprite
 (** [get_back_sprite creature] returns the back_sprite of the [creature]*)
 
 val get_hp_status : creature -> float * float
-(** [get_hp_status creature] returns the mac and current hp of the
+(** [get_hp_status creature] returns the [max] and [current] hp of the
     [creature] as a tuple.*)
 
 val get_specias : creature -> string

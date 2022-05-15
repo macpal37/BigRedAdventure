@@ -81,3 +81,8 @@ val animate_damage_render : sprite -> bool -> draw_func -> unit
 val animate_evolution : sprite -> sprite -> draw_func -> unit
 (** [animate_evolution old_sprite new_sprite (_)] performs the evolution
     animation. *)
+
+val animate_status :
+  sprite -> bool -> Creature.status -> draw_func -> unit
+(** [animate_status sprite player status ref] Performs the status effect
+    animation*)

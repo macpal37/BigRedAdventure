@@ -41,9 +41,9 @@ let draw_decision () =
   draw_sprite ~!decision_menu (x - 30) (y + 3) ();
   draw_string_colored x
     (y + 60 - (40 * minimenu_position.y))
-    0 ">" white text_color ();
-  draw_string_colored (x + 12) (y + 60) 0 "Yes" white text_color ();
-  draw_string_colored (x + 12) (y + 20) 0 "No" white text_color ()
+    Medium ">" white text_color ();
+  draw_string_colored (x + 12) (y + 60) Medium "Yes" white text_color ();
+  draw_string_colored (x + 12) (y + 20) Medium "No" white text_color ()
 
 let tick = ref 0
 
@@ -51,11 +51,11 @@ let draw_nickname () =
   draw_sprite ~!nameholder 240 (280 - 70) ();
 
   if !tick mod 20 <= 10 then
-    draw_string_colored (240 + 12) (280 - 62) 0 !nickname white
+    draw_string_colored (240 + 12) (280 - 62) Medium !nickname white
       text_color ()
   else
-    draw_string_colored (240 + 12) (280 - 62) 0 (!nickname ^ "_") white
-      text_color ()
+    draw_string_colored (240 + 12) (280 - 62) Medium (!nickname ^ "_")
+      white text_color ()
 
 let rec run_tick () =
   if !menu_mode = Captured_Creature then Input.sleep Draw.tick_rate ()

@@ -80,7 +80,7 @@ let generate_battler creature player =
   {
     creature;
     current_move = None;
-    stat_changes = empty_stats;
+    stat_changes = empty_stats ();
     status_cond = Status (get_status creature);
     is_player = player;
     active = true;
@@ -241,30 +241,38 @@ let stat_bound (stat_val : float) stat_name battler : float =
 
 let handle_stat_changes battler stat (stages : float) =
   match stat with
-  | HP -> ()
+  | HP -> false
   | Attack ->
       let sc = battler.stat_changes.attack +. stages in
-      battler.stat_changes.attack <- stat_bound sc stat battler
+      battler.stat_changes.attack <- stat_bound sc stat battler;
+      sc > 6.
   | Defense ->
       let sc = battler.stat_changes.defense +. stages in
-      battler.stat_changes.defense <- stat_bound sc stat battler
+      battler.stat_changes.defense <- stat_bound sc stat battler;
+      sc > 6.
   | Sp_Attack ->
       let sc = battler.stat_changes.sp_attack +. stages in
-      battler.stat_changes.sp_attack <- stat_bound sc stat battler
+      battler.stat_changes.sp_attack <- stat_bound sc stat battler;
+      sc > 6.
   | Sp_Defense ->
       let sc = battler.stat_changes.sp_defense +. stages in
-      battler.stat_changes.sp_defense <- stat_bound sc stat battler
+      battler.stat_changes.sp_defense <- stat_bound sc stat battler;
+      sc > 6.
   | Speed ->
       let sc = battler.stat_changes.speed +. stages in
-      battler.stat_changes.speed <- stat_bound sc stat battler
+      battler.stat_changes.speed <- stat_bound sc stat battler;
+      sc > 6.
 
 let handle_effects move attacker defender () =
   add_pp attacker.creature move.move_name (-1);
   let rec handle_effects_rec = function
     | [] -> ()
     | h :: t ->
-        (let digit1 = h mod 10 in
+        ((*Type of Effect*)
+         let digit1 = h mod 10 in
+         (*Effect*)
          let digit2 = h mod 100 / 10 in
+         (*Intensity*)
          let digit3 = h / 100 in
 
          match digit2 with
@@ -290,13 +298,70 @@ let handle_effects move attacker defender () =
                    | 1 -> "rose sharply!"
                    | _ -> "rose drastically!" )
              in
-             handle_stat_changes target stat (float_of_int stages);
-             add_action
-               ( target,
-                 StatGain stages,
-                 get_nickname target.creature
-                 ^ "'s " ^ string_of_stat stat ^ " " ^ state )
+             if handle_stat_changes target stat (float_of_int stages)
+             then
+               add_action
+                 ( target,
+                   StatGain stages,
+                   get_nickname target.creature
+                   ^ "'s " ^ string_of_stat stat ^ " " ^ state )
+         | 3 ->
+             (*Status Effect*)
+             let target = if digit2 = 3 then defender else attacker in
+             let s =
+               match digit1 with
+               | 0 ->
+                   add_action
+                     ( target,
+                       StatusGain (true, Status Burn),
+                       get_nickname target.creature ^ " got burned!" );
+                   Burn
+               | 1 ->
+                   if digit3 = 0 then begin
+                     add_action
+                       ( target,
+                         StatusGain (true, Status (Poison (ref (-1)))),
+                         get_nickname target.creature ^ " got poisoned!"
+                       );
+                     Poison (ref (-1))
+                   end
+                   else begin
+                     add_action
+                       ( target,
+                         StatusGain (true, Status (Poison (ref 0))),
+                         get_nickname target.creature
+                         ^ " got badly poisoned!" );
+                     Poison (ref 0)
+                   end
+               | 2 ->
+                   add_action
+                     ( target,
+                       StatusGain (true, Status Paralyze),
+                       get_nickname target.creature ^ " got paralyzed!"
+                     );
+                   Paralyze
+               | 3 ->
+                   add_action
+                     ( target,
+                       StatusGain (true, Status Freeze),
+                       get_nickname target.creature ^ " froze!" );
+                   Freeze
+               | 4 ->
+                   add_action
+                     ( target,
+                       StatusGain (true, Status (Sleep (ref 0))),
+                       get_nickname target.creature ^ " feel asleep!" );
+                   Sleep (ref (Util.rand 4 () + 1))
+               | _ -> Healthy
+             in
+
+             (try
+                apply_status target.creature s;
+                target.status_cond <- Status s
+              with NoEffect -> ());
+             ()
          | _ -> ());
+
         handle_effects_rec t
   in
   Random.self_init ();
@@ -373,19 +438,11 @@ let exec_turn attacker defender brecord =
     check_active_status brecord
   end
 
-(* let exec_resolution _ = failwith "" *)
-
-(* let execute_turn brecord = if brecord.turn_pos = Pending then if
-   !player_first then exec_turn brecord.player_battler
-   brecord.enemy_battler brecord else exec_turn brecord.enemy_battler
-   brecord.player_battler brecord else match
-   brecord.player_battler.current_move with | None -> exec_turn
-   brecord.enemy_battler brecord.player_battler brecord | Some _ ->
-   exec_turn brecord.player_battler brecord.enemy_battler brecord *)
-
-(*BATTLE SIM HELPERS END so many damn*)
+let confuse_recoil = create_move "Pound"
 
 let rec handle_status battler status =
+  let name = get_nickname battler.creature in
+
   match status with
   | Status s -> (
       match s with
@@ -394,15 +451,95 @@ let rec handle_status battler status =
             t := !t - 1;
             battler.current_move <- None
           end
-          else print_endline "He woke up!"
-      | Freeze -> ()
-      | Paralyze -> ()
+          else
+            add_action
+              (battler, StatusGain (false, status), name ^ " woke up!")
+      | Freeze ->
+          if Util.rand 4 () = 0 then
+            add_action
+              (battler, StatusGain (false, status), name ^ " thawed out")
+          else begin
+            battler.current_move <- None;
+            add_action
+              ( battler,
+                StatusEffect (status, 0., 0., 0.),
+                name ^ " is frozen solid!" )
+          end
+      | Paralyze ->
+          if Util.rand 4 () = 0 then begin
+            battler.current_move <- None;
+            add_action
+              ( battler,
+                StatusEffect (status, 0., 0., 0.),
+                name ^ " is paralyzed and can't move" )
+          end
       | _ -> ())
-  | Confused (_, s) ->
-      print_endline "Confused!";
+  | Confused (t, s) ->
+      if !t - 1 > 0 then t := !t - 1;
+
+      if !t - 1 > 0 then begin
+        if Util.rand 2 () = 0 then (
+          let max, curr = get_hp_status battler.creature in
+          let dmg, _, _ = damage_calc confuse_recoil battler battler in
+          add_action
+            ( battler,
+              StatusEffect (status, max, curr, curr -. dmg),
+              name ^ " hurt itself in its confusion!" );
+          battler.current_move <- None)
+      end
+      else
+        add_action
+          ( battler,
+            StatusGain (false, status),
+            name ^ " snapped out of confusion!" );
+
       handle_status battler s
-  | Flinch _ -> ()
+  | Flinch _ ->
+      add_action
+        (battler, StatusEffect (status, 0., 0., 0.), name ^ " flinched!");
+      battler.current_move <- None
   | _ -> ()
+
+let afflict_status battler =
+  let status = battler.status_cond in
+  let name = get_nickname battler.creature in
+  match status with
+  | Status s -> (
+      match s with
+      | Burn ->
+          let max, curr = get_hp_status battler.creature in
+          let aft = curr -. (max /. 8.) in
+          set_current_hp battler.creature aft;
+          add_action
+            ( battler,
+              StatusEffect (status, max, curr, aft),
+              name ^ " took damage from burn!" )
+      | Poison t ->
+          let max, curr = get_hp_status battler.creature in
+          if !t >= 0 then begin
+            t := !t + 1;
+            let aft = curr -. (max /. 16. *. float_of_int !t) in
+            set_current_hp battler.creature aft;
+            add_action
+              ( battler,
+                StatusEffect (status, max, curr, aft),
+                name ^ " took damage from poison!" )
+          end
+          else
+            let aft = curr -. (max /. 16.) in
+            set_current_hp battler.creature aft;
+            add_action
+              ( battler,
+                StatusEffect (status, max, curr, aft),
+                name ^ " took damage from poison!" )
+      | _ -> ())
+  | _ -> ()
+
+let exec_resolution brecord =
+  let enemy, player = (brecord.enemy_battler, brecord.player_battler) in
+  afflict_status enemy;
+  afflict_status player;
+  check_active_status brecord
 
 let battle_sim brecord player_move =
   brecord.player_battler.current_move <- player_move;
@@ -416,7 +553,7 @@ let battle_sim brecord player_move =
   exec_turn first second brecord;
   handle_status second second.status_cond;
   exec_turn second first brecord;
-  (* exec_resolution brecord; *)
+  exec_resolution brecord;
   ()
 
 let run_away brecord =
@@ -493,22 +630,20 @@ let capture brecord modifier =
         true catch_results
     then brecord.battle_status <- Catch;
     catch_results
-(* else if brecord.catch_attempts >= 3 then brecord.battle_status <-
-   Flee else brecord.escape_attempts <- brecord.escape_attempts + 1 *)
-
 (* ==============================================================*)
 (* =============== Switchig Party Members===================*)
 (* ==============================================================*)
 
-let switching_pending = null ()
+let switching_pending : creature pointer = null ()
+
+let reset_battler battler =
+  match get_status battler.creature with
+  | Poison t -> t := 0
+  | _ -> ()
 
 let switch_player brecord (switch_in : creature) _ =
   add_action (brecord.player_battler, Switch switch_in, "");
-  (* Ui.add_first_gameplay (Animation.switch_out (get_back_sprite
-     brecord.player_battler.creature) (get_back_sprite creature) true
-     (get_nickname brecord.player_battler.creature) (get_nickname
-     creature) (!refresh_battle (get_current_hp creature)
-     (get_current_hp brecord.enemy_battler.creature) 1)); *)
+  reset_battler brecord.player_battler;
   if List.mem switch_in brecord.creatures_switched = false then
     brecord.creatures_switched <-
       switch_in :: brecord.creatures_switched;

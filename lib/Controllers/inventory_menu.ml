@@ -40,7 +40,7 @@ let draw_list () =
         Ui.add_first_gameplay
           (draw_string_colored sx
              (sy - (i * 40))
-             0
+             Medium
              (Util.captilize_all_string (get_name item))
              white text_color);
         let s = string_of_int amount in
@@ -48,7 +48,7 @@ let draw_list () =
           (draw_string_colored
              (sx + dif - (16 * String.length s))
              (sy - (i * 40))
-             0 (s ^ "x") white text_color);
+             Medium (s ^ "x") white text_color);
         draw_list_rec (i + 1) t
   in
   let index = draw_list_rec 0 !display_queue in
@@ -56,7 +56,7 @@ let draw_list () =
     Ui.add_first_gameplay
       (draw_string_colored sx
          (sy - (index * 40))
-         0 "     - - - - - - -     " white text_color)
+         Medium "     - - - - - - -     " white text_color)
   else ()
 
 let inventory_position = Util.new_point ()
@@ -64,7 +64,7 @@ let inventory_position = Util.new_point ()
 let draw_bag item_type () =
   Ui.add_first_background (Draw.draw_sprite ~!inventory_menu 0 0);
   Ui.add_first_foreground
-    (draw_string_colored 428 644 1
+    (draw_string_colored 428 644 Huge
        (string_of_item_type item_type)
        (rgb 245 190 50) text_color);
 
@@ -102,7 +102,7 @@ let refresh () =
     let item, _ = List.nth !display_queue inventory_position.y in
 
     Ui.add_first_foreground
-      (draw_text_string_pos 35 142 40 30 (get_description item))
+      (draw_text_string_pos 35 142 Medium 30 (get_description item))
 
 let rec run_tick () =
   Input.sleep 0.016 ();
