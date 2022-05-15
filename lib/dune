@@ -22,7 +22,6 @@
   inventory
   map
   player
-  entity
   ; =====Other=====
   animation
   animator

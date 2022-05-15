@@ -45,11 +45,8 @@ type entity_trigger =
   | KeyItem of string
   | Button of string
   | None
-      (** If more types are needed, maybe polymorphism would be a better
-          option? dunno how viable parsing a json would be then tho *)
 
 type t = {
-  handler_id : string;
   e_type : entity_trigger;
   mutable orie : orientation;
   mutable pos : coord;
@@ -59,6 +56,7 @@ type t = {
   animations : (sprite_step, sprite Loopq.t) Hashtbl.t;
   mutable stop : stop_time;
   priority_queue : step Queue.t;
+  passable: bool;
   path : movement;
 }
 
@@ -69,7 +67,6 @@ let load_entity = failwith "Unimplemented"
 let get_trigger entity = entity.e_type
 let get_orientation entity = entity.orie
 let get_position entity = entity.pos
-let get_handler entity = entity.handler_id
 
 (** [step_to_sprite s o] is what type of sprite to render based on the
     type of step occuring [s] and the entity's current orientation [o] *)
@@ -128,6 +125,7 @@ let incr_int e = e.interval_frac <- e.interval_frac +. increment
 let reset_int e = e.interval_frac <- 0.0
 
 let update e =
+  (** Implement random push here *)
   match get_step e with
   | Step (_, i) | Pause i ->
       if e.interval_frac > float_of_int i then (

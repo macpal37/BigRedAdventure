@@ -36,9 +36,6 @@ val get_position : t -> coord
 val get_sprite : t -> sprite
 (** [get_sprite n] returns [n]'s current sprite representation *)
 
-val get_handler : t -> string
-(** [get_handler n] returns the id of [n]'s associated handler *)
-
 val get_dialogue : t -> string
 (** [get_dialogue n] returns the dialogue [n] gives *)
 
