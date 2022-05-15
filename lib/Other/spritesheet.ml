@@ -9,6 +9,16 @@ type sprite_sheet = {
   dpi : int;
 }
 
+let empty_spritesheet =
+  {
+    sprites = [||];
+    rows = 0;
+    columns = 0;
+    sheet_width = 0;
+    sheet_height = 0;
+    dpi = 1;
+  }
+
 let rec find x lst =
   match lst with
   | [] -> -1

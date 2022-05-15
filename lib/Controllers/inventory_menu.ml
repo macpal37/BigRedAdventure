@@ -4,13 +4,17 @@ open Inventory
 open Item
 open Util
 open DrawText
-open Sdlkeycode
+open Input
 
 let display_queue = ref []
 let max_list_size = 10
 let max_items = ref 0
-let inventory_menu = load_sprite "inventory_menu" GUI_Folder 3 ()
+let inventory_menu = Util.null ()
 let selected_item = null ()
+
+let load_assets _ =
+  inventory_menu
+  *= Sprite_assets.get_sprite2 "inventory_menu" GUI_Folder
 
 type menu_mode =
   | Selecting
@@ -58,7 +62,7 @@ let draw_list () =
 let inventory_position = Util.new_point ()
 
 let draw_bag item_type () =
-  Ui.add_first_background (Draw.draw_sprite inventory_menu 0 0);
+  Ui.add_first_background (Draw.draw_sprite ~!inventory_menu 0 0);
   Ui.add_first_foreground
     (draw_string_colored 428 644 1
        (string_of_item_type item_type)
@@ -98,25 +102,25 @@ let refresh () =
     let item, _ = List.nth !display_queue inventory_position.y in
 
     Ui.add_first_foreground
-      (draw_text_string_pos 35 142 40 30 (get_description item) white)
+      (draw_text_string_pos 35 142 40 30 (get_description item))
 (* else Ui.add_first_foreground (clear_text inventory_text_bg); *)
 
 let rec run_tick () =
   Input.sleep 0.016 ();
   let key =
     match Input.pop_key_option () with
-    | Some c -> c
-    | None -> Unknown
+    | Some c -> get_ctrl_key c
+    | None -> NoKey
   in
   (match !mode with
   | Selecting ->
       let x, y = (inventory_position.x, inventory_position.y) in
-      if (key = S || key = Down) && y >= 0 && y < !max_items - 1 then
+      if key = Down && y >= 0 && y < !max_items - 1 then
         inventory_position.y <- y + 1;
-      if (key = W || key = Up) && y < !max_items && y > 0 then
+      if key = Up && y < !max_items && y > 0 then
         inventory_position.y <- y - 1;
-      if key = D || key = Right then inventory_position.x <- x + 1;
-      if key = A || key = Left then inventory_position.x <- x - 1;
+      if key = Right then inventory_position.x <- x + 1;
+      if key = Left then inventory_position.x <- x - 1;
 
       if inventory_position.x >= num_item_types then
         inventory_position.x <- 0
@@ -124,12 +128,12 @@ let rec run_tick () =
         inventory_position.x <- num_item_types - 1
       else ();
 
-      if key = D || key = Right || key = A || key = Left then begin
+      if key = Right || key = Left then begin
         inventory_position.y <- 0;
         refresh ()
       end;
-      if key = W || key = Up || key = S || key = Down then refresh ();
-      if key = E || key = Z then begin
+      if key = Up || key = Down then refresh ();
+      if key = Action then begin
         minimenu_position.y <- 0;
         let item = get_selected_item () in
 
@@ -137,19 +141,19 @@ let rec run_tick () =
            (State.player ())) i | None -> ()); *)
         selected_item := item
       end;
-      if key = Q || key = X then mode := Minimenu
+      if key = Back then mode := Minimenu
   | Minimenu ->
-      if key = E || key = Z then begin
+      if key = Action then begin
         minimenu_position.y <- 0;
         selected_item := get_selected_item ()
       end;
-      if key = Q || key = X then begin
+      if key = Back then begin
         minimenu_position.y <- 0;
         mode := Selecting
       end);
 
   Ui.update_all ();
-  if key <> Q && key <> X && !selected_item = None then run_tick ()
+  if key <> Back && !selected_item = None then run_tick ()
 
 let init () =
   mode := Selecting;

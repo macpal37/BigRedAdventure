@@ -1,4 +1,4 @@
-let key : Sdlkeycode.t option ref = ref None
+let key : Sdlkeycode.t list ref = ref []
 (* let nil = Sdlkeycode.Unknown *)
 
 (* let key_char _ = match !key with | Some k -> k | None ->
@@ -12,6 +12,7 @@ type control_key =
   | Back
   | Start
   | Select
+  | Debug
   | NoKey
 
 let ( => ) (sdl : Sdlkeycode.t) (ctrl : control_key) : bool =
@@ -25,6 +26,7 @@ let ( => ) (sdl : Sdlkeycode.t) (ctrl : control_key) : bool =
     | Sdlkeycode.Z -> Back
     | Sdlkeycode.Slash -> Start
     | Sdlkeycode.Period -> Select
+    | Sdlkeycode.D | Sdlkeycode.S -> Debug
     | _ -> NoKey
   in
   c = ctrl
@@ -38,15 +40,26 @@ let get_ctrl_key (sdl : Sdlkeycode.t) : control_key =
   | Sdlkeycode.X -> Action
   | Sdlkeycode.Z -> Back
   | Sdlkeycode.Slash -> Start
+  | Sdlkeycode.D | Sdlkeycode.S -> Debug
   | Sdlkeycode.Period -> Select
   | _ -> NoKey
 
-let poll_key_option _ = !key
+let get_ctrl_option (sdl : Sdlkeycode.t option) : control_key option =
+  match sdl with
+  | Some k -> Some (get_ctrl_key k)
+  | None -> None
+
+let poll_key_option _ =
+  match !key with
+  | h :: _ -> Some h
+  | [] -> None
 
 let pop_key_option _ =
   let k = !key in
-  key := None;
-  k
+  key := [];
+  match k with
+  | h :: _ -> Some h
+  | [] -> None
 
 let rec input_poll _ =
   match Sdlevent.poll_event () with
@@ -54,10 +67,10 @@ let rec input_poll _ =
       Sdl.quit ();
       exit 0
   | Some (KeyDown e) ->
-      key := Some e.keycode;
+      if not (List.mem e.keycode !key) then key := e.keycode :: !key;
       input_poll ()
-  | Some (KeyUp _) ->
-      key := None;
+  | Some (KeyUp e) ->
+      key := List.filter (fun x -> x <> e.keycode) !key;
       input_poll ()
   | None -> ()
   | _ -> input_poll ()

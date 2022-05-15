@@ -6,3 +6,4 @@ val start_wild_battle : Creature.creature -> unit
     creature [c] as the opponent*)
 
 val run_tick : unit -> unit
+val load_assets : unit -> unit

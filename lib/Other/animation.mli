@@ -1,53 +1,76 @@
 open Draw
+open Ui
+
+type animation
+
+val make_animation :
+  draw_func -> (animation -> unit -> unit) -> int -> animation
+
+val run_animation : animation -> unit
+val display_text_box : string -> bool -> draw_func -> unit -> unit
+
+val draw_health_bar :
+  float -> float -> int -> int -> int -> int -> bool -> unit -> unit
+(** [draw_health_bar max_hp curr_hp x y width height is_hptext (_)]
+    draws the hp bar. *)
 
 val draw_exp_bar :
-  int -> int -> int -> int -> int -> int -> int -> unit -> unit
+  float -> float -> int -> int -> int -> int -> unit -> unit
+(** [draw_exp_bar max_xp curr_xp x y width height(_)] draws the xp bar. *)
+
+val animate_health_bar :
+  float ->
+  float ->
+  float ->
+  int ->
+  int ->
+  int ->
+  int ->
+  bool ->
+  draw_func ->
+  unit
+(** [draw_health_bar max_hp before_curr_hp after_curr_hp x y width height is_hptext(_)]
+    performs the health bar gain/loss animation. *)
+
+val animate_exp_bar :
+  float ->
+  float ->
+  float ->
+  int ->
+  int ->
+  int ->
+  int ->
+  draw_func ->
+  unit
 (** [draw_exp_bar max_xp before_curr_xp after_curr_xp x y width height(_)]
     performs the xp gain animation*)
 
-val draw_health_bar :
-  int ->
-  int ->
-  int ->
-  int ->
-  int ->
-  int ->
-  int ->
-  bool ->
-  bool ->
-  unit ->
-  unit
-(** [draw_health_bar max_hp before_curr_hp after_curr_hp x y width height is_hptext is_animated(_)]
-    performs the health bar gain/loss animation. *)
-
-val draw_creature_effect :
-  sprite -> bool -> int -> int -> int -> int -> unit -> unit
-
-val lower_stat_effect : sprite -> bool -> unit -> unit
+val animate_lower_stat_effect : sprite -> bool -> draw_func -> unit
 (** Cool Random Effects :)*)
 
-val raise_stat_effect : sprite -> bool -> unit -> unit
+val animate_raise_stat_effect : sprite -> bool -> draw_func -> unit
 (** Cool Random Effects :)*)
 
-val switch_out :
-  sprite ->
-  sprite ->
-  bool ->
-  string ->
-  string ->
-  (unit -> unit) ->
-  unit ->
-  unit
+val animate_switch :
+  sprite -> sprite -> bool -> string -> string -> draw_func -> unit
+(** [animate_switch switch_out switch_in player out_name in_name rf (_)]
+    Animates the switch out/switch in animation using the [switch_out]
+    [switch_in] sprites. [player] determines whether the player or enemy
+    switches out. [rf] represents the refresh function.*)
 
-val capture_animation :
+val animate_capture :
   Spritesheet.sprite_sheet ->
   sprite ->
   bool list ->
   int ->
-  (int -> unit -> unit) ->
-  unit ->
+  draw_func ->
   unit
 
-val animate_faint : sprite -> bool -> unit -> unit
+val animate_faint : sprite -> bool -> draw_func -> unit
 (** [animate_faint sprite (_)] performs the fainting animation of the
     creature [sprite] *)
+
+val animate_damage_render : sprite -> bool -> draw_func -> unit
+(** [damage_render sprite is_player (_)] performs the damage animation
+    of either the enemy or the player depedning on the [is_player]
+    boolean *)

@@ -53,7 +53,7 @@ val present : unit -> unit
 val rgb : int -> int -> int -> color
 (** mirrors Graphics.rgb*)
 
-val set_draw_color : int -> int -> int -> unit
+val set_draw_color : ?a:int -> int -> int -> int -> unit
 val set_color : color -> unit
 
 val fill_rect : int -> int -> int -> int -> unit
@@ -78,6 +78,10 @@ val get_dimension : sprite -> int * int
 (** [get_dimension sprite] returns the width and height of a sprite as a
     tuple.*)
 
+val set_active : sprite -> bool -> unit
+(** [set_active s flag] sets the sprite [s] to be active or not based on
+    the [flag] boolean .*)
+
 val change_dpi : sprite -> int -> sprite
 
 val wait : int -> unit -> unit
@@ -85,9 +89,9 @@ val wait : int -> unit -> unit
     continue. If [delay_time = -1] then it waits indefinetely until user
     input *)
 
-val present_draw : (unit -> unit) -> unit -> unit
-
 (** {1 Loading Sprites}*)
+
+val sprite_path : string -> folder -> string
 
 val load_creature : string -> unit -> sprite
 (** [load_creature name ()] Creates a sprite from the given [name.png]
@@ -111,6 +115,10 @@ val draw_sprite : sprite -> int -> int -> unit -> unit
 (** [draw_creature_pos sprite x y (_)] draws the [sprite] at the given
     position [x] [y] *)
 
+val draw_sprite_centered : sprite -> int -> int -> unit -> unit
+(** [draw_creature_pos sprite x y (_)] draws the [sprite] centered at
+    [x] [y] *)
+
 val draw_creature : sprite -> bool -> unit -> unit
 (** [draw_creature_pos sprite is_player (_)] draws the [sprite] at
     combat positions. If [is_player] is true then it draws the [sprite]
@@ -123,11 +131,6 @@ val draw_sprite_crop :
     (height_min, height_max) (_)]
     draws an image from the given [sprite] representation at [x] and [y]
     with cropped based on the bounds defined*)
-
-val damage_render : sprite -> bool -> (unit -> unit) -> unit -> unit
-(** [damage_render sprite is_player (_)] performs the damage animation
-    of either the enemy or the player depedning on the [is_player]
-    boolean *)
 
 val draw_gradient : int -> int -> unit
 (** (draw_gradient w h ) draws a cool radiant with width [w] adnd height

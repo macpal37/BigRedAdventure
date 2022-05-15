@@ -3,19 +3,25 @@ open Creature
 open Animation
 open Util
 open DrawText
-open Sdlkeycode
+open Input
 
 (* let max_creatures = 5 let max_creatures = ref 0 *)
-let party_menu_bg = load_sprite "party_menu" GUI_Folder 3 ()
-let active = load_sprite "active_party_creature" GUI_Folder 3 ()
-let minimenu1 = load_sprite "party_minimenu" GUI_Folder 3 ()
-let faint = load_sprite "faint" GUI_Folder 3 ()
+let party_menu_bg = Util.null ()
+let active = Util.null ()
+let minimenu1 = Util.null ()
+let faint = Util.null ()
 let menu_position = Util.new_point ()
 let switch_position = Util.new_point ()
 let minimenu_position = Util.new_point ()
 let current_item = null ()
 let set_current_item i = current_item := Some i
 let get_current_item = !current_item
+
+let load_assets _ =
+  party_menu_bg *= Sprite_assets.get_sprite2 "party_menu" GUI_Folder;
+  active *= Sprite_assets.get_sprite2 "active_party_creature" GUI_Folder;
+  minimenu1 *= Sprite_assets.get_sprite2 "party_minimenu" GUI_Folder;
+  faint *= Sprite_assets.get_sprite2 "faint" GUI_Folder
 
 type combat_mode =
   | OverworldMode
@@ -71,11 +77,11 @@ let move_y y () =
 
 let draw_status x y status () =
   match status with
-  | Fainted -> draw_sprite faint x y ()
+  | Fainted -> draw_sprite ~!faint x y ()
   | _ -> ()
 
 let draw_menu lead_creature () =
-  Ui.add_first_background (draw_sprite party_menu_bg 0 0);
+  Ui.add_first_background (draw_sprite ~!party_menu_bg 0 0);
 
   Ui.add_first_foreground
     (draw_string_colored 24 605 1 "PARTY" (rgb 255 170 40) white);
@@ -89,9 +95,8 @@ let draw_menu lead_creature () =
     (draw_string_colored 20 220 0
        ("LVL: " ^ string_of_int (get_level lead_creature))
        white text_color);
-  let max, _, aft = get_hp_status lead_creature in
-  Ui.add_first_gameplay
-    (draw_health_bar max aft aft 56 192 180 6 true false);
+  let max, curr = get_hp_status lead_creature in
+  Ui.add_first_gameplay (draw_health_bar max curr 56 192 180 6 true);
   Ui.add_first_gameplay
     (draw_status (56 - 20) (192 - 30) (get_status lead_creature))
 
@@ -103,7 +108,7 @@ let draw_creature_status creature pos () =
     (draw_sprite
        (change_dpi (get_front_sprite creature) 1)
        (x + 11) (y + 11));
-  Ui.add_first_background (draw_sprite active x y);
+  Ui.add_first_background (draw_sprite ~!active x y);
   Ui.add_first_gameplay
     (draw_string_colored xx (yy + 26) 0 (get_nickname creature) white
        text_color);
@@ -111,9 +116,9 @@ let draw_creature_status creature pos () =
     (draw_string_colored xx yy 0
        ("LVL: " ^ string_of_int (get_level creature))
        white text_color);
-  let max, _, aft = get_hp_status creature in
+  let max, curr = get_hp_status creature in
   Ui.add_first_gameplay
-    (draw_health_bar max aft aft (xx + 130) (yy + 6) 250 6 true false);
+    (draw_health_bar max curr (xx + 130) (yy + 6) 250 6 true);
   Ui.add_first_gameplay
     (draw_status (xx + 120) (yy - 24) (get_status creature))
 
@@ -161,13 +166,13 @@ let use_item creature item =
   let id = Item.get_id item in
   try
     (match id with
-    | 1 -> Creature.add_hp creature 20
-    | 2 -> Creature.add_hp creature 50
-    | 3 -> Creature.add_hp creature 120
+    | 1 -> Creature.add_hp creature 20.
+    | 2 -> Creature.add_hp creature 50.
+    | 3 -> Creature.add_hp creature 120.
     | 4 -> Creature.add_hp creature (get_stat creature HP)
     | 7 ->
         Creature.remove_status creature Fainted;
-        Creature.add_hp creature (get_stat creature HP / 2)
+        Creature.add_hp creature (get_stat creature HP /. 2.)
     | 8 ->
         Creature.remove_status creature Fainted;
         Creature.add_hp creature (get_stat creature HP)
@@ -204,7 +209,7 @@ let minimenu () =
     (draw_string_colored x
        (y - (dif * 3))
        f "Back" text_color2 text_color);
-  Ui.add_first_foreground (draw_sprite minimenu1 576 12)
+  Ui.add_first_foreground (draw_sprite ~!minimenu1 576 12)
 
 let get_party_index () =
   if menu_position.x = 0 then 0 else menu_position.y + 1
@@ -231,28 +236,28 @@ let rec run_tick () =
   Input.sleep Draw.tick_rate ();
   let key =
     match Input.pop_key_option () with
-    | Some c -> c
-    | None -> Unknown
+    | Some c -> get_ctrl_key c
+    | None -> NoKey
   in
 
   (*====== Move Selector ====== *)
-  if key = W || key = Up then move_y (-1) ();
-  if key = S || key = Down then move_y 1 ();
-  if key = A || key = Left then move_x (-1) ();
-  if key = D || key = Right then move_x 1 ();
+  if key = Up then move_y (-1) ();
+  if key = Down then move_y 1 ();
+  if key = Left then move_x (-1) ();
+  if key = Right then move_x 1 ();
 
   (match !menu_mode with
   | MainMenu -> (
       match !battle_mode with
       | BattleSwitch | OverworldMode ->
-          if key = E || key = Z then begin
+          if key = Action then begin
             minimenu_position.x <- 0;
             minimenu ();
             menu_mode := MiniMenu
           end;
-          if key = Q || key = X then menu_mode := Exit
+          if key = Back then menu_mode := Exit
       | InventoryMode ->
-          (if key = E || key = Z then
+          (if key = Action then
            let target_creature =
              Player.party_i (State.player ())
                (if menu_position.x = 0 then 0 else menu_position.y + 1)
@@ -260,31 +265,28 @@ let rec run_tick () =
            match !current_item with
            | Some i -> use_item target_creature i
            | None -> ());
-          if key = Q || key = X then menu_mode := Exit
+          if key = Back then menu_mode := Exit
       | FaintedSwitch ->
-          if key = E || key = Z then begin
+          if key = Action then begin
             minimenu_position.x <- 0;
             minimenu ();
             menu_mode := MiniMenu
           end)
   | MiniMenu ->
-      if
-        key = A || key = S || key = A || key = D || key = Up
-        || key = Down || key = Right || key = Left
-      then minimenu ();
-      if key = Q || key = X then begin
+      minimenu ();
+      if key = Back then begin
         minimenu_position.y <- 0;
         menu_mode := MainMenu;
         refresh ()
       end;
-      if (key = E || key = Z) && minimenu_position.y = 0 then begin
+      if key = Action && minimenu_position.y = 0 then begin
         Creature_menu.set_creature (get_party_index ());
         Creature_menu.init ();
 
         refresh ()
       end;
       minimenu ();
-      (if (key = E || key = Z) && minimenu_position.y = 1 then
+      (if key = Action && minimenu_position.y = 1 then
        match !battle_mode with
        | OverworldMode ->
            switch_position.x <- menu_position.x + 0;
@@ -316,10 +318,10 @@ let rec run_tick () =
                menu_mode := Exit
              end
        | _ -> ());
-      if (key = E || key = Z) && minimenu_position.y = 3 then
+      if key = Action && minimenu_position.y = 3 then
         menu_mode := MainMenu
   | SwitchMode ->
-      if key = E || key = Z then begin
+      if key = Action then begin
         switch ();
         menu_position.x <- switch_position.x + 0;
         menu_position.y <- switch_position.y + 0;
@@ -330,7 +332,7 @@ let rec run_tick () =
 
         menu_mode := MiniMenu
       end;
-      if key = Q || key = X then begin
+      if key = Back then begin
         menu_mode := MiniMenu;
         menu_position.x <- switch_position.x + 0;
         menu_position.y <- switch_position.y + 0;
@@ -347,7 +349,6 @@ let rec run_tick () =
   if !menu_mode <> Exit then run_tick ()
 
 let init bm () =
-  Ui.clear_all ();
   menu_mode := MainMenu;
   Combat.switching_pending := None;
   battle_mode := bm;
@@ -355,5 +356,5 @@ let init bm () =
   minimenu_position.y <- 0;
   switch_position.x <- 0;
   switch_position.y <- 0;
-  refresh ();
+  ignore (Input.poll_key_option ());
   run_tick ()

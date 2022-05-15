@@ -7,6 +7,7 @@ type sprite = {
   mutable color_palette : color list;
   base_palette : color list;
   dpi : int;
+  mutable active : bool;
 }
 
 type folder =
@@ -38,6 +39,7 @@ let empty_sprite =
     color_palette = [];
     base_palette = [];
     dpi = 1;
+    active = true;
   }
 
 let create_sprite pixels palette width height dpi =
@@ -48,6 +50,7 @@ let create_sprite pixels palette width height dpi =
     color_palette = palette;
     base_palette = palette;
     dpi;
+    active = true;
   }
 
 (* let blue = rgb 200 200 240 *)
@@ -65,7 +68,12 @@ let open_window _ =
   in
   window := Some w;
   renderer :=
-    Some (Sdlrender.create_renderer ~win:w ~index:(-1) ~flags:[])
+    Some (Sdlrender.create_renderer ~win:w ~index:(-1) ~flags:[]);
+  Sdlrender.set_draw_blend_mode
+    (match !renderer with
+    | Some r -> r
+    | None -> failwith "impossible")
+    Blend
 (* let window _ = match !window with | Some w -> w | None -> failwith
    "Window not initialized"*)
 
@@ -74,7 +82,10 @@ let renderer _ =
   | Some r -> r
   | None -> failwith "Window not initialized"
 
-let present _ = Sdlrender.render_present (renderer ())
+let present _ =
+  Sdlrender.render_present (renderer ());
+  Sdlrender.clear (renderer ())
+
 let get_dimension sprite = (sprite.width, sprite.height)
 
 let change_dpi sprite dpi =
@@ -85,12 +96,8 @@ let change_dpi sprite dpi =
     dpi;
   }
 
-let present_draw draw () =
-  draw ();
-  present ()
-
-let set_draw_color r g b =
-  Sdlrender.set_draw_color3 (renderer ()) ~r ~g ~b ~a:255
+let set_draw_color ?(a = 255) r g b =
+  Sdlrender.set_draw_color3 (renderer ()) ~r ~g ~b ~a
 
 let set_color c =
   let r, g, b = color_to_rgb c in
@@ -130,16 +137,17 @@ let draw_pixel size x y () =
   fill_rect (x - (size / 2)) (y - (size / 2)) size size
 
 let draw_from_pixels sprite x y min_w min_h max_w max_h () =
-  for j = min_h / sprite.dpi to (max_h / sprite.dpi) - 1 do
-    for i = min_w / sprite.dpi to (max_w / sprite.dpi) - 1 do
-      let c = sprite.pixels.(i + (j * (sprite.width / sprite.dpi))) in
-      let tx, ty = (i * sprite.dpi, j * sprite.dpi) in
-      if c <> 0 && tx >= min_w && ty >= min_h then begin
-        set_color (List.nth sprite.color_palette (c - 1));
-        draw_pixel sprite.dpi (x + tx) (y + max_h - ty) ()
-      end
+  if sprite.active then
+    for j = min_h / sprite.dpi to (max_h / sprite.dpi) - 1 do
+      for i = min_w / sprite.dpi to (max_w / sprite.dpi) - 1 do
+        let c = sprite.pixels.(i + (j * (sprite.width / sprite.dpi))) in
+        let tx, ty = (i * sprite.dpi, j * sprite.dpi) in
+        if c <> 0 && tx >= min_w && ty >= min_h then begin
+          set_color (List.nth sprite.color_palette (c - 1));
+          draw_pixel sprite.dpi (x + tx) (y + max_h - ty) ()
+        end
+      done
     done
-  done
 
 let rec find x lst =
   match lst with
@@ -177,16 +185,18 @@ let load_image (image : Image.image) dpi =
     color_palette = new_pallette;
     base_palette = new_pallette;
     dpi;
+    active = true;
   }
 
+let sprite_path name folder =
+  match folder with
+  | Creature_Folder -> "assets/creature_sprites/" ^ name ^ ".png"
+  | GUI_Folder -> "assets/gui_sprites/" ^ name ^ ".png"
+  | Item_Folder -> "assets/item_sprites/" ^ name ^ ".png"
+  | Tile_Folder -> "assets/tile_sprites/" ^ name ^ ".png"
+
 let load_sprite name folder dpi () =
-  let filename =
-    match folder with
-    | Creature_Folder -> "assets/creature_sprites/" ^ name ^ ".png"
-    | GUI_Folder -> "assets/gui_sprites/" ^ name ^ ".png"
-    | Item_Folder -> "assets/item_sprites/" ^ name ^ ".png"
-    | Tile_Folder -> "assets/tile_sprites/" ^ name ^ ".png"
-  in
+  let filename = sprite_path name folder in
   let image = ImageLib_unix.openfile filename in
   load_image image dpi
 
@@ -211,6 +221,12 @@ let draw_sprite_crop
 let draw_sprite sprite x y () =
   draw_from_pixels sprite x y 0 0 sprite.width sprite.height ()
 
+let draw_sprite_centered sprite x y () =
+  draw_sprite sprite
+    (x - (sprite.width / 2))
+    (y - (sprite.height / 2))
+    ()
+
 let draw_creature sprite player () =
   if player then draw_sprite sprite 50 166 ()
   else
@@ -220,10 +236,14 @@ let draw_creature sprite player () =
       ()
 
 let rec wait timer () =
-  if timer = 0 then () else Input.sleep 1. ();
-  match Input.pop_key_option () with
-  | Some _ -> ()
-  | None -> wait (timer - 1) ()
+  if timer = 0 then ()
+  else begin
+    Util.print_int "Timer: " timer;
+    Input.sleep 0.016 ();
+    match Input.pop_key_option () with
+    | Some _ -> ()
+    | None -> wait (timer - 1) ()
+  end
 
 let draw_gradient w h =
   for y = 0 to h - 1 do
@@ -233,27 +253,6 @@ let draw_gradient w h =
       Sdlrender.draw_point2 (renderer ()) ~x ~y
     done
   done
-
-let damage_render player_sprite player clear_function () =
-  let rec damage_render_rec c () =
-    if c = 0 then
-      (* draw_creature enemy_sprite (player = false) (); *)
-      draw_creature player_sprite player ()
-    else begin
-      if c mod 2 = 0 then draw_creature player_sprite player ()
-      else begin
-        clear_function ();
-
-        present ()
-      end;
-      present ();
-      Input.sleep 0.1 ();
-      damage_render_rec (c - 1) ()
-    end
-  in
-  damage_render_rec 7 ();
-  present ();
-  set_color text_color
 
 let add_rgb sprite red green blue () =
   let rec add_rgb_rec = function
@@ -279,6 +278,7 @@ let make_grayscale sprite () =
       sprite.color_palette
 
 let reset_rgb sprite () = sprite.color_palette <- sprite.base_palette
+let set_active (s : sprite) (flag : bool) = s.active <- flag
 
 let change_color sprite i c =
   let rec replace j = function

@@ -34,10 +34,7 @@ let item_type_of_string item_string =
 let new_item name item_type id description cost =
   { name; item_type; description; cost; id }
 
-let create_item name =
-  let json =
-    Yojson.Basic.from_file "assets/util/item_list.json" |> member name
-  in
+let create_item name json =
   {
     name;
     id = json |> member "id" |> to_int;

@@ -2,14 +2,20 @@ open Draw
 open Creature
 open Animation
 open DrawText
-open Sdlkeycode
+open Input
+open Util
 
-let creature_menu_bg = load_sprite "creature_menu" GUI_Folder 3 ()
+let creature_menu_bg = Util.null ()
 let menu_position = Util.new_point ()
 let party_position = Util.new_point ()
-let current_creature = ref (create_creature "clefairy" 100)
+let current_creature = ref null_creature
 let switch_position = Util.new_point ()
-let faint = load_sprite "faint" GUI_Folder 3 ()
+let faint = Util.null ()
+
+let load_assets _ =
+  creature_menu_bg
+  *= Sprite_assets.get_sprite2 "creature_menu" GUI_Folder;
+  faint *= Sprite_assets.get_sprite2 "faint" GUI_Folder
 
 let move_x x () =
   if switch_position.x = -1 then begin
@@ -30,7 +36,7 @@ let move_y y () =
 let draw_status status () =
   let x, y = (56 - 20, 192 - 30) in
   match status with
-  | Fainted -> draw_sprite faint x y ()
+  | Fainted -> draw_sprite ~!faint x y ()
   | _ -> ()
 
 let draw_stats () =
@@ -55,7 +61,7 @@ let draw_stats () =
       (draw_string_colored x2
          (y - (dif * (i + 1)))
          0
-         (string_of_int (get_stat !current_creature s))
+         (Util.string_of_intf (get_stat !current_creature s))
          color text_color)
   done
 
@@ -120,7 +126,7 @@ let draw_moves () =
 let refresh () =
   Ui.add_first_foreground
     (draw_string_colored 24 605 1 "SUMMARY" (rgb 255 170 40) white);
-  Ui.add_last_background (draw_sprite creature_menu_bg 0 0);
+  Ui.add_last_background (draw_sprite ~!creature_menu_bg 0 0);
   Ui.add_first_gameplay
     (draw_sprite (get_front_sprite !current_creature) 9 318);
   Ui.add_first_gameplay
@@ -131,21 +137,20 @@ let refresh () =
     (draw_string_colored 20 220 0
        ("LVL: " ^ string_of_int (get_level !current_creature))
        white text_color);
-  let max, _, aft = get_hp_status !current_creature in
-  Ui.add_first_gameplay
-    (draw_health_bar max aft aft 56 192 180 6 true false);
+  let max, aft = get_hp_status !current_creature in
+  Ui.add_first_gameplay (draw_health_bar max aft 56 192 180 6 true);
   Ui.add_first_gameplay (draw_status (get_status !current_creature));
   let curr_exp, min_exp, max_exp = get_exp !current_creature in
   Ui.add_first_gameplay
     (draw_string_colored 20 140 0 "EXP:" white text_color);
   Ui.add_first_gameplay
-    (draw_exp_bar (max_exp - min_exp) (curr_exp - min_exp)
-       (curr_exp - min_exp) 20 128 210 8);
+    (draw_exp_bar (max_exp -. min_exp) (curr_exp -. min_exp) 20 128 210
+       8);
   Ui.add_first_gameplay
     (draw_string_colored 20 104 0
-       (string_of_int (curr_exp - min_exp)
+       (Util.string_of_intf (curr_exp -. min_exp)
        ^ "/"
-       ^ string_of_int (max_exp - min_exp))
+       ^ Util.string_of_intf (max_exp -. min_exp))
        white text_color);
 
   let type1, type2 = get_types !current_creature in
@@ -177,7 +182,7 @@ let refresh () =
   | None -> ()
   | Some m ->
       Ui.add_first_foreground
-        (draw_text_string_pos 290 120 30 32 m.description text_color2));
+        (draw_text_string_pos 290 120 30 32 m.description));
   draw_moves ()
 
 let set_creature i =
@@ -219,33 +224,29 @@ let rec run_tick () =
   Input.sleep Draw.tick_rate ();
   let key =
     match Input.pop_key_option () with
-    | Some c -> c
-    | None -> Unknown
+    | Some c -> get_ctrl_key c
+    | None -> NoKey
   in
   if menu_position.x = -3 then menu_position.x <- -2;
 
   if menu_position.x <> -2 then begin
-    if key = W || key = Up then move_y (-1) ();
-    if key = S || key = Down then move_y 1 ();
-    if key = A || key = Left then move_x (-1) ();
-    if key = D || key = Right then move_x 1 ()
+    if key = Up then move_y (-1) ();
+    if key = Down then move_y 1 ();
+    if key = Left then move_x (-1) ();
+    if key = Right then move_x 1 ()
   end
   else begin
-    if key = A || key = Left then next_creature (-1);
-    if key = D || key = Right then next_creature 1
+    if key = Left then next_creature (-1);
+    if key = Right then next_creature 1
   end;
 
   (*====== Switch ====== *)
-  if
-    (key = E || key = Z)
-    && menu_position.x >= 0 && switch_position.x = -1
-  then begin
+  if key = Action && menu_position.x >= 0 && switch_position.x = -1 then begin
     switch_position.x <- menu_position.x + 0;
     switch_position.y <- menu_position.y + 0
   end
   else if
-    (key = E || key = Z)
-    && switch_position.x <> -1 && menu_position.x <> -2
+    key = Action && switch_position.x <> -1 && menu_position.x <> -2
   then begin
     switch_move ();
     menu_position.x <- switch_position.x + 0;
@@ -255,12 +256,12 @@ let rec run_tick () =
     refresh ()
   end;
 
-  if (key = E || key = Z) && menu_position.x = -2 then begin
+  if key = Action && menu_position.x = -2 then begin
     menu_position.x <- 0;
     refresh ();
     draw_moves ()
   end;
-  if (key = Q || key = X) && menu_position.x <> -2 then begin
+  if key = Back && menu_position.x <> -2 then begin
     menu_position.x <- -3;
     refresh ()
   end;
@@ -268,11 +269,10 @@ let rec run_tick () =
   refresh ();
 
   Ui.update_all ();
-  if (key <> Q && key <> X) || menu_position.x <> -2 then run_tick ()
+  if key <> Back || menu_position.x <> -2 then run_tick ()
 
 let init () =
   menu_position.x <- -2;
   switch_position.x <- -1;
-
-  refresh ();
+  ignore (Input.poll_key_option ());
   run_tick ()

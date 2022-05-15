@@ -19,9 +19,18 @@ let print_int str i = print_endline (str ^ string_of_int i)
 let bound num min max =
   if num >= max + 1 then max else if num <= min then min else num
 
+let boundf num min max =
+  if num >= max +. 1. then max else if num <= min then min else num
+
+let string_of_intf f = string_of_int (int_of_float f)
+
 let rand max () =
   Random.self_init ();
   Random.int max
+
+let randf max () =
+  Random.self_init ();
+  Random.float max
 
 let captilize_all_string str =
   let lst = String.split_on_char ' ' str in

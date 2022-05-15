@@ -9,6 +9,8 @@ type sprite_sheet = {
   dpi : int;
 }
 
+val empty_spritesheet : sprite_sheet
+
 val init_spritesheet : string -> int -> int -> int -> sprite_sheet
 (** [init_spritesheet filepath sprite_width sprite_column dpi] Returns a
     sprite_sheet type from a given [image] given the number of [row] and
