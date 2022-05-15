@@ -259,6 +259,19 @@ val add_move_i : creature -> Move.move -> int -> unit
 (** [num_moves creature move i] replaces the [i]th move with [move] of
     the [creature] *)
 
+val get_evolution_name : creature -> string
+(** [get_evolution_name c] returns the evolution name of creature [c]*)
+
+val can_evolve : creature -> bool
+(** [can_evolve c] determiens whther a creature [c] can evolve.*)
+
+val evolve : creature -> unit
+(** [evolve c] mutates the creature [c] and evovles it to its next
+    stage.*)
+
+val is_shiny : creature -> bool
+(** [is_shiny c] returns true if [c] is shiny, false otherwise. *)
+
 val level_up_move : creature -> Move.move
 (** [level_up_move creature] returns a possible move when levels up.
     Raise Not_foundwhen when ther is no possible move.*)

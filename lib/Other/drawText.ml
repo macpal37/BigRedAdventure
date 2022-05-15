@@ -75,7 +75,7 @@ let set_text_display (s : string) = text_display := s
 let box_cap = 40
 
 let clear_text clear_sprite () =
-  let sx = 30 in
+  let sx = 46 in
   let sy = 128 in
   draw_sprite clear_sprite 3 0 ();
   draw_text_string_pos sx sy 0 box_cap !text_display ()

@@ -29,8 +29,9 @@ let refresh () =
 
   (match !target_creature with
   | Some creature ->
-      Ui.add_first_gameplay
-        (draw_sprite (get_front_sprite creature) 240 280)
+      if !menu_mode <> Evolution then
+        Ui.add_first_gameplay
+          (draw_sprite (get_front_sprite creature) 280 240)
   | None -> ());
   Ui.add_first_foreground (clear_text empty_sprite)
 
@@ -118,7 +119,35 @@ let rec run_tick () =
               keycode strings of length 1*)
             if String.length !nickname <= 14 then
               nickname := !nickname ^ c_to_string)
-  | Evolution -> ()
+  | Evolution ->
+      let old_name, new_name =
+        ( get_nickname ~!target_creature,
+          get_evolution_name ~!target_creature )
+      in
+      let old_sprite, new_sprite =
+        ( get_front_sprite ~!target_creature,
+          Spritesheet.get_sprite
+            (Sprite_assets.get_spritesheet
+               ("assets/creature_sprites/"
+               ^ String.lowercase_ascii
+                   (get_evolution_name ~!target_creature)
+               ^ ".png"))
+            (if is_shiny ~!target_creature then 1 else 0) )
+      in
+      Animation.animate_evolution old_sprite new_sprite refresh;
+
+      Animation.display_text_box
+        ("Your " ^ old_name ^ " has evolved into a " ^ new_name)
+        false
+        (fun () ->
+          refresh ();
+          Ui.add_first_gameplay (reset_rgb new_sprite);
+          Ui.add_last_gameplay (draw_sprite new_sprite 280 240))
+        ();
+      evolve ~!target_creature;
+
+      wait 240 ();
+      menu_mode := Exit
   | Exit -> ());
 
   (*====== MiniMenu ====== *)
@@ -144,4 +173,14 @@ let init_evolution creature () =
   menu_mode := Evolution;
   target_creature := Some creature;
   ignore (Input.poll_key_option ());
+  Animation.display_text_box
+    ("What? " ^ get_nickname creature ^ " is evolving!")
+    true
+    (fun () ->
+      refresh ();
+
+      Ui.add_last_gameplay
+        (draw_sprite (get_front_sprite ~!target_creature) 280 240))
+    ();
+  wait 60 ();
   run_tick ()

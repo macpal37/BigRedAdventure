@@ -241,6 +241,47 @@
       }
     ]
   },
+  "jaxel": {
+    "name": "Jaxel",
+    "poke_id": 19,
+    "catch_rate": 87,
+    "base_exp": 182,
+    "level_rate": "Medium Fast",
+    "type1": "Electric",
+    "type2": "Dark",
+    "base_stats": {
+      "hp": 70,
+      "attack": 112,
+      "defense": 60,
+      "sp_attack": 50,
+      "sp_defense": 50,
+      "speed": 128
+    },
+    "ev_stat": "attack",
+    "ev_amount": 2,
+    "evolution": {
+      "name": "none",
+      "level_up": -1
+    },
+    "learnset": [
+      {
+        "move": "Scratch",
+        "level": 1
+      },
+      {
+        "move": "Leer",
+        "level": 3
+      },
+      {
+        "move": "Spark",
+        "level": 5
+      },
+      {
+        "move": "Bite",
+        "level": 18
+      }
+    ]
+  },
   "fispie": {
     "name": "Fispie",
     "poke_id": 20,

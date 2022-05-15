@@ -253,6 +253,8 @@ let draw_gradient w h =
     done
   done
 
+let get_dpi sprite = sprite.dpi
+
 let add_rgb sprite red green blue () =
   let rec add_rgb_rec = function
     | [] -> []

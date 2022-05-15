@@ -63,7 +63,7 @@ let rec run_text_animation
 
 let animate_text_box (t : string) (anim : animation) () : unit =
   let frame = anim.frame in
-  let sx = 30 in
+  let sx = 46 in
   let sy = 128 in
   let t' = String.sub t 0 frame in
   Ui.add_last_foreground (draw_text_string_pos sx sy 0 box_cap t');
@@ -526,3 +526,84 @@ let animate_damage_render
     (refresh_func : draw_func) =
   run_animation
     (make_animation refresh_func (damage_render sprite player) 0)
+
+let animate_effect_f
+    sprite
+    red
+    green
+    blue
+    value
+    x
+    y
+    (anim : animation)
+    () =
+  let frame = anim.frame in
+  let rr = red / value in
+  let gg = green / value in
+  let bb = blue / value in
+  Ui.add_first_gameplay (fun () ->
+      add_rgb sprite rr gg bb ();
+      draw_sprite sprite x y ());
+  anim.finished <- frame = value
+
+let evolution (old_s : sprite) (new_s : sprite) (anim : animation) () =
+  let frame = anim.frame in
+
+  let xx, yy = (280, 240) in
+
+  if frame = 0 then begin
+    run_animation
+      (make_animation anim.refresh_func
+         (animate_effect_f old_s 255 255 255 8 xx yy)
+         0);
+    add_rgb new_s 255 255 255 ()
+  end
+  else
+    let x = (frame - 1) mod 6 in
+
+    if x <= 2 then begin
+      let w_old = Draw.change_dpi old_s (3 - x) in
+      let w_new = Draw.change_dpi new_s (1 + x) in
+
+      let x1, y1 =
+        if get_dpi w_old = 3 then (xx, yy)
+        else if get_dpi w_old = 2 then (xx + 20, yy + 40)
+        else (xx + 50, yy + 60)
+      in
+      let x2, y2 =
+        if get_dpi w_new = 3 then (xx, yy)
+        else if get_dpi w_new = 2 then (xx + 20, yy + 40)
+        else (xx + 50, yy + 60)
+      in
+      Ui.add_first_gameplay (draw_sprite w_old x1 y1);
+      Ui.add_first_gameplay (draw_sprite w_new x2 y2)
+    end
+    else
+      let w_old = Draw.change_dpi old_s (x - 2) in
+      let w_new = Draw.change_dpi new_s (6 - x) in
+      let x1, y1 =
+        if get_dpi w_old = 3 then (xx, yy)
+        else if get_dpi w_old = 2 then (xx + 20, yy + 40)
+        else (xx + 50, yy + 60)
+      in
+      let x2, y2 =
+        if get_dpi w_new = 3 then (xx, yy)
+        else if get_dpi w_new = 2 then (xx + 20, yy + 40)
+        else (xx + 50, yy + 60)
+      in
+      Ui.add_first_gameplay (draw_sprite w_old x1 y1);
+      Ui.add_first_gameplay (draw_sprite w_new x2 y2);
+
+      let max_frame = 72 in
+
+      if frame = max_frame then begin
+        reset_rgb new_s ();
+        reset_rgb old_s ()
+      end;
+      anim.finished <- frame >= max_frame
+
+let animate_evolution
+    (old_s : sprite)
+    (new_s : sprite)
+    (refresh_func : draw_func) =
+  run_animation (make_animation refresh_func (evolution old_s new_s) 0)

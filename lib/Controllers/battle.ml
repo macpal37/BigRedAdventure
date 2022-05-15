@@ -238,7 +238,10 @@ let draw_level_up creature frame () =
       draw_string_colored (x2 + 80)
         (y - (dif * (i + 1)))
         0
-        ("+" ^ string_of_intf (get_stat2 new_stats s))
+        ("+"
+        ^ string_of_int
+            (int_of_float (get_stat2 new_stats s)
+            - int_of_float (get_stat2 old_stats s)))
         white text_color ()
     done
   end
@@ -757,7 +760,11 @@ let rec run_tick () =
           Player.add_creature c (State.player ());
           captured_creature := None);
       combat_mode := Exit;
-      wait 240 ()
+      wait 240 ();
+      for i = 0 to List.length (Player.party (State.player ())) - 1 do
+        let c = Player.party_i (State.player ()) i in
+        if can_evolve c then Event_menu.init_evolution c ()
+      done
   | Exit -> ());
 
   refresh_battle 2 ();

@@ -74,6 +74,10 @@ val animate_faint : sprite -> bool -> draw_func -> unit
     creature [sprite] *)
 
 val animate_damage_render : sprite -> bool -> draw_func -> unit
-(** [damage_render sprite is_player (_)] performs the damage animation
-    of either the enemy or the player depedning on the [is_player]
-    boolean *)
+(** [animate_damage_render sprite is_player (_)] performs the damage
+    animation of either the enemy or the player depedning on the
+    [is_player] boolean *)
+
+val animate_evolution : sprite -> sprite -> draw_func -> unit
+(** [animate_evolution old_sprite new_sprite (_)] performs the evolution
+    animation. *)
