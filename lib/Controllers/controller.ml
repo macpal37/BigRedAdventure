@@ -1,8 +1,3 @@
-type modes =
-  | ModeOverworld
-  | ModeBattle
-  | ModeMenu
-
 let load_assets _ =
   Play_assets.load ();
   Sprite_assets.load ();
@@ -11,7 +6,8 @@ let load_assets _ =
   Battle.load_assets ();
   Event_menu.load_assets ();
   Inventory_menu.load_assets ();
-  Party_menu.load_assets ()
+  Party_menu.load_assets ();
+  Main_menu.load_assets ()
 
 let main _ =
   Sdl.init [ `VIDEO; `JOYSTICK ];
@@ -20,5 +16,5 @@ let main _ =
 
   Draw.open_window ();
 
-  Overworld.run_overworld ()
+  Main_menu.init ()
 (* Battle.start_wild_battle (Creature.create_creature "rafu" 4) *)

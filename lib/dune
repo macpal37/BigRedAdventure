@@ -8,6 +8,7 @@
   ; =====Controllers=====
   battle
   controller
+  main_menu
   inventory_menu
   creature_menu
   event_menu
