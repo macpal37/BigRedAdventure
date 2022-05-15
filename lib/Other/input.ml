@@ -22,8 +22,8 @@ let ( => ) (sdl : Sdlkeycode.t) (ctrl : control_key) : bool =
     | Sdlkeycode.Down -> Down
     | Sdlkeycode.Left -> Left
     | Sdlkeycode.Right -> Right
-    | Sdlkeycode.X -> Action
-    | Sdlkeycode.Z -> Back
+    | Sdlkeycode.X | Sdlkeycode.Return | Sdlkeycode.E -> Action
+    | Sdlkeycode.Z | Sdlkeycode.Q | Sdlkeycode.Backspace -> Back
     | Sdlkeycode.Slash -> Start
     | Sdlkeycode.Period -> Select
     | Sdlkeycode.D | Sdlkeycode.S -> Debug

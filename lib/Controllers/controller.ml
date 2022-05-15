@@ -21,4 +21,5 @@ let main _ =
   Draw.open_window ();
 
   Overworld.run_overworld ()
+(* Event_menu.init_capture (Creature.create_creature "rafu" 4) () *)
 (* Battle.start_wild_battle (Creature.create_creature "rafu" 4) *)

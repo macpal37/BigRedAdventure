@@ -105,7 +105,7 @@ end
 
 val null_creature : creature
 
-val empty_stats : stats
+val empty_stats : unit -> stats
 (** Represents an emtpy set of stats*)
 
 (** {1 Creature Creation}*)
@@ -217,6 +217,8 @@ val add_exp : creature -> float -> (float * float * float * int) list
     [max, before, after, level]*)
 
 val add_pp : creature -> string -> int -> unit
+(** [add_pp creature move amount] adds [amount] of pp to the [move] from
+    the [creature]*)
 
 val get_nickname : creature -> string
 (** [get_nickname creature] returns a [creature]'s nickname*)
@@ -225,10 +227,51 @@ val set_nickname : creature -> string -> unit
 (** [get_nickname creature] returns a [creature]'s nickname*)
 
 val get_front_sprite : creature -> Draw.sprite
-val set_front_sprite : creature -> Draw.sprite -> unit
+(** [get_front_sprite creature] returns the front_sprite of the
+    [creature]*)
+
 val get_back_sprite : creature -> Draw.sprite
-val set_back_sprite : creature -> Draw.sprite -> unit
+(** [get_back_sprite creature] returns the back_sprite of the [creature]*)
+
 val get_hp_status : creature -> float * float
+(** [get_hp_status creature] returns the [max] and [current] hp of the
+    [creature] as a tuple.*)
+
 val get_specias : creature -> string
+(** [get_specias creature] returns the species name of the creature*)
+
 val get_color_from_etype : etype -> Draw.color
+(** [get_color_from_etype etype] returns a color that corresponds to the
+    elemental type [etype]. *)
+
 val get_move_i : creature -> int -> Move.move option
+(** [get_move_i creature i] returns the [i]th move from the [creature] *)
+
+val num_moves : creature -> int
+(** [num_moves creature i] returns the number of moves from the
+    [creature] *)
+
+val add_move : creature -> Move.move -> unit
+(** [add_move creature move] adds a [move] to the last slot of
+    [creature] *)
+
+val add_move_i : creature -> Move.move -> int -> unit
+(** [num_moves creature move i] replaces the [i]th move with [move] of
+    the [creature] *)
+
+val get_evolution_name : creature -> string
+(** [get_evolution_name c] returns the evolution name of creature [c]*)
+
+val can_evolve : creature -> bool
+(** [can_evolve c] determiens whther a creature [c] can evolve.*)
+
+val evolve : creature -> unit
+(** [evolve c] mutates the creature [c] and evovles it to its next
+    stage.*)
+
+val is_shiny : creature -> bool
+(** [is_shiny c] returns true if [c] is shiny, false otherwise. *)
+
+val level_up_move : creature -> Move.move
+(** [level_up_move creature] returns a possible move when levels up.
+    Raise Not_foundwhen when ther is no possible move.*)

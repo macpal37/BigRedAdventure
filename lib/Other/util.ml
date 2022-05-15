@@ -16,6 +16,13 @@ let ( ~! ) = deref
 let ( *= ) = assign
 let print_int str i = print_endline (str ^ string_of_int i)
 
+exception Found_None
+
+let ( !! ) opt =
+  match opt with
+  | Some c -> c
+  | None -> raise Found_None
+
 let bound num min max =
   if num >= max + 1 then max else if num <= min then min else num
 
