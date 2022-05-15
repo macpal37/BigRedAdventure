@@ -140,7 +140,6 @@ let interact e =
   | Heal -> heal_party ()
   | Merchant -> failwith "Unimplemented"
   | Door _ -> failwith "Unimplemented"
-  | Trainer _ -> failwith "Unimplemented"
   | _ -> failwith "Unimplemented"
 
 let update = failwith "Unimplemented"
