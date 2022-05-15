@@ -54,7 +54,7 @@
                 {
                  "name":"is_obstacle",
                  "type":"bool",
-                 "value":false
+                 "value":true
                 }, 
                 {
                  "name":"orientation",

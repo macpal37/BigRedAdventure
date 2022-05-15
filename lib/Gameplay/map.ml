@@ -15,6 +15,7 @@ type encounters = encounter list
 
 type tile_type =
   | Path
+  | Grass of encounters
   | Obstacle
 
 type tile = {
@@ -45,6 +46,11 @@ let encounter_of_json json =
     rate = json_val json to_float "encounter_rate";
     levels = json_val json to_string "level_range" |> string_to_range;
   }
+(* let encounters_of_json json = json |> to_list |> List.map
+   encounter_of_json *)
+
+(* let all_encounters_of_json json = json_list json encounters_of_json
+   "encounters" |> Array.of_list *)
 
 let encounters =
   let json = Yojson.Basic.from_file "assets/util/encounters.json" in
@@ -74,7 +80,18 @@ let json_build_matrix w json =
   ll_to_matrix (json_build_matrix_r l w w [])
 
 let build_id_arrays json w =
-  json |> member "layers" |> to_list |> List.map (json_build_matrix w)
+  let layers = json |> member "layers" |> to_list in
+  let rec build_id_arrays_rec = function
+    | [] -> []
+    | h :: t -> (
+        try json_build_matrix w h :: build_id_arrays_rec t
+        with Yojson.Basic.Util.Type_error (_, _) ->
+          build_id_arrays_rec t)
+  in
+  build_id_arrays_rec layers
+
+(* json |> member "layers" |> to_list |> List.map (json_build_matrix
+   w) *)
 
 let json_tilesets json = json |> member "tilesets" |> to_list
 
@@ -168,7 +185,7 @@ let load_map map_name =
   match build_id_arrays json w with
   | [ tile_id_m; encounter_id_m ] -> (
       match json_tilesets json with
-      | [ tile_t; encounter_t ] ->
+      | [ tile_t; encounter_t; _ ] ->
           let tileset_l = json_tileset tile_t in
           let encounter_l = json_encounters encounter_t in
           let tile_m = build_tile_matrix tile_id_m tileset_l in
