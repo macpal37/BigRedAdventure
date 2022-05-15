@@ -142,6 +142,7 @@ val reset_rgb : sprite -> unit -> unit
 (** (reset_rgb sprite () ) resets the rgb values of the sprite.*)
 
 val add_rgb : sprite -> int -> int -> int -> unit -> unit
+val get_dpi : sprite -> int
 
 val create_sprite :
   int array -> Graphics.color list -> int -> int -> int -> sprite

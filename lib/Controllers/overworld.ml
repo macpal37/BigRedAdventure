@@ -88,7 +88,8 @@ let draw _ =
   draw_player (Player.orie (State.player ()))
 
 let encounter_anim _ =
-  for i = 1 to 60 do
+  for i = 1 to 30 do
+    let i = i * 2 in
     Draw.set_color 0;
     draw ();
     Draw.fill_rect (400 - (7 * i)) (360 - (6 * i)) (14 * i) (12 * i);

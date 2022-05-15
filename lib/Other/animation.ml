@@ -63,10 +63,10 @@ let rec run_text_animation
 
 let animate_text_box (t : string) (anim : animation) () : unit =
   let frame = anim.frame in
-  let sx = 30 in
+  let sx = 46 in
   let sy = 128 in
   let t' = String.sub t 0 frame in
-  Ui.add_last_foreground (draw_text_string_pos sx sy 0 box_cap t');
+  Ui.add_last_foreground (draw_text_string_pos sx sy Medium box_cap t');
   anim.finished <- frame >= String.length t
 
 let display_text_box
@@ -74,33 +74,35 @@ let display_text_box
     (sticky : bool)
     (refresh_func : draw_func)
     () : unit =
-  let rec get_text_boxes text_box c boxes = function
-    | [] -> boxes @ [ text_box ]
-    | h :: t ->
-        if c < 3 then
-          get_text_boxes (text_box ^ " " ^ h) (c + 1) boxes t
-        else get_text_boxes "" 0 (boxes @ [ text_box ]) (h :: t)
-  in
-  let text_boxes =
-    get_text_boxes "" 0 [] (get_text_transcript text box_cap)
-  in
+  (if text <> "" then
+   let rec get_text_boxes text_box c boxes = function
+     | [] -> boxes @ [ text_box ]
+     | h :: t ->
+         if c < 3 then
+           if text_box = "" then get_text_boxes h (c + 1) boxes t
+           else get_text_boxes (text_box ^ " " ^ h) (c + 1) boxes t
+         else get_text_boxes "" 0 (boxes @ [ text_box ]) (h :: t)
+   in
+   let text_boxes =
+     get_text_boxes "" 0 [] (get_text_transcript text box_cap)
+   in
 
-  let rec run_text_rec = function
-    | [] -> ()
-    | h :: t ->
-        Input.sleep Draw.tick_rate ();
-        set_text_display "";
+   let rec run_text_rec = function
+     | [] -> ()
+     | h :: t ->
+         Input.sleep Draw.tick_rate ();
+         set_text_display "";
 
-        refresh_func ();
-        Ui.update_all ();
-        run_text_animation h
-          (make_animation refresh_func (animate_text_box h) 0)
-          sticky;
-        run_text_rec t;
-        set_text_display h
-  in
+         refresh_func ();
+         Ui.update_all ();
+         run_text_animation h
+           (make_animation refresh_func (animate_text_box h) 0)
+           sticky;
+         run_text_rec t;
+         set_text_display h
+   in
 
-  run_text_rec text_boxes;
+   run_text_rec text_boxes);
   if sticky = false then set_text_display ""
 
 let hp_to_string (hp : float) =
@@ -114,7 +116,7 @@ let draw_hp_val x y (curr : float) (max : float) player () =
     let combat_bg = white in
     set_color combat_bg;
     fill_rect (current_x () - 2) (current_y () - 4) 100 24;
-    (DrawText.draw_string_colored x (y - 8) 0
+    (DrawText.draw_string_colored x (y - 8) Small
        (hp_to_string curr ^ "/" ^ hp_to_string max)
        white text_color)
       ()
@@ -140,7 +142,7 @@ let draw_health_bar
   draw_rect xh yh hwidth hheight;
   if hp_text && !show_hp_val then
     draw_hp_val
-      (xh + (hwidth / 2))
+      (xh + (hwidth / 2) - 10)
       (yh - hheight - 5 - 22)
       curr max hp_text ();
   set_color blank;
@@ -189,22 +191,23 @@ let health_bar
   let max, before, after =
     (boundf max 0. max, boundf before 0. max, boundf after 0. max)
   in
-  let frame = anim.frame in
+  let frame = float_of_int anim.frame *. 1.5 in
 
   let new_hp =
     before
-    +. float_of_int
-         (if before > after then -frame
-         else if after > before then frame
-         else 0)
+    +. (if before > after then 0. -. frame
+       else if after > before then frame
+       else 0.)
        *. max /. 100.
   in
 
   Ui.add_last_foreground (fun () ->
-      show_hp_val := true;
+      if hp_text then show_hp_val := true;
       draw_health_bar max new_hp xh yh hwidth hheight hp_text ();
-      show_hp_val := false);
-  anim.finished <- int_of_float new_hp = int_of_float after
+      if hp_text then show_hp_val := false);
+  if before >= after then
+    anim.finished <- int_of_float new_hp <= int_of_float after
+  else anim.finished <- int_of_float new_hp >= int_of_float after
 
 let animate_health_bar
     (max : float)
@@ -221,7 +224,7 @@ let animate_health_bar
     (make_animation refresh_func
        (health_bar max before after xh yh hwidth hheight hp_text)
        0);
-  if hp_text then show_hp_val := true
+  show_hp_val := true
 
 let exp_bar
     (max : float)
@@ -236,8 +239,8 @@ let exp_bar
   let max, before, after =
     (boundf max 0. max, boundf before 0. after, boundf after 0. max)
   in
-  let frame = anim.frame * 2 in
-  let curr_bar = (before /. max *. 100.) +. float_of_int frame in
+  let frame = float_of_int anim.frame *. 2.5 in
+  let curr_bar = (before /. max *. 100.) +. frame in
   let goal_bar = after /. max *. 100. in
   let curr_exp = curr_bar /. 100. *. max in
   Ui.add_last_foreground
@@ -324,68 +327,114 @@ let animate_raise_stat_effect sprite player (refresh_func : draw_func) =
   run_animation
     (make_animation refresh_func (raise_stat_effect sprite player) 0)
 
-let switch
-    (switching_out : sprite)
+let burn_effect sprite player (anim : animation) () =
+  let frame = anim.frame in
+  if anim.frame = 0 then make_grayscale sprite ();
+  (match frame with
+  | 0 ->
+      run_animation
+        (make_animation anim.refresh_func
+           (animate_effect sprite player 252 78 30 16)
+           0);
+      run_animation
+        (make_animation anim.refresh_func
+           (animate_effect sprite player (-50) (-78) (-30) 16)
+           0)
+  | 1 ->
+      Ui.add_first_gameplay (fun () ->
+          reset_rgb sprite ();
+          draw_creature sprite player ())
+  | _ -> ());
+  anim.finished <- frame >= 1
+
+let poison_effect sprite player (anim : animation) () =
+  let frame = anim.frame in
+  if anim.frame = 0 then make_grayscale sprite ();
+  (match frame with
+  | 0 ->
+      run_animation
+        (make_animation anim.refresh_func
+           (animate_effect sprite player 185 30 252 16)
+           0);
+      run_animation
+        (make_animation anim.refresh_func
+           (animate_effect sprite player (-100) (-30) (-50) 16)
+           0)
+  | 1 ->
+      Ui.add_first_gameplay (fun () ->
+          reset_rgb sprite ();
+          draw_creature sprite player ())
+  | _ -> ());
+  anim.finished <- frame >= 1
+
+let animate_status sprite player status (refresh_func : draw_func) =
+  match status with
+  | Creature.Burn ->
+      run_animation
+        (make_animation refresh_func (burn_effect sprite player) 0)
+  | Poison _ ->
+      run_animation
+        (make_animation refresh_func (poison_effect sprite player) 0)
+  | _ -> ()
+
+let switch_in
     (switching_in : sprite)
     (player : bool)
-    (name_out : string)
-    (name_in : string)
     (anim : animation)
     () =
   let frame = anim.frame in
-
   (match frame with
   | 0 ->
-      display_text_box
-        ("Come back " ^ name_in ^ "!")
-        true anim.refresh_func ()
-  | 1 ->
-      run_animation
-        (make_animation anim.refresh_func
-           (animate_effect switching_out player 255 255 255 4)
-           0)
-  | 2 ->
-      set_active switching_out false;
-      let small1 = Draw.change_dpi switching_out 2 in
-      Ui.add_last_gameplay (draw_creature small1 player);
-      wait 15 ()
-  | 3 ->
-      let small2 = Draw.change_dpi switching_out 1 in
-      Ui.add_last_gameplay (draw_creature small2 player);
-      wait 15 ()
-  | 4 ->
-      display_text_box
-        ("Go " ^ name_out ^ "!")
-        true anim.refresh_func ()
-  | 5 ->
       let small3 = Draw.change_dpi switching_in 1 in
       add_rgb small3 255 255 255 ();
       Ui.add_last_gameplay (draw_creature small3 player);
       wait 15 ()
-  | 6 ->
+  | 1 ->
       let small4 = Draw.change_dpi switching_in 2 in
       add_rgb small4 255 255 255 ();
       Ui.add_last_gameplay (draw_creature small4 player);
       wait 15 ()
-  | 7 ->
+  | 2 ->
       Ui.add_last_gameplay (draw_creature switching_in player);
-      Ui.add_last_gameplay (reset_rgb switching_out);
       Ui.add_last_gameplay (reset_rgb switching_in)
   | _ -> ());
-  set_active switching_out true;
-  anim.finished <- frame = 7
+  anim.finished <- frame >= 2
 
-let animate_switch
+let switch_out
     (switching_out : sprite)
+    (player : bool)
+    (anim : animation)
+    () =
+  let frame = anim.frame in
+  (match frame with
+  | 0 ->
+      run_animation
+        (make_animation anim.refresh_func
+           (animate_effect switching_out player 255 255 255 4)
+           0)
+  | 1 ->
+      let small1 = Draw.change_dpi switching_out 2 in
+      Ui.add_last_gameplay (draw_creature small1 player)
+  | 2 ->
+      let small2 = Draw.change_dpi switching_out 1 in
+      Ui.add_last_gameplay (draw_creature small2 player);
+      Ui.add_last_gameplay (reset_rgb switching_out)
+  | _ -> ());
+  anim.finished <- frame >= 2
+
+let animate_switch_in
     (switching_in : sprite)
     (player : bool)
-    (name_out : string)
-    (name_in : string)
     (refresh_func : draw_func) =
   run_animation
-    (make_animation refresh_func
-       (switch switching_out switching_in player name_out name_in)
-       0)
+    (make_animation refresh_func (switch_in switching_in player) 0)
+
+let animate_switch_out
+    (switching_out : sprite)
+    (player : bool)
+    (refresh_func : draw_func) =
+  run_animation
+    (make_animation refresh_func (switch_out switching_out player) 0)
 
 let animate_sprite (ss : sprite array) x y (anim : animation) () =
   let frame = anim.frame in
@@ -399,32 +448,40 @@ let animate_toss_ball (ss : sprite array) (anim : animation) () =
   Ui.add_last_gameplay (draw_sprite (Array.get ss (frame mod 3)) x y);
   anim.finished <- frame = 21
 
-let capture spritesheet creature results pokeball (anim : animation) ()
+let capture spritesheet creature results ball_type (anim : animation) ()
     =
   let frame = anim.frame in
-  let c = spritesheet.columns in
-  let x, y = (510 + 30, 430 - 34) in
+  let c = spritesheet.columns - 1 in
+  let x, y = (540, 396) in
 
   (match frame with
   | 0 ->
       let toss_anim =
         Array.init 3 (fun i ->
-            get_sprite spritesheet ((i * c) + pokeball))
-      in
+            let ix = (i * c) + ball_type in
 
+            get_sprite spritesheet ix)
+      in
+      Ui.add_last_gameplay (draw_creature creature false);
       run_animation
-        (make_animation anim.refresh_func
+        (make_animation
+           (fun () ->
+             anim.refresh_func ();
+             Ui.add_last_gameplay (draw_creature creature false))
            (animate_toss_ball toss_anim)
            0)
   | 1 ->
       let capture_anim =
         Array.init 13 (fun i ->
             if i < 12 then
-              get_sprite spritesheet (((i + 3) * c) + pokeball)
-            else get_sprite spritesheet ((18 * c) + pokeball))
+              get_sprite spritesheet (((i + 3) * c) + ball_type)
+            else get_sprite spritesheet ((18 * c) + ball_type))
       in
       run_animation
-        (make_animation anim.refresh_func
+        (make_animation
+           (fun () ->
+             anim.refresh_func ();
+             Ui.add_last_gameplay (draw_creature creature false))
            (animate_sprite capture_anim x (y + 4))
            0)
   | 2 ->
@@ -439,23 +496,24 @@ let capture spritesheet creature results pokeball (anim : animation) ()
       let small2 = Draw.change_dpi creature 1 in
       Ui.add_last_gameplay (draw_sprite small2 (x + 50) (y + 60))
   | 5 -> reset_rgb creature ()
-  | 6 | 7 | 8 ->
+  | 6 | 7 | 8 | 9 ->
       let shake_anim =
         Array.init 8 (fun i ->
             if i < 5 then
-              get_sprite spritesheet (((i + 15) * c) + pokeball)
-            else get_sprite spritesheet (((23 - i) * c) + pokeball))
+              get_sprite spritesheet (((i + 15) * c) + ball_type)
+            else get_sprite spritesheet (((23 - i) * c) + ball_type))
       in
       run_animation
         (make_animation anim.refresh_func
            (animate_sprite shake_anim (x + 4) y)
-           0)
+           0);
+      wait 5 ()
   | _ -> ());
   if frame >= 6 then
     if List.nth results (frame - 6) = false then begin
       let fail_anim =
         Array.init 7 (fun i ->
-            get_sprite spritesheet (((i + 20) * c) + pokeball))
+            get_sprite spritesheet (((i + 20) * c) + ball_type))
       in
       run_animation
         (make_animation anim.refresh_func
@@ -463,10 +521,10 @@ let capture spritesheet creature results pokeball (anim : animation) ()
            0);
       anim.finished <- true
     end
-    else if frame = 8 then begin
+    else if frame = 9 then begin
       let success_anim =
         Array.init 6 (fun i ->
-            get_sprite spritesheet (((i + 27) * c) + pokeball))
+            get_sprite spritesheet (((i + 27) * c) + ball_type))
       in
       run_animation
         (make_animation anim.refresh_func
@@ -479,15 +537,15 @@ let animate_capture
     spritesheet
     creature
     results
-    pokeball
+    ball_type
     (refresh_func : draw_func) =
   run_animation
     (make_animation refresh_func
-       (capture spritesheet creature results pokeball)
+       (capture spritesheet creature results ball_type)
        0)
 
 let faint sprite player (anim : animation) () =
-  let frame = anim.frame + 1 in
+  let frame = (float_of_int anim.frame +. 2.) /. 2. in
   let sprite_width, sprite_height = get_dimension sprite in
   let xh, yh =
     if player then (50, 166)
@@ -495,15 +553,13 @@ let faint sprite player (anim : animation) () =
   in
   Ui.add_last_gameplay (fun () ->
       draw_sprite_crop sprite xh yh (0, sprite_width)
-        (sprite_height - (sprite_height / frame), sprite_height)
+        (0, int_of_float (float_of_int sprite_height /. frame))
         ());
 
-  (* Ui.add_last_gameplay (fun () ->
-
-     draw_sprite_crop sprite xx (yy - (sprite_height - (sprite_height /
-     frame))) (0, sprite_width) (sprite_height - (sprite_height /
-     frame), sprite_height) (); ); *)
-  anim.finished <- frame = 20
+  (* Ui.add_last_gameplay (fun () -> draw_sprite_crop sprite xh yh (0,
+     sprite_width) ( sprite_height - int_of_float (float_of_int
+     sprite_height /. frame), sprite_height ) ()); *)
+  anim.finished <- frame >= 20.
 
 let animate_faint sprite player (refresh_func : draw_func) =
   run_animation (make_animation refresh_func (faint sprite player) 0)
@@ -521,3 +577,84 @@ let animate_damage_render
     (refresh_func : draw_func) =
   run_animation
     (make_animation refresh_func (damage_render sprite player) 0)
+
+let animate_effect_f
+    sprite
+    red
+    green
+    blue
+    value
+    x
+    y
+    (anim : animation)
+    () =
+  let frame = anim.frame in
+  let rr = red / value in
+  let gg = green / value in
+  let bb = blue / value in
+  Ui.add_first_gameplay (fun () ->
+      add_rgb sprite rr gg bb ();
+      draw_sprite sprite x y ());
+  anim.finished <- frame = value
+
+let evolution (old_s : sprite) (new_s : sprite) (anim : animation) () =
+  let frame = anim.frame in
+
+  let xx, yy = (280, 240) in
+
+  if frame = 0 then begin
+    run_animation
+      (make_animation anim.refresh_func
+         (animate_effect_f old_s 255 255 255 8 xx yy)
+         0);
+    add_rgb new_s 255 255 255 ()
+  end
+  else
+    let x = (frame - 1) mod 6 in
+
+    if x <= 2 then begin
+      let w_old = Draw.change_dpi old_s (3 - x) in
+      let w_new = Draw.change_dpi new_s (1 + x) in
+
+      let x1, y1 =
+        if get_dpi w_old = 3 then (xx, yy)
+        else if get_dpi w_old = 2 then (xx + 20, yy + 40)
+        else (xx + 50, yy + 60)
+      in
+      let x2, y2 =
+        if get_dpi w_new = 3 then (xx, yy)
+        else if get_dpi w_new = 2 then (xx + 20, yy + 40)
+        else (xx + 50, yy + 60)
+      in
+      Ui.add_first_gameplay (draw_sprite w_old x1 y1);
+      Ui.add_first_gameplay (draw_sprite w_new x2 y2)
+    end
+    else
+      let w_old = Draw.change_dpi old_s (x - 2) in
+      let w_new = Draw.change_dpi new_s (6 - x) in
+      let x1, y1 =
+        if get_dpi w_old = 3 then (xx, yy)
+        else if get_dpi w_old = 2 then (xx + 20, yy + 40)
+        else (xx + 50, yy + 60)
+      in
+      let x2, y2 =
+        if get_dpi w_new = 3 then (xx, yy)
+        else if get_dpi w_new = 2 then (xx + 20, yy + 40)
+        else (xx + 50, yy + 60)
+      in
+      Ui.add_first_gameplay (draw_sprite w_old x1 y1);
+      Ui.add_first_gameplay (draw_sprite w_new x2 y2);
+
+      let max_frame = 72 in
+
+      if frame = max_frame then begin
+        reset_rgb new_s ();
+        reset_rgb old_s ()
+      end;
+      anim.finished <- frame >= max_frame
+
+let animate_evolution
+    (old_s : sprite)
+    (new_s : sprite)
+    (refresh_func : draw_func) =
+  run_animation (make_animation refresh_func (evolution old_s new_s) 0)

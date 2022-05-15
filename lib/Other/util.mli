@@ -19,6 +19,12 @@ val assign : 'a pointer -> 'a -> unit
 val ( ~! ) : 'a pointer -> 'a
 val ( *= ) : 'a pointer -> 'a -> unit
 
+exception Found_None
+
+val ( !! ) : 'a option -> 'a
+(** Forces the value of an option to be returned. Raises [Found_None] if
+    the option is None*)
+
 type point = {
   mutable x : int;
   mutable y : int;

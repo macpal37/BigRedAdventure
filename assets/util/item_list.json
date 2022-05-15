@@ -33,7 +33,7 @@
     "id": 6,
     "type": "Medicine",
     "description": "Restore the PP of a single move to full.",
-    "cost": 1500
+    "cost": 2500
   },
   "revive": {
     "id": 7,
@@ -46,6 +46,42 @@
     "type": "Medicine",
     "description": "Revives a fainted creature to full hp.",
     "cost": 1500
+  },
+  "antidote": {
+    "id": 9,
+    "type": "Medicine",
+    "description": "Cures a creature of posion.",
+    "cost": 200
+  },
+  "burn heal": {
+    "id": 10,
+    "type": "Medicine",
+    "description": "Heals a burned creature.",
+    "cost": 250
+  },
+  "ice heal": {
+    "id": 11,
+    "type": "Medicine",
+    "description": "Defrosts a frozen creature",
+    "cost": 250
+  },
+  "paralyze heal": {
+    "id": 12,
+    "type": "Medicine",
+    "description": "Heals a paralyzed creature",
+    "cost": 250
+  },
+  "awakening": {
+    "id": 13,
+    "type": "Medicine",
+    "description": "Awakes a sleeping creature",
+    "cost": 250
+  },
+  "full heal": {
+    "id": 14,
+    "type": "Medicine",
+    "description": "Heals all status effects.",
+    "cost": 250
   },
   "poke ball": {
     "id": 50,

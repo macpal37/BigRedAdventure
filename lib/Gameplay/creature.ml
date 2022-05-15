@@ -22,11 +22,6 @@ type stat =
   | Sp_Defense
   | Speed
 
-type learnset_moves = {
-  move : string;
-  level_learned : int;
-}
-
 type status =
   | Healthy
   | Sleep of int ref
@@ -121,6 +116,8 @@ module Move = struct
     | "Fighting" -> Fighting
     | _ -> NoType
 
+  type learnset_moves = int * move
+
   let parse_move name json =
     {
       move_name = name;
@@ -149,33 +146,40 @@ end
 
 open Move
 
+type evolution = {
+  name : string;
+  level_up : int;
+  item : int option;
+}
+
 type creature = {
   mutable nickname : string;
-  species : string;
+  mutable species : string;
   mutable level : int;
   mutable current_hp : float;
   mutable exp : float;
-  base_stats : stats;
+  mutable base_stats : stats;
   mutable current_stats : stats;
   iv_stats : stats;
   mutable ev_stats : stats;
   mutable current_status : status;
-  etypes : etype * etype;
+  mutable etypes : etype * etype;
   nature : nature;
   leveling_rate : leveling_rate;
-  ev_gain : stat * int;
-  poke_id : int;
-  catch_rate : int;
-  base_exp : float;
+  mutable ev_gain : stat * int;
+  mutable poke_id : int;
+  mutable catch_rate : int;
+  mutable base_exp : float;
   mutable friendship : int;
-  learnset : learnset_moves list;
+  mutable learnset : learnset_moves list;
   moves : move option array;
   mutable front_sprite : Draw.sprite;
   mutable back_sprite : Draw.sprite;
+  mutable evolution : evolution;
   shiny : bool;
 }
 
-let empty_stats =
+let empty_stats () =
   {
     max_hp = 0.;
     attack = 0.;
@@ -185,37 +189,8 @@ let empty_stats =
     speed = 0.;
   }
 
-let null_creature =
-  {
-    nickname = "";
-    species = "";
-    level = -1;
-    current_hp = -1.;
-    exp = -1.;
-    base_stats = empty_stats;
-    current_stats = empty_stats;
-    iv_stats = empty_stats;
-    ev_stats = empty_stats;
-    current_status = Healthy;
-    etypes = (NoType, NoType);
-    nature = { name = ""; buff = HP; nerf = HP; id = -1 };
-    leveling_rate = Fast;
-    ev_gain = (HP, -1);
-    poke_id = -1;
-    catch_rate = -1;
-    base_exp = -1.;
-    friendship = -1;
-    learnset = [];
-    moves = [||];
-    front_sprite = Draw.empty_sprite;
-    back_sprite = Draw.empty_sprite;
-    shiny = false;
-  }
-
 let get_front_sprite creature = creature.front_sprite
-let set_front_sprite creature sprite = creature.front_sprite <- sprite
 let get_back_sprite creature = creature.back_sprite
-let set_back_sprite creature sprite = creature.back_sprite <- sprite
 
 let string_of_status stat_var =
   match stat_var with
@@ -228,6 +203,17 @@ let string_of_status stat_var =
   | Fainted -> "Fainted"
 
 let get_moves creature = creature.moves
+
+let num_moves c : int =
+  Array.fold_left
+    (fun x y ->
+      match y with
+      | Some _ -> x + 1
+      | None -> x)
+    0 c.moves
+
+let add_move c m = c.moves.(num_moves c + 1) <- Some m
+let add_move_i c m i = c.moves.(i) <- Some m
 
 let get_move_i creature i =
   let size = Array.length creature.moves in
@@ -313,9 +299,19 @@ let string_of_etype etype_var =
 
 (**=============== JSON Parsing ============**)
 let parse_learn_set json =
+  let name = json |> member "move" |> to_string in
+
+  (json |> member "level" |> to_int, create_move name)
+
+let parse_evolution json =
+  let null = json |> member "null" in
+
+  if json |> member "item" = null then print_endline "It works!";
+
   {
-    move = json |> member "move" |> to_string;
-    level_learned = json |> member "level" |> to_int;
+    name = json |> member "name" |> to_string;
+    level_up = json |> member "level_up" |> to_int;
+    item = None;
   }
 
 let stats_of_json json =
@@ -344,13 +340,18 @@ let level_rate_from_json json =
 
 let generate_moves learnset level =
   let possible_moves =
-    List.rev (List.filter (fun a -> a.level_learned <= level) learnset)
+    List.rev
+      (List.filter
+         (fun a ->
+           let lvl, _ = a in
+           lvl <= level)
+         learnset)
   in
   let moves = Array.make 4 None in
   for i = 1 to 4 do
     if i <= List.length possible_moves then
       moves.(List.length possible_moves - i) <-
-        Some (create_move (List.nth possible_moves (i - 1)).move)
+        Some (snd (List.nth possible_moves (i - 1)))
   done;
 
   moves
@@ -408,6 +409,9 @@ let calculate_stats level bstats ivs evs nature =
   mod_statc un_mod_stats nature.nerf 0.90;
   mod_statc un_mod_stats nature.buff 1.1;
   un_mod_stats
+
+let recalc_stats c =
+  calculate_stats c.level c.base_stats c.iv_stats c.ev_stats c.nature
 
 (** Generate Indiviudal Values (IVs) for the creature, randomizng the
     seed each time*)
@@ -470,10 +474,9 @@ let exp_calc level rate =
       +. (100. *. level) -. 140.
   | Slow -> 5. *. level *. level *. level /. 4.
 
-let create_creature name (level : int) =
+let create_creature_mod n (level : int) normal shiny =
   let json =
-    Yojson.Basic.from_file "assets/util/creature_list.json"
-    |> member name
+    Yojson.Basic.from_file "assets/util/creature_list.json" |> member n
   in
 
   Random.self_init ();
@@ -482,16 +485,20 @@ let create_creature name (level : int) =
   let ivs = generate_ivs () in
   let random_nature = generate_nature (rand 25 ()) in
   let curr_stats =
-    calculate_stats level bstats ivs empty_stats random_nature
+    calculate_stats level bstats ivs (empty_stats ()) random_nature
   in
   let lev_rate = level_rate_from_json json in
   let learnset =
     json |> member "learnset" |> to_list |> List.map parse_learn_set
   in
-  let shiny_chance = Random.int 100 = 0 in
+  let shiny_chance = if normal then shiny else Random.int 100 = 0 in
   let sprite_sheet =
-    Sprite_assets.get_spritesheet
-      ("assets/creature_sprites/" ^ String.lowercase_ascii name ^ ".png")
+    if String.lowercase_ascii n <> "missingno" then
+      Sprite_assets.get_spritesheet
+        ("assets/creature_sprites/"
+        ^ String.lowercase_ascii name
+        ^ ".png")
+    else Spritesheet.empty_spritesheet
   in
   {
     nickname = name;
@@ -502,7 +509,7 @@ let create_creature name (level : int) =
     base_stats = bstats;
     current_stats = curr_stats;
     iv_stats = ivs;
-    ev_stats = empty_stats;
+    ev_stats = empty_stats ();
     current_status = Healthy;
     etypes = (etype_from_json json 1, etype_from_json json 2);
     leveling_rate = lev_rate;
@@ -522,8 +529,14 @@ let create_creature name (level : int) =
     back_sprite =
       Spritesheet.get_sprite sprite_sheet
         (if shiny_chance then 3 else 2);
+    evolution = parse_evolution (json |> member "evolution");
     shiny = shiny_chance;
   }
+
+let create_creature n (level : int) =
+  create_creature_mod n level false false
+
+let null_creature = create_creature "missingno" 1
 
 let get_nature creature =
   (creature.nature.name, creature.nature.buff, creature.nature.nerf)
@@ -595,7 +608,7 @@ let add_ev_gain creature (stat, amount) =
   | _ -> ()
 
 let get_exp_gain creature =
-  (float_of_int creature.level *. creature.base_exp /. 5. *. 10.) +. 1.
+  (float_of_int creature.level *. creature.base_exp /. 5. *. 5.) +. 1.
 
 let get_current_hp creature = creature.current_hp
 let get_specias creature = creature.species
@@ -693,6 +706,44 @@ let add_exp creature amount =
 let get_nickname creature = creature.nickname
 
 let set_nickname creature nickname = creature.nickname <- nickname
+let level_up_move creature = List.assoc creature.level creature.learnset
+
+let can_evolve creature =
+  creature.evolution.level_up <> -1
+  && creature.evolution.level_up <= creature.level
+
+let get_evolution_name c = c.evolution.name
+let is_shiny c = c.shiny
+
+let evolve c =
+  let next_evo =
+    create_creature_mod c.evolution.name c.level true c.shiny
+  in
+  let spsh =
+    Sprite_assets.get_spritesheet
+      ("assets/creature_sprites/"
+      ^ String.lowercase_ascii c.evolution.name
+      ^ ".png")
+  in
+  let front, back =
+    ( Spritesheet.get_sprite spsh (if c.shiny then 1 else 0),
+      Spritesheet.get_sprite spsh (if c.shiny then 3 else 2) )
+  in
+  Draw.reset_rgb front ();
+  Draw.reset_rgb back ();
+
+  c.species <- next_evo.species;
+  c.base_stats <- next_evo.base_stats;
+  c.current_stats <- recalc_stats c;
+  c.etypes <- next_evo.etypes;
+  c.ev_gain <- next_evo.ev_gain;
+  c.poke_id <- next_evo.poke_id;
+  c.catch_rate <- next_evo.catch_rate;
+  c.base_exp <- next_evo.base_exp;
+  c.learnset <- next_evo.learnset;
+  c.front_sprite <- front;
+  c.back_sprite <- back;
+  c.evolution <- next_evo.evolution
 
 let get_color_from_etype etype =
   match etype with

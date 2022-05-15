@@ -21,9 +21,9 @@
     "type": "Normal",
     "description": "The user scrtaches the foe with claws.",
     "effect_ids": [
-      15
+      30
     ],
-    "effect_chance": 10
+    "effect_chance": 100
   },
   "Round": {
     "power": 60,
@@ -47,7 +47,7 @@
     "type": "Normal",
     "description": "Growls cutely to reduce the foe's Attack.",
     "effect_ids": [
-      0
+      34
     ],
     "effect_chance": 100
   },
@@ -60,12 +60,12 @@
     "type": "Normal",
     "description": "The foe is given an intimidating leer with sharp eyes. The target's Defense stat is reduced.",
     "effect_ids": [
-      1
+      131
     ],
     "effect_chance": 100
   },
   "Rock Throw": {
-    "power": 160,
+    "power": 80,
     "accuracy": 100,
     "priority": 1,
     "pp": 15,
@@ -86,9 +86,9 @@
     "type": "Dark",
     "description": "The foe is bitten with viciously sharp fangs. It may lower defense",
     "effect_ids": [
-      1
+      50
     ],
-    "effect_chance": 50
+    "effect_chance": 100
   },
   "Spark": {
     "power": 65,
@@ -99,9 +99,9 @@
     "type": "Electric",
     "description": "The user throws an electrically charged tackle at the foe. It may also leave the target paralyzed.",
     "effect_ids": [
-      0
+      32
     ],
-    "effect_chance": 0
+    "effect_chance": 100
   },
   "Disarming Voice": {
     "power": 50,
@@ -116,7 +116,7 @@
     ],
     "effect_chance": 50
   },
-  "Draining Kiss Voice": {
+  "Draining Kiss": {
     "power": 50,
     "accuracy": 100,
     "priority": 1,

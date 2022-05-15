@@ -10,12 +10,22 @@ let menu_position = Util.new_point ()
 let party_position = Util.new_point ()
 let current_creature = ref null_creature
 let switch_position = Util.new_point ()
-let faint = Util.null ()
+let icon_faint = Util.null ()
+let icon_brn = Util.null ()
+let icon_frz = Util.null ()
+let icon_par = Util.null ()
+let icon_psn = Util.null ()
+let icon_slp = Util.null ()
 
 let load_assets _ =
   creature_menu_bg
   *= Sprite_assets.get_sprite2 "creature_menu" GUI_Folder;
-  faint *= Sprite_assets.get_sprite2 "faint" GUI_Folder
+  icon_faint *= Sprite_assets.get_sprite2 "faint" GUI_Folder;
+  icon_brn *= Sprite_assets.get_sprite2 "icon_brn" GUI_Folder;
+  icon_frz *= Sprite_assets.get_sprite2 "icon_frz" GUI_Folder;
+  icon_par *= Sprite_assets.get_sprite2 "icon_par" GUI_Folder;
+  icon_psn *= Sprite_assets.get_sprite2 "icon_psn" GUI_Folder;
+  icon_slp *= Sprite_assets.get_sprite2 "icon_slp" GUI_Folder
 
 let move_x x () =
   if switch_position.x = -1 then begin
@@ -33,14 +43,18 @@ let move_y y () =
   else if switch_position.y + y >= 0 && switch_position.y + y <= 1 then
     switch_position.y <- switch_position.y + y
 
-let draw_status status () =
-  let x, y = (56 - 20, 192 - 30) in
+let draw_status x y status () =
   match status with
-  | Fainted -> draw_sprite ~!faint x y ()
+  | Fainted -> draw_sprite ~!icon_faint x y ()
+  | Burn -> draw_sprite ~!icon_brn x y ()
+  | Freeze -> draw_sprite ~!icon_frz x y ()
+  | Poison _ -> draw_sprite ~!icon_psn x y ()
+  | Paralyze -> draw_sprite ~!icon_par x y ()
+  | Sleep _ -> draw_sprite ~!icon_slp x y ()
   | _ -> ()
 
 let draw_stats () =
-  let x, y, dif, x2 = (290, 623, 35, 556) in
+  let x, y, dif, x2 = (290 - 4, 623 - 8, 35, 556) in
   let _, buff, nerf = get_nature !current_creature in
   let buff_color = rgb 180 32 42 in
   let nerf_color = rgb 121 58 128 in
@@ -56,11 +70,11 @@ let draw_stats () =
     Ui.add_last_foreground
       (draw_string_colored x
          (y - (dif * (i + 1)))
-         0 (string_of_stat s) color text_color);
+         Medium (string_of_stat s) color text_color);
     Ui.add_last_foreground
       (draw_string_colored x2
          (y - (dif * (i + 1)))
-         0
+         Medium
          (Util.string_of_intf (get_stat !current_creature s))
          color text_color)
   done
@@ -100,19 +114,19 @@ let draw_moves () =
       | Some m ->
           let x, y = (text_x + (box_w * i), text_y - (box_h * j)) in
           Ui.add_first_foreground
-            (draw_string_colored x y 0 m.move_name
+            (draw_string_colored x y Medium m.move_name
                (get_color_from_etype m.etype)
                text_color);
 
           Ui.add_first_foreground
-            (draw_string_colored x (y - 30) 0
+            (draw_string_colored x (y - 30) Small
                (string_of_etype m.etype)
                (get_color_from_etype m.etype)
                text_color);
 
           set_color text_color;
           Ui.add_first_foreground
-            (draw_string_colored (x + 120) (y - 30) 0
+            (draw_string_colored (x + 120) (y - 30) Small
                ("PP:" ^ string_of_int m.curr_pp ^ "/"
               ^ string_of_int m.max_pp)
                white text_color));
@@ -125,56 +139,71 @@ let draw_moves () =
 
 let refresh () =
   Ui.add_first_foreground
-    (draw_string_colored 24 605 1 "SUMMARY" (rgb 255 170 40) white);
-  Ui.add_last_background (draw_sprite ~!creature_menu_bg 0 0);
+    (draw_string_colored 18 590 Huge "SUMMARY" (rgb 255 170 40) white);
+  Ui.add_last_background (draw_sprite ~!creature_menu_bg 0 (-3));
   Ui.add_first_gameplay
     (draw_sprite (get_front_sprite !current_creature) 9 318);
   Ui.add_first_gameplay
-    (draw_string_colored 20 246 0
+    (draw_string_colored 20 246 Medium
        (get_nickname !current_creature)
        white text_color);
   Ui.add_first_gameplay
-    (draw_string_colored 20 220 0
+    (draw_string_colored 20 220 Small
        ("LVL: " ^ string_of_int (get_level !current_creature))
        white text_color);
   let max, aft = get_hp_status !current_creature in
   Ui.add_first_gameplay (draw_health_bar max aft 56 192 180 6 true);
-  Ui.add_first_gameplay (draw_status (get_status !current_creature));
+
+  Ui.add_first_gameplay
+    (draw_status 50 162 (get_status !current_creature));
   let curr_exp, min_exp, max_exp = get_exp !current_creature in
   Ui.add_first_gameplay
-    (draw_string_colored 20 140 0 "EXP:" white text_color);
+    (draw_string_colored 20 123 Small "EXP:" white text_color);
   Ui.add_first_gameplay
-    (draw_exp_bar (max_exp -. min_exp) (curr_exp -. min_exp) 20 128 210
-       8);
+    (draw_exp_bar (max_exp -. min_exp) (curr_exp -. min_exp) 76 137
+       (210 - 54) 8);
   Ui.add_first_gameplay
-    (draw_string_colored 20 104 0
+    (draw_string_colored 76 100 Small
        (Util.string_of_intf (curr_exp -. min_exp)
        ^ "/"
        ^ Util.string_of_intf (max_exp -. min_exp))
        white text_color);
 
   let type1, type2 = get_types !current_creature in
+
+  Ui.add_first_gameplay
+    (draw_string_colored 20 (53 + 15) Small "TYPE: " white text_color);
+
   let type_str =
-    string_of_etype type1
-    ^ if type2 = NoType then "" else "/" ^ string_of_etype type2
+    string_of_etype type1 ^ if type2 = NoType then "" else "/"
   in
-
   Ui.add_first_gameplay
-    (draw_string_colored 20 (132 - 56) 0 ("TYPE: " ^ type_str) white
+    (draw_string_colored 116 (56 + 15) Small type_str
+       (Creature.get_color_from_etype type1)
        text_color);
   draw_stats ();
-
   let nature, _, _ = get_nature !current_creature in
-  Ui.add_first_gameplay
-    (draw_string_colored 20 (102 - 56) 0 ("NATURE: " ^ nature) white
-       text_color);
+  if type2 <> NoType then begin
+    Ui.add_first_gameplay
+      (draw_string_colored 116 (28 + 14) Small (string_of_etype type2)
+         (Creature.get_color_from_etype type2)
+         text_color);
+    draw_stats ();
+    Ui.add_first_gameplay
+      (draw_string_colored 20 18 Small ("NATURE: " ^ nature) white
+         text_color)
+  end
+  else
+    Ui.add_first_gameplay
+      (draw_string_colored 20 (24 + 14) Small ("NATURE: " ^ nature)
+         white text_color);
+
   draw_stats ();
-  (* Ui.add_first_gameplay (draw_string_colored 20 100 1 24 type_str
-     white); *)
+
   Ui.add_first_foreground
-    (draw_string_colored 482 383 0 "Moves" white text_color);
+    (draw_string_colored 482 383 Medium "Moves" white text_color);
   Ui.add_first_foreground
-    (draw_string_colored 398 636 0 "Stats" white text_color);
+    (draw_string_colored 398 636 Medium "Stats" white text_color);
   (match
      get_move_i !current_creature
        (menu_position.x + (2 * menu_position.y))
@@ -182,7 +211,7 @@ let refresh () =
   | None -> ()
   | Some m ->
       Ui.add_first_foreground
-        (draw_text_string_pos 290 120 30 32 m.description));
+        (draw_text_string_pos 290 120 Small 32 m.description));
   draw_moves ()
 
 let set_creature i =

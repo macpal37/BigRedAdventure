@@ -18,12 +18,15 @@ let adhoc_init () =
   Player.set_x 4 (player ());
   Player.set_y 4 (player ());
   !current_state.map <- Play_assets.get_map "test_map.json";
+  (* let nuxel = Creature.create_creature "nuxel" 23 in *)
   let chumpi = Creature.create_creature "chumpi" 10 in
   let rafu = Creature.create_creature "rafu" 10 in
   Creature.set_current_hp chumpi 20.;
+  (* Player.add_creature nuxel !current_state.player; *)
   Player.add_creature chumpi !current_state.player;
   Player.add_creature rafu !current_state.player;
 
+  (* Creature.set_nickname nuxel "Sonic"; *)
   Creature.set_nickname chumpi "Lucky";
   Creature.set_nickname rafu "Ya Boi";
 

@@ -51,8 +51,11 @@ val animate_lower_stat_effect : sprite -> bool -> draw_func -> unit
 val animate_raise_stat_effect : sprite -> bool -> draw_func -> unit
 (** Cool Random Effects :)*)
 
-val animate_switch :
-  sprite -> sprite -> bool -> string -> string -> draw_func -> unit
+val animate_switch_out : sprite -> bool -> draw_func -> unit
+val animate_switch_in : sprite -> bool -> draw_func -> unit
+
+(* val animate_switch : sprite -> sprite -> bool -> string -> string ->
+   draw_func -> unit *)
 (** [animate_switch switch_out switch_in player out_name in_name rf (_)]
     Animates the switch out/switch in animation using the [switch_out]
     [switch_in] sprites. [player] determines whether the player or enemy
@@ -71,6 +74,15 @@ val animate_faint : sprite -> bool -> draw_func -> unit
     creature [sprite] *)
 
 val animate_damage_render : sprite -> bool -> draw_func -> unit
-(** [damage_render sprite is_player (_)] performs the damage animation
-    of either the enemy or the player depedning on the [is_player]
-    boolean *)
+(** [animate_damage_render sprite is_player (_)] performs the damage
+    animation of either the enemy or the player depedning on the
+    [is_player] boolean *)
+
+val animate_evolution : sprite -> sprite -> draw_func -> unit
+(** [animate_evolution old_sprite new_sprite (_)] performs the evolution
+    animation. *)
+
+val animate_status :
+  sprite -> bool -> Creature.status -> draw_func -> unit
+(** [animate_status sprite player status ref] Performs the status effect
+    animation*)

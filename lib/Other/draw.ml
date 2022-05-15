@@ -238,7 +238,6 @@ let draw_creature sprite player () =
 let rec wait timer () =
   if timer = 0 then ()
   else begin
-    Util.print_int "Timer: " timer;
     Input.sleep 0.016 ();
     match Input.pop_key_option () with
     | Some _ -> ()
@@ -253,6 +252,8 @@ let draw_gradient w h =
       Sdlrender.draw_point2 (renderer ()) ~x ~y
     done
   done
+
+let get_dpi sprite = sprite.dpi
 
 let add_rgb sprite red green blue () =
   let rec add_rgb_rec = function
