@@ -55,6 +55,15 @@
                 }]
         }, 
         {
+         "id":5,
+         "properties":[
+                {
+                 "name":"tile_id",
+                 "type":"string",
+                 "value":"Path"
+                }]
+        }, 
+        {
          "id":6,
          "properties":[
                 {
@@ -97,6 +106,15 @@
                  "name":"tile_id",
                  "type":"string",
                  "value":"Obstacle"
+                }]
+        }, 
+        {
+         "id":11,
+         "properties":[
+                {
+                 "name":"tile_id",
+                 "type":"string",
+                 "value":"Path"
                 }]
         }, 
         {
@@ -145,6 +163,15 @@
                 }]
         }, 
         {
+         "id":17,
+         "properties":[
+                {
+                 "name":"tile_id",
+                 "type":"string",
+                 "value":"Path"
+                }]
+        }, 
+        {
          "id":18,
          "properties":[
                 {
@@ -190,6 +217,15 @@
                 }]
         }, 
         {
+         "id":23,
+         "properties":[
+                {
+                 "name":"tile_id",
+                 "type":"string",
+                 "value":"Path"
+                }]
+        }, 
+        {
          "id":24,
          "properties":[
                 {
@@ -227,6 +263,69 @@
         }, 
         {
          "id":28,
+         "properties":[
+                {
+                 "name":"tile_id",
+                 "type":"string",
+                 "value":"Path"
+                }]
+        }, 
+        {
+         "id":29,
+         "properties":[
+                {
+                 "name":"tile_id",
+                 "type":"string",
+                 "value":"Path"
+                }]
+        }, 
+        {
+         "id":30,
+         "properties":[
+                {
+                 "name":"tile_id",
+                 "type":"string",
+                 "value":"Path"
+                }]
+        }, 
+        {
+         "id":31,
+         "properties":[
+                {
+                 "name":"tile_id",
+                 "type":"string",
+                 "value":"Path"
+                }]
+        }, 
+        {
+         "id":32,
+         "properties":[
+                {
+                 "name":"tile_id",
+                 "type":"string",
+                 "value":"Path"
+                }]
+        }, 
+        {
+         "id":33,
+         "properties":[
+                {
+                 "name":"tile_id",
+                 "type":"string",
+                 "value":"Path"
+                }]
+        }, 
+        {
+         "id":34,
+         "properties":[
+                {
+                 "name":"tile_id",
+                 "type":"string",
+                 "value":"Path"
+                }]
+        }, 
+        {
+         "id":35,
          "properties":[
                 {
                  "name":"tile_id",
