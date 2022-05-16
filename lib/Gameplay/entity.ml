@@ -131,6 +131,8 @@ let heal_party p () =
   List.iter heal party
 
 let interact e p redraw =
+  if String.length e.dialogue > 0 then
+  Animation.display_text_box e.dialogue false redraw ();
   match e.e_type with
   | Sign -> Animation.display_text_box e.dialogue false redraw ()
   | Item a -> give_item e a p

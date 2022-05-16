@@ -156,7 +156,7 @@ let attempt_move dx dy orie =
           let e =
             List.assoc (new_x, new_y) (Map.get_entities (State.map ()))
           in
-          if e.obstacle = false then begin
+          if Entity.is_obstacle e = false then begin
             move_scroll dx dy;
             Player.set_coord new_x new_y (State.player ())
           end
@@ -194,7 +194,7 @@ let attemp_action () =
         (new_x + State.player_x (), new_y + State.player_y ())
         (Map.get_entities (State.map ()))
     in
-    if e.obstacle = true then
+    if Entity.is_obstacle e then
       Entity.interact e (State.player ()) (fun () ->
           Ui.add_first_background draw;
           Ui.add_first_gameplay
