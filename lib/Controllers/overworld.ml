@@ -199,7 +199,38 @@ let attemp_action () =
           Ui.add_first_gameplay
             (Draw.draw_sprite DrawText.battle_bot 0 0))
   with Not_found -> ()
+  
+  let coord_add (orie : Entity.orientation) = 
+    match orie with
+    | N -> (0, 1)
+    | E -> (1, 0)
+    | S -> (0, -1)
+    | W -> (-1, 0)
 
+let rec incr_coord_list (x, y) dir num =
+  let add_x, add_y = coord_add dir in
+  if num = 0 then []
+  else (x + add_x * num, y + add_y * num) :: incr_coord_list (x, y) dir (num - 1)
+
+let max_sight_coords pos dir = incr_coord_list pos dir 4 |> List.rev
+
+let is_obstacle (x, y) = 
+  let e = List.assoc (x, y) (Map.get_entities (State.map ())) in 
+  let is_e_obs = e.obstacle in 
+  let is_t_obs = Map.get_type (State.map ()) (x, y) = Map.Obstacle in
+  is_e_obs || is_t_obs
+
+let rec sight_len clist = 
+  match clist with
+  | [] -> 4
+  | h :: _ when is_obstacle h -> List.length clist
+  | _ :: t -> sight_len t
+
+let sight_dist trainer = 
+  let pos = Entity.get_position trainer in
+  let dir = Entity.get_orientation trainer in 
+  max_sight_coords pos dir |> sight_len
+  
 let rec run_tick _ =
   (match Input.get_ctrl_option (Input.poll_key_option ()) with
   | Some Up -> attempt_move 0 1 Player.N

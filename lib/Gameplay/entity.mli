@@ -65,6 +65,8 @@ val is_obstacle : entity -> bool
 val interact : entity -> Player.player -> Ui.draw_func -> unit
 (** [interact n] is what happens when the player interacts with n *)
 
+val apply_persistence : t -> bool * (int * int)
+
 (* val go : entity -> orientation -> int -> unit (** [go e d n] moves n
    tiles in direction [d]. In addition, this stops [n]'s movement loop
    until it is restarted with [restart_loop n] *)

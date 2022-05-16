@@ -54,6 +54,7 @@ type entity = {
   mutable pos : coord;
   dialogue : string;
   sprite : sprite;
+  mutable state : int;
   (* path : movement; *)
   (* animations : (sprite_step, sprite array) Hashtbl.t;*)
   obstacle : bool;
@@ -68,7 +69,14 @@ type entity = {
 let get_trigger entity = entity.e_type
 let get_orientation entity = entity.orie
 let get_position entity = entity.pos
-let is_obstacle e = e.obstacle
+let is_obstacle e = if state = 0 then e.obstacle else false
+
+let is_visible e = if state = 0 then true else false
+
+(** 0 = show, 1 = invisible *)
+let get_state e = e.state
+
+let set_state e i = e.state <- i
 
 (* (** [step_to_sprite s o] is what type of sprite to render based on
    the type of step occuring [s] and the entity's current orientation
@@ -130,6 +138,8 @@ let interact e p redraw =
   | Merchant -> failwith "Unimplemented"
   | Door _ -> failwith "Unimplemented"
   | _ -> failwith "Unimplemented"
+
+(* let update e p redraw = failwith "Unimplemented" *)
 
 (* let update = failwith "Unimplemented" *)
 
