@@ -89,3 +89,6 @@ val set_coord : int -> int -> player -> unit
 val set_orie : orientations -> player -> unit
 (** [set_orie o p] sets the orientation of [p] to [o]. This call mutates
     [p]*)
+
+val serialize : player -> Yojson.Basic.t
+val deserialize : Yojson.Basic.t -> player
