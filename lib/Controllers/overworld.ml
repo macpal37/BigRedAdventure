@@ -47,12 +47,13 @@ let draw_entities tile_x tile_y graphic_x graphic_y =
 
   for i = 0 to List.length entities - 1 do
     let _, e = List.nth entities i in
+    if Entity.is_visible e then (
     let x, y = (fst e.pos - tile_x + 6, snd e.pos - tile_y + 5) in
     let w, h = Draw.get_dimension e.sprite in
     Draw.draw_sprite e.sprite
       ((x * tile_size) - graphic_x - (w / 4))
       ((y * tile_size) - graphic_y + (h / 4))
-      ()
+      ())
   done
 
 let draw_tiles tile_x tile_y graphic_x graphic_y =
@@ -200,7 +201,7 @@ let attemp_action () =
             (Draw.draw_sprite DrawText.battle_bot 0 0))
   with Not_found -> ()
   
-  let coord_add (orie : Entity.orientation) = 
+  (* let coord_add (orie : Entity.orientation) = 
     match orie with
     | N -> (0, 1)
     | E -> (1, 0)
@@ -229,7 +230,7 @@ let rec sight_len clist =
 let sight_dist trainer = 
   let pos = Entity.get_position trainer in
   let dir = Entity.get_orientation trainer in 
-  max_sight_coords pos dir |> sight_len
+  max_sight_coords pos dir |> sight_len *)
   
 let rec run_tick _ =
   (match Input.get_ctrl_option (Input.poll_key_option ()) with

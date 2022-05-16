@@ -69,9 +69,9 @@ type entity = {
 let get_trigger entity = entity.e_type
 let get_orientation entity = entity.orie
 let get_position entity = entity.pos
-let is_obstacle e = if state = 0 then e.obstacle else false
+let is_obstacle e = if e.state = 0 then e.obstacle else false
 
-let is_visible e = if state = 0 then true else false
+let is_visible e = if e.state = 0 then true else false
 
 (** 0 = show, 1 = invisible *)
 let get_state e = e.state
@@ -112,13 +112,13 @@ let get_sprite e = e.sprite
 
 let get_dialogue n = n.dialogue
 
-let give_item item p =
+let give_item e item p =
   (if item.given = false then
    let item = Item.get_item item.name in
    let inventory = p |> Player.inventory in
    Inventory.add_item inventory item);
   item.given <-
-    true (* check if disappear is true and if it is, remove from map *)
+    true; if item.disappear then e.state <- 1
 
 let heal c =
   let max_hp = (Creature.get_stats c).max_hp in
@@ -133,7 +133,7 @@ let heal_party p () =
 let interact e p redraw =
   match e.e_type with
   | Sign -> Animation.display_text_box e.dialogue false redraw ()
-  | Item a -> give_item a p
+  | Item a -> give_item e a p
   | Heal -> heal_party p ()
   | Merchant -> failwith "Unimplemented"
   | Door _ -> failwith "Unimplemented"

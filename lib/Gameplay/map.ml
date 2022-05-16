@@ -285,7 +285,7 @@ let generate_entities h tiles objs =
         | _ -> (NoEntity, Spritesheet.get_sprite entity_sprites 2)
       in
 
-      (pos, { e_type; orie; pos; dialogue; sprite; obstacle = true })
+      (pos, { e_type; orie; pos; dialogue; sprite; state = 0; obstacle = true })
     with Yojson.Basic.Util.Type_error (_, _) ->
       ( (0, 0),
         {
@@ -293,6 +293,7 @@ let generate_entities h tiles objs =
           orie = S;
           pos = (0, 0);
           dialogue = "";
+          state = 0;
           sprite = Spritesheet.get_sprite trainer_sprites 1;
           obstacle = true;
         } )

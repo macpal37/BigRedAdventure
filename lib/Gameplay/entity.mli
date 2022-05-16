@@ -28,14 +28,15 @@ type orientation =
   | E
   | W  (** Type representing the four orientations *)
 
-type entity = {
-  e_type : entity_interaction;
-  mutable orie : orientation;
-  mutable pos : coord;
-  dialogue : string;
-  sprite : sprite;
-  obstacle : bool;
-}
+  type entity = {
+    e_type : entity_interaction;
+    mutable orie : orientation;
+    mutable pos : coord;
+    dialogue : string;
+    sprite : sprite;
+    mutable state : int;
+    obstacle : bool;
+  }
 
 (* val load_entity : string -> entity *)
 (** [load_entity file] is the entity represented by [file]. Raises
@@ -56,7 +57,7 @@ val get_sprite : entity -> sprite
 val get_dialogue : entity -> string
 (** [get_dialogue n] returns the dialogue [n] gives *)
 
-val is_visible : t -> bool
+val is_visible : entity -> bool
 
 val is_obstacle : entity -> bool
 (** [is_obstacle e] *)
@@ -67,9 +68,9 @@ val is_obstacle : entity -> bool
 val interact : entity -> Player.player -> Ui.draw_func -> unit
 (** [interact n] is what happens when the player interacts with n *)
 
-val get_state : t -> int
+val get_state : entity -> int
 
-val set_state : t -> int -> unit
+val set_state : entity -> int -> unit
 
 (* val go : entity -> orientation -> int -> unit (** [go e d n] moves n
    tiles in direction [d]. In addition, this stops [n]'s movement loop
