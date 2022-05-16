@@ -3,18 +3,21 @@
 (library
  (name CreatureGame)
  (public_name CreatureGame)
- (libraries yojson ANSITerminal imagelib.unix stdlib sdl2)
+ (libraries yojson ANSITerminal imagelib.unix stdlib sdl2 threads)
  (modules
   ; =====Controllers=====
   battle
   controller
+  main_menu
   inventory_menu
   creature_menu
   event_menu
   party_menu
-  state
+  saves_menu
+  loading_screen
   overworld
   state
+  saves
   ; =====GAMEPLAY=====
   combat
   creature
@@ -25,7 +28,6 @@
   ; =====Other=====
   animation
   animator
-  play_assets
   sprite_assets
   spritesheet
   draw

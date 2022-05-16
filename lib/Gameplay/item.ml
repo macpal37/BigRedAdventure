@@ -1,4 +1,5 @@
 open Yojson.Basic.Util
+open Util
 
 let num_item_types = 4
 
@@ -49,3 +50,14 @@ let get_type i = i.item_type
 let get_id i = i.id
 let get_description i = i.description
 let get_cost i = i.cost
+let loaded_items = Util.null ()
+
+let load_items _ =
+  let t = Hashtbl.create 16 in
+  Yojson.Basic.from_file "assets/util/item_list.json"
+  |> to_assoc
+  |> List.iter (fun (name, j) ->
+         Hashtbl.add t name (create_item name j));
+  loaded_items *= t
+
+let get_item s = Hashtbl.find ~!loaded_items s

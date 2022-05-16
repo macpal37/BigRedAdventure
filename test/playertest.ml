@@ -103,8 +103,8 @@ let player_orie_test
   assert_equal expected_output (Player.orie p)
 
 let _ =
-  Play_assets.load ();
-  Sprite_assets.load ()
+  Item.load_items ();
+  Map.load_maps ()
 
 let creature_rafu = Creature.create_creature "rafu" 10
 let creature_chumpi = Creature.create_creature "chumpi" 20

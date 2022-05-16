@@ -1,4 +1,5 @@
 open Yojson.Basic.Util
+open Util
 
 exception Out_of_Bounds
 exception Malformed_Json of string
@@ -271,3 +272,16 @@ let string_of_encounters e =
       ^ "; levels = " ^ string_of_int low ^ "-" ^ string_of_int high
       ^ "}")
     "" e
+
+let loaded_maps = Util.null ()
+
+let load_maps _ =
+  let t = Hashtbl.create 16 in
+  Yojson.Basic.from_file "assets/maps/maps.json"
+  |> to_list
+  |> List.iter (fun j ->
+         let file = j |> to_string in
+         Hashtbl.add t file (load_map file));
+  loaded_maps *= t
+
+let get_map s = Hashtbl.find ~!loaded_maps s

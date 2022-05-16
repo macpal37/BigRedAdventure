@@ -1,11 +1,7 @@
-type modes =
-  | ModeOverworld
-  | ModeBattle
-  | ModeMenu
-
 let load_assets _ =
-  Play_assets.load ();
   Sprite_assets.load ();
+  Item.load_items ();
+  Map.load_maps ();
   Creature_menu.load_assets ();
   Overworld.load_assets ();
   Battle.load_assets ();
@@ -20,6 +16,5 @@ let main _ =
 
   Draw.open_window ();
 
-  Overworld.run_overworld ()
-(* Event_menu.init_capture (Creature.create_creature "rafu" 4) () *)
+  Main_menu.init ()
 (* Battle.start_wild_battle (Creature.create_creature "rafu" 4) *)
