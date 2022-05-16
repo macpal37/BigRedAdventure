@@ -93,10 +93,22 @@ let encounter_anim _ =
     Draw.set_color 0;
     draw ();
     Draw.fill_rect (400 - (7 * i)) (360 - (6 * i)) (14 * i) (12 * i);
+    draw_player (Player.orie (State.player ()));
     Draw.present ();
     Input.sleep Draw.tick_rate ()
   done;
-  Input.sleep 0.3 ()
+  for i = 1 to 10 do
+    Draw.set_color 0;
+    Draw.fill_rect 0 0 Draw.width Draw.height;
+    draw_player (Player.orie (State.player ()));
+    Draw.set_draw_color ~a:(i * 25) 0 0 0;
+    Draw.fill_rect 0 0 Draw.width Draw.height;
+    Draw.present ();
+    Input.sleep Draw.tick_rate ()
+  done;
+  Draw.set_color 0;
+  Draw.fill_rect 0 0 Draw.width Draw.height;
+  Draw.present ()
 
 let move_scroll dx dy =
   let speed = 12 in
