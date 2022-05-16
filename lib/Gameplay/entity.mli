@@ -29,12 +29,12 @@ type orientation =
   | W  (** Type representing the four orientations *)
 
 type entity = {
-  e_type : entity_interaction;
+  mutable e_type : entity_interaction;
   mutable orie : orientation;
   mutable pos : coord;
-  dialogue : string;
-  sprite : sprite;
-  obstacle : bool;
+  mutable dialogue : string;
+  mutable sprite : sprite;
+  mutable obstacle : bool;
 }
 
 (* val load_entity : string -> entity *)

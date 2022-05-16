@@ -218,6 +218,24 @@
                  "width":16,
                  "x":448,
                  "y":272
+                }, 
+                {
+                 "gid":45,
+                 "height":16,
+                 "id":29,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"All your creatures are healed!"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":336,
+                 "y":240
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -226,7 +244,7 @@
          "y":0
         }],
  "nextlayerid":7,
- "nextobjectid":29,
+ "nextobjectid":30,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.8.2",
