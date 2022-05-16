@@ -70,14 +70,16 @@ let rec loading_screen_wait ticks =
 
 let fade_in _ =
   Unix.sleepf 0.5;
-  for i = 0 to 42 do
-    draw i;
-    Draw.set_draw_color ~a:(255 - (i * 6)) 0 0 0;
-    Draw.fill_rect 0 0 Draw.width Draw.height;
-    Draw.present ();
-    Input.sleep Draw.tick_rate ()
-  done;
-  loading_screen_wait 0
+  if Mutex.try_lock busy_mutex then Mutex.unlock busy_mutex
+  else (
+    for i = 0 to 42 do
+      draw i;
+      Draw.set_draw_color ~a:(255 - (i * 6)) 0 0 0;
+      Draw.fill_rect 0 0 Draw.width Draw.height;
+      Draw.present ();
+      Input.sleep Draw.tick_rate ()
+    done;
+    loading_screen_wait 0)
 
 let await _ =
   if Mutex.try_lock busy_mutex then Mutex.unlock busy_mutex
