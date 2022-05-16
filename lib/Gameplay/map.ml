@@ -1,9 +1,14 @@
 open Yojson.Basic.Util
+open Entity
 
 exception Out_of_Bounds
 exception Malformed_Json of string
 
 type coord = int * int
+
+let entity_sprites =
+  Spritesheet.init_spritesheet
+    "assets/entity_sprites/entity_sprites.png" 16 16 2
 
 type encounter = {
   name : string;
@@ -93,13 +98,23 @@ let build_id_arrays json w =
 (* json |> member "layers" |> to_list |> List.map (json_build_matrix
    w) *)
 
-let json_tilesets json = json |> member "tilesets" |> to_list
+let json_tilesets json =
+  let tilesets = json |> member "tilesets" |> to_list in
+  List.map
+    (fun ts ->
+      ( List.nth
+          (String.split_on_char '/'
+             (ts |> member "source" |> to_string))
+          2,
+        ts ))
+    tilesets
 
 let tileset_path_parser p =
   "assets/" ^ String.sub p 3 (String.length p - 3)
 
 let json_tileset json =
   let src_path = json |> member "source" |> to_string in
+  print_endline src_path;
   let src_json =
     Yojson.Basic.from_file (tileset_path_parser src_path)
   in
@@ -121,6 +136,24 @@ let json_encounters json =
            j |> member "properties" |> to_list
            |> List.map (fun j -> j |> member "value" |> to_int)
            |> List.hd) )
+
+let to_entity gid json =
+  let properties = json |> member "properties" |> to_list in
+  ( gid + (json |> member "id" |> to_int),
+    List.nth
+      (List.filter
+         (fun j -> j |> member "name" |> to_string = "entity_type")
+         properties)
+      0
+    |> member "value" |> to_string )
+
+let json_entities json =
+  let src_path = json |> member "source" |> to_string in
+  let src_json =
+    Yojson.Basic.from_file (tileset_path_parser src_path)
+  in
+  let gid = json |> member "firstgid" |> to_int in
+  src_json |> member "tiles" |> to_list |> List.map (to_entity gid)
 
 let build_tile_matrix id_m tileset =
   let offset, l = tileset in
@@ -183,16 +216,21 @@ let load_map map_name =
   let json = Yojson.Basic.from_file ("assets/maps/" ^ map_name) in
   let w, _ = read_dim json in
   match build_id_arrays json w with
-  | [ tile_id_m; encounter_id_m ] -> (
-      match json_tilesets json with
-      | [ tile_t; encounter_t; _ ] ->
-          let tileset_l = json_tileset tile_t in
-          let encounter_l = json_encounters encounter_t in
-          let tile_m = build_tile_matrix tile_id_m tileset_l in
-          set_encounters tile_m encounter_id_m encounter_l;
-          let spritesheet = json_spritesheet tile_t in
-          { tiles = tile_m; spritesheet }
-      | [] | _ :: _ -> raise (Malformed_Json "Impossible case!"))
+  | [ tile_id_m; encounter_id_m ] ->
+      let tilesets = json_tilesets json in
+
+      let tile_t = List.assoc "small_outside_tileset.json" tilesets in
+      let tileset_l = json_tileset tile_t in
+      let encounter_l =
+        json_encounters (List.assoc "id_tiles.json" tilesets)
+      in
+      let _ =
+        json_entities (List.assoc "entities_tilesets.json" tilesets)
+      in
+      let tile_m = build_tile_matrix tile_id_m tileset_l in
+      set_encounters tile_m encounter_id_m encounter_l;
+      let spritesheet = json_spritesheet tile_t in
+      { tiles = tile_m; spritesheet }
   | [] | _ :: _ -> raise (Malformed_Json "Impossible case!")
 
 (*let e = all_encounters_of_json json in let g = sprites_of_json json in

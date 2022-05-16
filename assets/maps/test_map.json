@@ -32,7 +32,7 @@
          "name":"entitites",
          "objects":[
                 {
-                 "gid":2147483679,
+                 "gid":31,
                  "height":16,
                  "id":29,
                  "name":"",
@@ -42,6 +42,36 @@
                  "width":16,
                  "x":96,
                  "y":272
+                }, 
+                {
+                 "gid":37,
+                 "height":16,
+                 "id":30,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"item",
+                         "type":"string",
+                         "value":"potion"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":48,
+                 "y":272
+                }, 
+                {
+                 "gid":36,
+                 "height":16,
+                 "id":31,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":112,
+                 "y":240
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -50,7 +80,7 @@
          "y":0
         }],
  "nextlayerid":8,
- "nextobjectid":30,
+ "nextobjectid":32,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.8.2",

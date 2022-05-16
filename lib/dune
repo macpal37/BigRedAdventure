@@ -22,6 +22,7 @@
   inventory
   map
   player
+  entity
   ; =====Other=====
   animation
   animator
@@ -33,4 +34,5 @@
   ui
   util
   input
+  loopq
   drawText))

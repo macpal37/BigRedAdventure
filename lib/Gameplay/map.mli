@@ -9,7 +9,7 @@ type t
 
 type coord = int * int
 (** type representing the coordinate of a tile on a map. (0, 0) is the
-    top left corner of the map *)
+    bottom left corner of the map *)
 
 type encounters
 (** type representing the possible encounters on a grass tile *)
