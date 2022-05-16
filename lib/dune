@@ -28,7 +28,6 @@
   ; =====Other=====
   animation
   animator
-  sprite_assets
   spritesheet
   draw
   author

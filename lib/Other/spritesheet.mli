@@ -21,3 +21,6 @@ val get_sprite : sprite_sheet -> int -> sprite
     [sprite_sheet]*)
 
 val set_text_color : sprite_sheet -> int -> int -> unit
+val load_spritesheets : unit -> unit
+val get_spritesheet : string -> sprite_sheet
+val get_spritesheet2 : string -> Draw.folder -> sprite_sheet

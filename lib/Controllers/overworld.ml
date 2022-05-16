@@ -7,7 +7,7 @@ let player_spritesheet = Util.null ()
 
 let load_assets _ =
   player_spritesheet
-  *= Sprite_assets.get_spritesheet
+  *= Spritesheet.get_spritesheet
        "assets/entity_sprites/player_sprite_overworld.png"
 
 let player_sprite_n_walk i =

@@ -2,7 +2,8 @@ let busy_mutex = Mutex.create ()
 let channel = Event.new_channel ()
 
 let load_assets _ =
-  Sprite_assets.load ();
+  Draw.load_sprites ();
+  Spritesheet.load_spritesheets ();
   Item.load_items ();
   Map.load_maps ();
   Creature_menu.load_assets ();
@@ -10,9 +11,8 @@ let load_assets _ =
   Battle.load_assets ();
   Event_menu.load_assets ();
   Inventory_menu.load_assets ();
-  Party_menu.load_assets ();
-  (* Unix.sleepf 15.; *)
-  print_endline "Done loading"
+  Party_menu.load_assets ()
+(* print_endline "Done loading" *)
 
 let load _ =
   ignore

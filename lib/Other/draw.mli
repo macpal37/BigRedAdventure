@@ -148,3 +148,6 @@ val create_sprite :
   int array -> Graphics.color list -> int -> int -> int -> sprite
 
 val change_color : sprite -> int -> int -> unit
+val load_sprites : unit -> unit
+val get_sprite2 : string -> folder -> sprite
+val get_sprite : string -> sprite

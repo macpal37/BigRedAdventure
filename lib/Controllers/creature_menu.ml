@@ -18,14 +18,13 @@ let icon_psn = Util.null ()
 let icon_slp = Util.null ()
 
 let load_assets _ =
-  creature_menu_bg
-  *= Sprite_assets.get_sprite2 "creature_menu" GUI_Folder;
-  icon_faint *= Sprite_assets.get_sprite2 "faint" GUI_Folder;
-  icon_brn *= Sprite_assets.get_sprite2 "icon_brn" GUI_Folder;
-  icon_frz *= Sprite_assets.get_sprite2 "icon_frz" GUI_Folder;
-  icon_par *= Sprite_assets.get_sprite2 "icon_par" GUI_Folder;
-  icon_psn *= Sprite_assets.get_sprite2 "icon_psn" GUI_Folder;
-  icon_slp *= Sprite_assets.get_sprite2 "icon_slp" GUI_Folder
+  creature_menu_bg *= Draw.get_sprite2 "creature_menu" GUI_Folder;
+  icon_faint *= Draw.get_sprite2 "faint" GUI_Folder;
+  icon_brn *= Draw.get_sprite2 "icon_brn" GUI_Folder;
+  icon_frz *= Draw.get_sprite2 "icon_frz" GUI_Folder;
+  icon_par *= Draw.get_sprite2 "icon_par" GUI_Folder;
+  icon_psn *= Draw.get_sprite2 "icon_psn" GUI_Folder;
+  icon_slp *= Draw.get_sprite2 "icon_slp" GUI_Folder
 
 let move_x x () =
   if switch_position.x = -1 then begin
