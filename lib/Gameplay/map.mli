@@ -52,3 +52,5 @@ val encounter_creature : encounters -> Creature.creature option
 
 val graphics_matrix : t -> string array array
 val string_of_encounters : encounters -> string
+val load_maps : unit -> unit
+val get_map : string -> t

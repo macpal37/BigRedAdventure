@@ -1,13 +1,13 @@
 let load_assets _ =
-  Play_assets.load ();
   Sprite_assets.load ();
+  Item.load_items ();
+  Map.load_maps ();
   Creature_menu.load_assets ();
   Overworld.load_assets ();
   Battle.load_assets ();
   Event_menu.load_assets ();
   Inventory_menu.load_assets ();
-  Party_menu.load_assets ();
-  Main_menu.load_assets ()
+  Party_menu.load_assets ()
 
 let main _ =
   Sdl.init [ `VIDEO; `JOYSTICK ];
