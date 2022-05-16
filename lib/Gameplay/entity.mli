@@ -2,7 +2,7 @@ open Draw
 
 (** abstract data type representing an entity *)
 
-type coord = float * float
+type coord = int * int
 (** type representing the coordinate of a tile on a map. (0, 0) is the
     bottom left corner of the map *)
 
@@ -37,7 +37,7 @@ type entity = {
   obstacle : bool;
 }
 
-val load_entity : string -> entity
+(* val load_entity : string -> entity *)
 (** [load_entity file] is the entity represented by [file]. Raises
     [Malformed_Json] if the json file is invalid *)
 
@@ -59,10 +59,10 @@ val get_dialogue : entity -> string
 val is_obstacle : entity -> bool
 (** [is_obstacle e] *)
 
-val update : entity -> unit
+(* val update : entity -> unit *)
 (** [update npc] increments [npc]'s movement loop by one step *)
 
-val interact : entity -> Player.player -> unit
+val interact : entity -> Player.player -> Ui.draw_func -> unit
 (** [interact n] is what happens when the player interacts with n *)
 
 (* val go : entity -> orientation -> int -> unit (** [go e d n] moves n

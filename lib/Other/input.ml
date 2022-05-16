@@ -39,9 +39,9 @@ let get_ctrl_key (sdl : Sdlkeycode.t) : control_key =
   | Sdlkeycode.Right -> Right
   | Sdlkeycode.X -> Action
   | Sdlkeycode.Z -> Back
-  | Sdlkeycode.Slash -> Start
+  | Sdlkeycode.Slash | Sdlkeycode.C -> Start
   | Sdlkeycode.D | Sdlkeycode.S -> Debug
-  | Sdlkeycode.Period -> Select
+  | Sdlkeycode.Period | Sdlkeycode.LShift -> Select
   | _ -> NoKey
 
 let get_ctrl_option (sdl : Sdlkeycode.t option) : control_key option =

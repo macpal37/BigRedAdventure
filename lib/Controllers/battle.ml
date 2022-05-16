@@ -161,7 +161,7 @@ let draw_combat_hud sprite name level player () =
       white text_color ();
     draw_health_bar_combat ~!e_hud_stats.max_hp ~!e_hud_stats.curr_hp
       player ();
-    let xh, yh = (130 + 78, 612 + 20) in
+    let xh, yh = (130 + 78, 612 + 16) in
     Creature_menu.draw_status xh yh ~!e_hud_stats.status ()
   end
 

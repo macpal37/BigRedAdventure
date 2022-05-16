@@ -1,10 +1,10 @@
 open Draw
 (* open Yojson.Basic.Util *)
 
-type coord = float * float
+type coord = int * int
 
 module Coord = struct
-  type t = float * float
+  type t = int * int
 
   let compare (x1, y1) (x2, y2) =
     if x1 > x2 || (x1 = x2 && y1 > y2) then 1
@@ -64,7 +64,7 @@ type entity = {
 (* [increment] is how far this entity moves when update is called, also
    determines the duration of a pause and turns *)
 (* let increment = 0.1 *)
-let load_entity = failwith "Unimplemented"
+(* let load_entity = failwith "Unimplemented" *)
 let get_trigger entity = entity.e_type
 let get_orientation entity = entity.orie
 let get_position entity = entity.pos
@@ -122,15 +122,16 @@ let heal_party p () =
   let party = p |> Player.party in
   List.iter heal party
 
-let interact e p =
+let interact e p redraw =
   match e.e_type with
+  | Sign -> Animation.display_text_box e.dialogue false redraw ()
   | Item a -> give_item a p
   | Heal -> heal_party p ()
   | Merchant -> failwith "Unimplemented"
   | Door _ -> failwith "Unimplemented"
   | _ -> failwith "Unimplemented"
 
-let update = failwith "Unimplemented"
+(* let update = failwith "Unimplemented" *)
 
 (* let pop e = let open Queue in if not (is_empty e.priority_queue) then
    ignore (pop e.priority_queue) else match e.path with | MNone -> () |

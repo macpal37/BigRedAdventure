@@ -35,7 +35,7 @@ type tile = {
 
 type t = {
   tiles : tile array array;
-  entities : entity list;
+  entities : (coord * entity) list;
   spritesheet : Spritesheet.sprite_sheet;
 }
 
@@ -176,10 +176,14 @@ let json_entities json =
 
 let build_tile_matrix id_m tileset =
   let offset, l = tileset in
+  Util.print_int "Tile Set LENGTH: " (List.length l);
   let tile_f = Util.list_index_fun l in
   matrix_map
     (fun t ->
       let ot = t - offset in
+      Util.print_int "OT: " ot;
+
+      Util.print_int "T: " t;
       match tile_f ot with
       | "Grass" -> { graphic = ot; ttype = Grass [] }
       | "Path" -> { graphic = ot; ttype = Path }
@@ -252,9 +256,9 @@ let generate_entities h tiles objs =
     let props = json |> member "properties" |> to_list in
     let orie = find_o props "orientation" orie_of_json S in
     let dialogue = find_o props "dialogue" to_string "" in
-    let pos =
-      ( float_of_int ((json |> member "x" |> to_int) / 16),
-        float_of_int (h - ((json |> member "y" |> to_int) / 16) - 1) )
+    let pos : coord =
+      ( (json |> member "x" |> to_int) / 16,
+        h - ((json |> member "y" |> to_int) / 16) )
     in
     let e_type, sprite =
       match List.assoc gid tiles with
@@ -277,7 +281,7 @@ let generate_entities h tiles objs =
             Spritesheet.get_sprite entity_sprites 4 )
       | _ -> (NoEntity, Spritesheet.get_sprite entity_sprites 2)
     in
-    { e_type; orie; pos; dialogue; sprite; obstacle = true }
+    (pos, { e_type; orie; pos; dialogue; sprite; obstacle = true })
   in
 
   List.map entity_of_json objs
@@ -289,7 +293,7 @@ let load_map map_name =
   | [ tile_id_m; encounter_id_m ], entities_m ->
       let tilesets = json_tilesets json in
 
-      let tile_t = List.assoc "small_outside_tileset.json" tilesets in
+      let tile_t = List.assoc "forest_tileset.json" tilesets in
       let tileset_l = json_tileset tile_t in
       let encounter_l =
         json_encounters (List.assoc "id_tiles.json" tilesets)

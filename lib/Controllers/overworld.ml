@@ -46,11 +46,8 @@ let draw_entities tile_x tile_y graphic_x graphic_y =
   let entities = Map.get_entities (State.map ()) in
 
   for i = 0 to List.length entities - 1 do
-    let e = List.nth entities i in
-    let x, y =
-      ( int_of_float (fst e.pos) - tile_x + 6,
-        int_of_float (snd e.pos) - tile_y + 6 )
-    in
+    let _, e = List.nth entities i in
+    let x, y = (fst e.pos - tile_x + 6, snd e.pos - tile_y + 5) in
     let w, h = Draw.get_dimension e.sprite in
     Draw.draw_sprite e.sprite
       ((x * tile_size) - graphic_x - (w / 4))
@@ -153,9 +150,18 @@ let attempt_move dx dy orie =
       (State.player_x () + dx, State.player_y () + dy)
     in
     match Map.get_type (State.map ()) (new_x, new_y) with
-    | Path ->
-        move_scroll dx dy;
-        Player.set_coord new_x new_y (State.player ())
+    | Path -> (
+        try
+          let e =
+            List.assoc (new_x, new_y) (Map.get_entities (State.map ()))
+          in
+          if e.obstacle = false then begin
+            move_scroll dx dy;
+            Player.set_coord new_x new_y (State.player ())
+          end
+        with Not_found ->
+          move_scroll dx dy;
+          Player.set_coord new_x new_y (State.player ()))
     | Obstacle -> ()
     | Grass e ->
         move_scroll dx dy;
@@ -173,13 +179,35 @@ let redraw _ =
   draw ();
   Draw.present ()
 
+let attemp_action () =
+  let new_x, new_y =
+    match Player.get_orie (State.player ()) with
+    | N -> (0, 1)
+    | E -> (1, 0)
+    | S -> (0, -1)
+    | W -> (-1, 0)
+  in
+  try
+    let e =
+      List.assoc
+        (new_x + State.player_x (), new_y + State.player_y ())
+        (Map.get_entities (State.map ()))
+    in
+    if e.obstacle = true then
+      Entity.interact e (State.player ()) (fun () ->
+          Ui.add_first_background draw;
+          Ui.add_first_gameplay
+            (Draw.draw_sprite DrawText.battle_bot 0 0))
+  with Not_found -> ()
+
 let rec run_tick _ =
   (match Input.get_ctrl_option (Input.poll_key_option ()) with
   | Some Up -> attempt_move 0 1 Player.N
   | Some Left -> attempt_move (-1) 0 Player.W
   | Some Down -> attempt_move 0 (-1) Player.S
   | Some Right -> attempt_move 1 0 Player.E
-  | Some Action -> Party_menu.init OverworldMode ()
+  | Some Action -> attemp_action ()
+  | Some Start -> Party_menu.init OverworldMode ()
   | Some Back -> ()
   | Some k -> ignore k
   | None -> ());
