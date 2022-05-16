@@ -121,7 +121,7 @@ let rec request_name saves name ticks =
   | Some Return ->
       for i = 0 to 28 do
         draw_all_preview_but saves position.y;
-        Draw.moveto 0 (-240 * position.y);
+        Draw.moveto 0 ((-240 * position.y) - 2);
         draw_request_name name (-20);
         Draw.moveto 0 0;
         Draw.set_draw_color ~a:(i * 9) 0 0 0;
