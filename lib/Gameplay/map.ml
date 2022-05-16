@@ -181,9 +181,10 @@ let build_tile_matrix id_m tileset =
   matrix_map
     (fun t ->
       let ot = t - offset in
-      Util.print_int "OT: " ot;
 
-      Util.print_int "T: " t;
+      (* Util.print_int "OT: " ot; *)
+
+      (* Util.print_int "T: " t; *)
       match tile_f ot with
       | "Grass" -> { graphic = ot; ttype = Grass [] }
       | "Path" -> { graphic = ot; ttype = Path }
@@ -253,42 +254,58 @@ let find_o props name f def =
 let generate_entities h tiles objs =
   let entity_of_json json =
     let gid = json |> member "gid" |> to_int in
-    let props = json |> member "properties" |> to_list in
-    let orie = find_o props "orientation" orie_of_json S in
-    let dialogue = find_o props "dialogue" to_string "" in
-    let pos : coord =
-      ( (json |> member "x" |> to_int) / 16,
-        h - ((json |> member "y" |> to_int) / 16) )
-    in
-    let e_type, sprite =
-      match List.assoc gid tiles with
-      | "Trainer" ->
-          let name = find_o props "trainer_name" to_string "Eve" in
-          let sprite =
-            match name with
-            | "Eve" -> Spritesheet.get_sprite trainer_sprites 1
-            | _ -> Spritesheet.get_sprite trainer_sprites 0
-          in
-          (Trainer name, sprite)
-      | "Sign" -> (Sign, Spritesheet.get_sprite entity_sprites 1)
-      | "Item" ->
-          ( Item
-              {
-                name = find_o props "item" to_string "potiton";
-                given = true;
-                disappear = find_o props "will_disappear" to_bool true;
-              },
-            Spritesheet.get_sprite entity_sprites 4 )
-      | _ -> (NoEntity, Spritesheet.get_sprite entity_sprites 2)
-    in
-    (pos, { e_type; orie; pos; dialogue; sprite; obstacle = true })
+
+    try
+      let props = json |> member "properties" |> to_list in
+      let orie = find_o props "orientation" orie_of_json S in
+      let dialogue = find_o props "dialogue" to_string "" in
+      let pos : coord =
+        ( (json |> member "x" |> to_int) / 16,
+          h - ((json |> member "y" |> to_int) / 16) )
+      in
+      let e_type, sprite =
+        match List.assoc gid tiles with
+        | "Trainer" ->
+            let name = find_o props "trainer_name" to_string "Eve" in
+            let sprite =
+              match name with
+              | "Eve" -> Spritesheet.get_sprite trainer_sprites 1
+              | _ -> Spritesheet.get_sprite trainer_sprites 0
+            in
+            (Trainer name, sprite)
+        | "Sign" -> (Sign, Spritesheet.get_sprite entity_sprites 1)
+        | "Item" ->
+            ( Item
+                {
+                  name = find_o props "item" to_string "potiton";
+                  given = true;
+                  disappear = find_o props "will_disappear" to_bool true;
+                },
+              Spritesheet.get_sprite entity_sprites 4 )
+        | _ -> (NoEntity, Spritesheet.get_sprite entity_sprites 2)
+      in
+
+      (pos, { e_type; orie; pos; dialogue; sprite; obstacle = true })
+    with Yojson.Basic.Util.Type_error (_, _) ->
+      ( (0, 0),
+        {
+          e_type = NoEntity;
+          orie = S;
+          pos = (0, 0);
+          dialogue = "";
+          sprite = Spritesheet.get_sprite trainer_sprites 1;
+          obstacle = true;
+        } )
   in
 
   List.map entity_of_json objs
 
 let load_map map_name =
+  print_endline ("Name: " ^ map_name);
   let json = Yojson.Basic.from_file ("assets/maps/" ^ map_name) in
   let w, h = read_dim json in
+  Util.print_int "W: " w;
+  Util.print_int "H: " h;
   match build_id_arrays json w with
   | [ tile_id_m; encounter_id_m ], entities_m ->
       let tilesets = json_tilesets json in
