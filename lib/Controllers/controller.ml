@@ -11,5 +11,8 @@ let main _ =
   (* State.adhoc_init (); *)
   Draw.open_window ();
 
-  Main_menu.init ()
+  if false then Main_menu.init ()
+  else (
+    Loading_screen.await ();
+    Saves.new_game 0 "Red")
 (* Battle.start_wild_battle (Creature.create_creature "rafu" 4) *)
