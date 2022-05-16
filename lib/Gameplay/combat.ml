@@ -362,7 +362,6 @@ let handle_effects move attacker defender () =
                      Sleep (ref (Util.rand 5 () + 1))
                  | _ -> Healthy
                in
-
                (try
                   apply_status target.creature s;
                   refresh_status attacker;

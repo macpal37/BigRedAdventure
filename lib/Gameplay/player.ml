@@ -69,3 +69,4 @@ let set_coord x y p =
   set_y y p
 
 let set_orie o p = p.orie <- o
+let get_orie p = p.orie

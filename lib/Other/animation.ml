@@ -64,7 +64,7 @@ let rec run_text_animation
 let animate_text_box (t : string) (anim : animation) () : unit =
   let frame = anim.frame in
   let sx = 46 in
-  let sy = 128 in
+  let sy = 136 in
   let t' = String.sub t 0 frame in
   Ui.add_last_foreground (draw_text_string_pos sx sy Medium box_cap t');
   anim.finished <- frame >= String.length t

@@ -89,3 +89,6 @@ val set_coord : int -> int -> player -> unit
 val set_orie : orientations -> player -> unit
 (** [set_orie o p] sets the orientation of [p] to [o]. This call mutates
     [p]*)
+
+val get_orie : player -> orientations
+(** [get_orie p] returns the orientation of [p].*)

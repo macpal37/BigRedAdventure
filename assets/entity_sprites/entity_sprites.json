@@ -2,9 +2,9 @@
   "spritesheets": [
     {
       "file": "player_sprite_overworld.png",
-      "w": 64,
-      "h": 64,
-      "dpi": 1
+      "w": 32,
+      "h": 32,
+      "dpi": 3
     }
   ]
 }

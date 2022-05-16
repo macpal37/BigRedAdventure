@@ -7,7 +7,12 @@ val make_animation :
   draw_func -> (animation -> unit -> unit) -> int -> animation
 
 val run_animation : animation -> unit
+
 val display_text_box : string -> bool -> draw_func -> unit -> unit
+(** [display_text_box text is_sticky refresh_func (_)] animates text box
+    animated. The tex box displays [text]. [is_sticky] determines
+    whether the text remains on the screen or dispapears afterwards.
+    [refresh_func] is a [fun ()->()] function that refreshes. *)
 
 val draw_health_bar :
   float -> float -> int -> int -> int -> int -> bool -> unit -> unit
