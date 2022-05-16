@@ -16,8 +16,8 @@ let map _ = !current_state.map
 
 let adhoc_init () =
   (* Player.set_x 4 (player ()); Player.set_y 4 (player ()); *)
-  Player.set_x 3 (player ());
-  Player.set_y 9 (player ());
+  Player.set_x 23 (player ());
+  Player.set_y 14 (player ());
   !current_state.map <- Map.get_map "route2.json";
   (* let nuxel = Creature.create_creature "nuxel" 23 in *)
   let chumpi = Creature.create_creature "chumpi" 10 in

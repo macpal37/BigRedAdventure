@@ -125,6 +125,11 @@
                  "value":"South"
                 }, 
                 {
+                 "name":"party",
+                 "type":"string",
+                 "value":"rafu;"
+                }, 
+                {
                  "name":"trainer_name",
                  "type":"string",
                  "value":""

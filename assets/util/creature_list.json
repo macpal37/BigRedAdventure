@@ -24,6 +24,48 @@
     },
     "learnset": []
   },
+  "clefairy": {
+    "name": "Clefairy",
+    "poke_id": 11,
+    "catch_rate": 150,
+    "base_exp": 113,
+    "level_rate": "Fast",
+    "type1": "Fairy",
+    "type2": "None",
+    "base_stats": {
+      "hp": 70,
+      "attack": 45,
+      "defense": 48,
+      "sp_attack": 60,
+      "sp_defense": 65,
+      "speed": 35
+    },
+    "ev_stat": "hp",
+    "ev_amount": 2,
+    "evolution": {
+      "name": "Clefable",
+      "poke_id": 12,
+      "level_up": 35
+    },
+    "learnset": [
+      {
+        "move": "Pound",
+        "level": 1
+      },
+      {
+        "move": "Growl",
+        "level": 3
+      },
+      {
+        "move": "Disarming Voice",
+        "level": 6
+      },
+      {
+        "move": "Flamethrower",
+        "level": 35
+      }
+    ]
+  },
   "rafu": {
     "name": "Rafu",
     "poke_id": 13,
