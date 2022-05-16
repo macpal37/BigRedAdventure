@@ -50,6 +50,7 @@ val encounter_creature : encounters -> Creature.creature option
     based on the specification in [e]. Returns None if no creature is
     encountered *)
 
+val get_name : t -> string
 val graphics_matrix : t -> string array array
 val string_of_encounters : encounters -> string
 val load_maps : unit -> unit

@@ -257,6 +257,8 @@ let encounter_creature e =
   | None -> None
   | Some { name; level } -> Some (Creature.create_creature name level)
 
+let get_name _ = "yeetyeet"
+
 let graphics_matrix m =
   matrix_map
     (fun t ->
