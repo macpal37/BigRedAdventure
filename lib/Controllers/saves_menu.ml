@@ -44,22 +44,25 @@ let write_preview (p : Saves.save_preview option) =
 let draw_all_preview_but (saves : int -> Saves.save_preview option) not
     =
   Draw.draw_sprite_centered ~!save_menu (Draw.width / 2)
-    (Draw.height / 2) ();
+    ((Draw.height / 2) - 2)
+    ();
+  Draw.moveto 0 (-2);
   if not <> 0 then write_preview (saves 0);
-  Draw.moveto 0 (-240);
+  Draw.moveto 0 (-242);
   if not <> 1 then write_preview (saves 1);
-  Draw.moveto 0 (-480);
+  Draw.moveto 0 (-482);
   if not <> 2 then write_preview (saves 2);
-  Draw.moveto 0 0;
+  Draw.moveto 0 (-2);
   Draw.set_line_width 8;
   Draw.set_draw_color 255 255 0;
   Draw.draw_rect (18 - 1)
     (Draw.height - 225 - (240 * position.y) + 4)
-    (768 + 2) 210
+    (768 + 2) 210;
+  Draw.moveto 0 0
 
 let rec confirm_overwrite saves mode =
   draw_all_preview_but saves position.y;
-  Draw.moveto 0 (-240 * position.y);
+  Draw.moveto 0 ((-240 * position.y) - 2);
   DrawText.draw_string_colored 75 (Draw.height - 85) DrawText.Small
     (match mode with
     | New -> "Are you sure you want to overwrite this save?"
@@ -96,7 +99,7 @@ let draw_request_name name ticks =
 
 let rec request_name saves name ticks =
   draw_all_preview_but saves position.y;
-  Draw.moveto 0 (-240 * position.y);
+  Draw.moveto 0 ((-240 * position.y) - 2);
   draw_request_name name ticks;
   Draw.moveto 0 0;
   Draw.present ();
