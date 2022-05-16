@@ -28,7 +28,7 @@ type orientation =
   | E
   | W  (** Type representing the four orientations *)
 
-type t = {
+type entity = {
   e_type : entity_interaction;
   mutable orie : orientation;
   mutable pos : coord;
@@ -37,43 +37,43 @@ type t = {
   obstacle : bool;
 }
 
-val load_entity : string -> t
+val load_entity : string -> entity
 (** [load_entity file] is the entity represented by [file]. Raises
     [Malformed_Json] if the json file is invalid *)
 
-val get_trigger : t -> entity_interaction
+val get_trigger : entity -> entity_interaction
 (** [get_trigger n] returns what interaction triggers [n] *)
 
-val get_orientation : t -> orientation
+val get_orientation : entity -> orientation
 (** [get_orientation n] is the current direction [n] is facing *)
 
-val get_position : t -> coord
+val get_position : entity -> coord
 (** [get_position n] returns [n]'s current position *)
 
-val get_sprite : t -> sprite
+val get_sprite : entity -> sprite
 (** [get_sprite n] returns [n]'s current sprite representation *)
 
-val get_dialogue : t -> string
+val get_dialogue : entity -> string
 (** [get_dialogue n] returns the dialogue [n] gives *)
 
-val is_obstacle : t -> bool
+val is_obstacle : entity -> bool
 (** [is_obstacle e] *)
 
-val update : t -> unit
+val update : entity -> unit
 (** [update npc] increments [npc]'s movement loop by one step *)
 
-val interact : t -> unit
+val interact : entity -> Player.player -> unit
 (** [interact n] is what happens when the player interacts with n *)
 
-(* val go : t -> orientation -> int -> unit (** [go e d n] moves n tiles
-   in direction [d]. In addition, this stops [n]'s movement loop until
-   it is restarted with [restart_loop n] *)
+(* val go : entity -> orientation -> int -> unit (** [go e d n] moves n
+   tiles in direction [d]. In addition, this stops [n]'s movement loop
+   until it is restarted with [restart_loop n] *)
 
-   val turn : t -> orientation -> unit (** [turn e d] turns [e] to face
-   direction [d] *)
+   val turn : entity -> orientation -> unit (** [turn e d] turns [e] to
+   face direction [d] *)
 
-   val wait : t -> int -> unit (** [wait e t] makes [e] wait for [t]
-   intervals *)
+   val wait : entity -> int -> unit (** [wait e t] makes [e] wait for
+   [t] intervals *)
 
-   val is_static : t -> bool (** [is_static e] returns whether e has a
-   preset movement loop or not *) *)
+   val is_static : entity -> bool (** [is_static e] returns whether e
+   has a preset movement loop or not *) *)

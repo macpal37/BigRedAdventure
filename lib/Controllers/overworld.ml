@@ -41,6 +41,23 @@ let player_sprite_w_walk i =
 (** draw_tiles tx ty gx gy draws the tiles centered at (tx,ty) within
     [Draw.width / (tile_size * 2) + 1] tiles with graphical offset of
     (gx,gy)*)
+
+let draw_entities tile_x tile_y graphic_x graphic_y =
+  let entities = Map.get_entities (State.map ()) in
+
+  for i = 0 to List.length entities - 1 do
+    let e = List.nth entities i in
+    let x, y =
+      ( int_of_float (fst e.pos) - tile_x + 6,
+        int_of_float (snd e.pos) - tile_y + 6 )
+    in
+    let w, h = Draw.get_dimension e.sprite in
+    Draw.draw_sprite e.sprite
+      ((x * tile_size) - graphic_x - (w / 4))
+      ((y * tile_size) - graphic_y + (h / 4))
+      ()
+  done
+
 let draw_tiles tile_x tile_y graphic_x graphic_y =
   Draw.set_color 0;
   Draw.fill_rect 0 0 Draw.width Draw.height;
@@ -62,26 +79,39 @@ let draw_tiles tile_x tile_y graphic_x graphic_y =
   done
 
 let draw_player ?(i = 2) orie =
+  let s = 48 / 2 in
   match orie with
   | Player.N ->
       Draw.draw_sprite_centered
         (player_sprite_n_walk i)
-        (Draw.width / 2) (Draw.height / 2) ()
+        (Draw.width / 2)
+        ((Draw.height / 2) + s)
+        ()
   | Player.E ->
       Draw.draw_sprite_centered
         (player_sprite_e_walk i)
-        (Draw.width / 2) (Draw.height / 2) ()
+        (Draw.width / 2)
+        ((Draw.height / 2) + s)
+        ()
   | Player.S ->
       Draw.draw_sprite_centered
         (player_sprite_s_walk i)
-        (Draw.width / 2) (Draw.height / 2) ()
+        (Draw.width / 2)
+        ((Draw.height / 2) + s)
+        ()
   | Player.W ->
       Draw.draw_sprite_centered
         (player_sprite_w_walk i)
-        (Draw.width / 2) (Draw.height / 2) ()
+        (Draw.width / 2)
+        ((Draw.height / 2) + s)
+        ()
 
 let draw _ =
   draw_tiles
+    (Player.x (State.player ()))
+    (Player.y (State.player ()))
+    0 0;
+  draw_entities
     (Player.x (State.player ()))
     (Player.y (State.player ()))
     0 0;
@@ -106,28 +136,38 @@ let move_scroll dx dy =
       (Player.y (State.player ()))
       (i * dx * tile_size / speed)
       (i * dy * tile_size / speed);
+    draw_entities
+      (Player.x (State.player ()))
+      (Player.y (State.player ()))
+      (i * dx * tile_size / speed)
+      (i * dy * tile_size / speed);
     draw_player ~i:(i / 5 mod 3) (Player.orie (State.player ()));
+
     Draw.present ();
     Input.sleep Draw.tick_rate ()
   done
 
 let attempt_move dx dy orie =
-  Player.set_orie orie (State.player ());
-  let new_x, new_y = (State.player_x () + dx, State.player_y () + dy) in
-  match Map.get_type (State.map ()) (new_x, new_y) with
-  | Path ->
-      move_scroll dx dy;
-      Player.set_coord new_x new_y (State.player ())
-  | Obstacle -> ()
-  | Grass e ->
-      move_scroll dx dy;
-      Player.set_coord new_x new_y (State.player ());
-      if Random.float 1. < 0.2 then (
-        encounter_anim ();
-        let c = Map.encounter_creature e in
-        match c with
-        | Some c -> Battle.start_wild_battle c
-        | None -> failwith "no creature encountered")
+  if Player.get_orie (State.player ()) = orie then begin
+    let new_x, new_y =
+      (State.player_x () + dx, State.player_y () + dy)
+    in
+    match Map.get_type (State.map ()) (new_x, new_y) with
+    | Path ->
+        move_scroll dx dy;
+        Player.set_coord new_x new_y (State.player ())
+    | Obstacle -> ()
+    | Grass e ->
+        move_scroll dx dy;
+        Player.set_coord new_x new_y (State.player ());
+        if Random.float 1. < 0.2 then (
+          encounter_anim ();
+          let c = Map.encounter_creature e in
+          match c with
+          | Some c -> Battle.start_wild_battle c
+          | None -> failwith "no creature encountered")
+  end
+  else Player.set_orie orie (State.player ())
 
 let redraw _ =
   draw ();

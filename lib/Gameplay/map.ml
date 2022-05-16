@@ -1,5 +1,6 @@
 open Yojson.Basic.Util
 open Entity
+open Util
 
 exception Out_of_Bounds
 exception Malformed_Json of string
@@ -8,7 +9,11 @@ type coord = int * int
 
 let entity_sprites =
   Spritesheet.init_spritesheet
-    "assets/entity_sprites/entity_sprites.png" 16 16 2
+    "assets/entity_sprites/entity_sprites.png" 16 16 3
+
+let trainer_sprites =
+  Spritesheet.init_spritesheet
+    "assets/entity_sprites/trainer_sprites.png" 32 32 3
 
 type encounter = {
   name : string;
@@ -30,11 +35,16 @@ type tile = {
 
 type t = {
   tiles : tile array array;
+  entities : entity list;
   spritesheet : Spritesheet.sprite_sheet;
 }
 
 let null_map =
-  { tiles = [||]; spritesheet = Spritesheet.empty_spritesheet }
+  {
+    tiles = [||];
+    entities = [];
+    spritesheet = Spritesheet.empty_spritesheet;
+  }
 
 let json_val json f key = json |> member key |> f
 let json_list json f key = json |> member key |> to_list |> List.map f
@@ -93,7 +103,16 @@ let build_id_arrays json w =
         with Yojson.Basic.Util.Type_error (_, _) ->
           build_id_arrays_rec t)
   in
-  build_id_arrays_rec layers
+
+  let rec build_entities_list = function
+    | [] -> []
+    | h :: t -> (
+        try h |> member "objects" |> to_list
+        with Yojson.Basic.Util.Type_error (_, _) ->
+          build_entities_list t)
+  in
+
+  (build_id_arrays_rec layers, build_entities_list layers)
 
 (* json |> member "layers" |> to_list |> List.map (json_build_matrix
    w) *)
@@ -212,11 +231,62 @@ let json_spritesheet json =
       Hashtbl.add spritesheet_cache png_path sprite_sheet;
       sprite_sheet
 
+let orie_of_json json =
+  match json |> to_string with
+  | "South" -> S
+  | "North" -> N
+  | "East" -> E
+  | "West" -> W
+  | _ -> S
+
+let find_o props name f def =
+  let filter =
+    List.filter (fun j -> j |> member "name" |> to_string = name) props
+  in
+  if List.length filter = 1 then List.hd filter |> member "value" |> f
+  else def
+
+let generate_entities h tiles objs =
+  let entity_of_json json =
+    let gid = json |> member "gid" |> to_int in
+    let props = json |> member "properties" |> to_list in
+    let orie = find_o props "orientation" orie_of_json S in
+    let dialogue = find_o props "dialogue" to_string "" in
+    let pos =
+      ( float_of_int ((json |> member "x" |> to_int) / 16),
+        float_of_int (h - ((json |> member "y" |> to_int) / 16) - 1) )
+    in
+    let e_type, sprite =
+      match List.assoc gid tiles with
+      | "Trainer" ->
+          let name = find_o props "trainer_name" to_string "Eve" in
+          let sprite =
+            match name with
+            | "Eve" -> Spritesheet.get_sprite trainer_sprites 1
+            | _ -> Spritesheet.get_sprite trainer_sprites 0
+          in
+          (Trainer name, sprite)
+      | "Sign" -> (Sign, Spritesheet.get_sprite entity_sprites 1)
+      | "Item" ->
+          ( Item
+              {
+                name = find_o props "item" to_string "potiton";
+                given = true;
+                disappear = find_o props "will_disappear" to_bool true;
+              },
+            Spritesheet.get_sprite entity_sprites 4 )
+      | _ -> (NoEntity, Spritesheet.get_sprite entity_sprites 2)
+    in
+    { e_type; orie; pos; dialogue; sprite; obstacle = true }
+  in
+
+  List.map entity_of_json objs
+
 let load_map map_name =
   let json = Yojson.Basic.from_file ("assets/maps/" ^ map_name) in
-  let w, _ = read_dim json in
+  let w, h = read_dim json in
   match build_id_arrays json w with
-  | [ tile_id_m; encounter_id_m ] ->
+  | [ tile_id_m; encounter_id_m ], entities_m ->
       let tilesets = json_tilesets json in
 
       let tile_t = List.assoc "small_outside_tileset.json" tilesets in
@@ -224,14 +294,15 @@ let load_map map_name =
       let encounter_l =
         json_encounters (List.assoc "id_tiles.json" tilesets)
       in
-      let _ =
+      let entities_l =
         json_entities (List.assoc "entities_tilesets.json" tilesets)
       in
       let tile_m = build_tile_matrix tile_id_m tileset_l in
       set_encounters tile_m encounter_id_m encounter_l;
       let spritesheet = json_spritesheet tile_t in
-      { tiles = tile_m; spritesheet }
-  | [] | _ :: _ -> raise (Malformed_Json "Impossible case!")
+      let entities = generate_entities h entities_l entities_m in
+      { tiles = tile_m; entities; spritesheet }
+  | [], _ | _ :: _, _ -> raise (Malformed_Json "Impossible case!")
 
 (*let e = all_encounters_of_json json in let g = sprites_of_json json in
   json |> member "map" |> to_list |> List.map codes_of_json |>
@@ -303,3 +374,17 @@ let string_of_encounters e =
       ^ "; levels = " ^ string_of_int low ^ "-" ^ string_of_int high
       ^ "}")
     "" e
+
+let loaded_maps = Util.null ()
+
+let load_maps _ =
+  let t = Hashtbl.create 16 in
+  Yojson.Basic.from_file "assets/maps/maps.json"
+  |> to_list
+  |> List.iter (fun j ->
+         let file = j |> to_string in
+         Hashtbl.add t file (load_map file));
+  loaded_maps *= t
+
+let get_entities t = t.entities
+let get_map s = Hashtbl.find ~!loaded_maps s

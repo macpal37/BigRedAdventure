@@ -36,12 +36,18 @@
                  "height":16,
                  "id":29,
                  "name":"",
+                 "properties":[
+                        {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"Hello"
+                        }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":16,
-                 "x":96,
-                 "y":272
+                 "x":80,
+                 "y":208
                 }, 
                 {
                  "gid":37,
@@ -50,7 +56,7 @@
                  "name":"",
                  "properties":[
                         {
-                         "name":"item",
+                         "name":"item_name",
                          "type":"string",
                          "value":"potion"
                         }],
@@ -58,14 +64,25 @@
                  "type":"",
                  "visible":true,
                  "width":16,
-                 "x":48,
-                 "y":272
+                 "x":32,
+                 "y":256
                 }, 
                 {
                  "gid":36,
                  "height":16,
                  "id":31,
                  "name":"",
+                 "properties":[
+                        {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"Hello Trainer!"
+                        }, 
+                        {
+                         "name":"trainer_name",
+                         "type":"string",
+                         "value":"Eve"
+                        }],
                  "rotation":0,
                  "type":"",
                  "visible":true,

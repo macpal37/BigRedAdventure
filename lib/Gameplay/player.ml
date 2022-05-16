@@ -42,8 +42,8 @@ let set_party party player = player.party <- party
 let creatures player = player.creatures
 
 let add_creature c p =
-  if List.length p.party < 6 then p.party <- p.party @ [ c ]
-  else p.creatures <- c :: p.creatures
+  if List.length p.party < 6 then p.party <- p.party @ [ c ];
+  p.creatures <- c :: p.creatures
 
 let rec remove_creature_rec c l =
   match l with
@@ -51,7 +51,8 @@ let rec remove_creature_rec c l =
   | h :: t -> if h = c then t else h :: remove_creature_rec c t
 
 let remove_creature c p =
-  p.creatures <- remove_creature_rec c p.creatures
+  p.creatures <- remove_creature_rec c p.creatures;
+  try p.party <- remove_creature_rec c p.party with _ -> ()
 
 let has_badge b p = List.mem b p.badges
 let add_money i p = p.money <- p.money + i
@@ -68,3 +69,4 @@ let set_coord x y p =
   set_y y p
 
 let set_orie o p = p.orie <- o
+let get_orie p = p.orie

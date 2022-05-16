@@ -31,6 +31,7 @@ val get_dim : t -> int * int
 
 val get_width : t -> int
 val get_height : t -> int
+val get_entities : t -> Entity.entity list
 
 val get_type : t -> coord -> tile_type
 (** [get_type m c] is the type ([Path, Grass, Obstacle]) of the tile at
@@ -52,3 +53,5 @@ val encounter_creature : encounters -> Creature.creature option
 
 val graphics_matrix : t -> string array array
 val string_of_encounters : encounters -> string
+val load_maps : unit -> unit
+val get_map : string -> t

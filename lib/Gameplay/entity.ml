@@ -48,7 +48,7 @@ type entity_interaction =
   | Door of string * coord
   | NoEntity
 
-type t = {
+type entity = {
   e_type : entity_interaction;
   mutable orie : orientation;
   mutable pos : coord;
@@ -104,10 +104,10 @@ let get_sprite e = e.sprite
 
 let get_dialogue n = n.dialogue
 
-let give_item item =
+let give_item item p =
   (if item.given = false then
-   let item = Play_assets.get_item item.name in
-   let inventory = State.player () |> Player.inventory in
+   let item = Item.get_item item.name in
+   let inventory = p |> Player.inventory in
    Inventory.add_item inventory item);
   item.given <-
     true (* check if disappear is true and if it is, remove from map *)
@@ -118,14 +118,14 @@ let heal c =
   Creature.set_current_hp c max_hp;
   if status <> Healthy then Creature.remove_status c status
 
-let heal_party () =
-  let party = State.player () |> Player.party in
+let heal_party p () =
+  let party = p |> Player.party in
   List.iter heal party
 
-let interact e =
+let interact e p =
   match e.e_type with
-  | Item a -> give_item a
-  | Heal -> heal_party ()
+  | Item a -> give_item a p
+  | Heal -> heal_party p ()
   | Merchant -> failwith "Unimplemented"
   | Door _ -> failwith "Unimplemented"
   | _ -> failwith "Unimplemented"

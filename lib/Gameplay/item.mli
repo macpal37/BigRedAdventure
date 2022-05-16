@@ -40,3 +40,6 @@ val get_description : item -> string
 
 val get_cost : item -> int
 (** [get_cost i] is the monetary cost of item [i]*)
+
+val load_items : unit -> unit
+val get_item : string -> item
