@@ -18,4 +18,6 @@ val player_y : unit -> int
 val map : unit -> Map.t
 (** [map _] is the current map of the game*)
 
+val set_player : Player.player -> unit
+val set_map : Map.t -> unit
 val adhoc_init : unit -> unit

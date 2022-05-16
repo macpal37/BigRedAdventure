@@ -287,3 +287,4 @@ let load_maps _ =
   loaded_maps *= t
 
 let get_map s = Hashtbl.find ~!loaded_maps s
+let get_maps _ = ~!loaded_maps

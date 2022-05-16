@@ -13,11 +13,14 @@ let player _ = !current_state.player
 let player_x _ = Player.x !current_state.player
 let player_y _ = Player.y !current_state.player
 let map _ = !current_state.map
+let set_player p = current_state := { !current_state with player = p }
+let set_map m = !current_state.map <- m
 
 let adhoc_init () =
-  Player.set_x 4 (player ());
-  Player.set_y 4 (player ());
-  !current_state.map <- Map.get_map "test_map.json";
+  (* Player.set_x 4 (player ()); Player.set_y 4 (player ()); *)
+  Player.set_x 23 (player ());
+  Player.set_y 14 (player ());
+  !current_state.map <- Map.get_map "route2.json";
   (* let nuxel = Creature.create_creature "nuxel" 23 in *)
   let chumpi = Creature.create_creature "chumpi" 10 in
   let rafu = Creature.create_creature "rafu" 10 in
