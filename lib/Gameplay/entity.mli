@@ -56,6 +56,8 @@ val get_sprite : entity -> sprite
 val get_dialogue : entity -> string
 (** [get_dialogue n] returns the dialogue [n] gives *)
 
+val is_visible : t -> bool
+
 val is_obstacle : entity -> bool
 (** [is_obstacle e] *)
 
@@ -65,7 +67,9 @@ val is_obstacle : entity -> bool
 val interact : entity -> Player.player -> Ui.draw_func -> unit
 (** [interact n] is what happens when the player interacts with n *)
 
-val apply_persistence : t -> bool * (int * int)
+val get_state : t -> int
+
+val set_state : t -> int -> unit
 
 (* val go : entity -> orientation -> int -> unit (** [go e d n] moves n
    tiles in direction [d]. In addition, this stops [n]'s movement loop
