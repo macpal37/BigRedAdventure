@@ -141,6 +141,17 @@ let fade_out saves =
     Unix.sleepf Draw.tick_rate
   done
 
+let launch_new_game id name =
+  let save_preview : Saves.save_preview =
+    { name; id; money = -1; time = 0 }
+  in
+  State.adhoc_init ();
+  Overworld.run_overworld save_preview
+
+let launch_load_game save_preview =
+  State.adhoc_init ();
+  Overworld.run_overworld save_preview
+
 let action mode saves =
   position.x <- 0;
   match mode with
@@ -150,23 +161,23 @@ let action mode saves =
           if confirm_overwrite saves mode then (
             let name = request_name saves "" 0 in
             Loading_screen.await ();
-            Saves.new_game position.x name)
+            launch_new_game position.y name)
           else ()
       | None ->
           let name = request_name saves "" 0 in
           Loading_screen.await ();
-          Saves.new_game position.x name)
+          launch_new_game position.y name)
   | Load -> (
       match saves position.y with
       | Some s ->
           fade_out saves;
           Loading_screen.await ();
-          Saves.load_game s
+          launch_load_game s
       | None ->
           if confirm_overwrite saves mode then (
             let name = request_name saves "" 0 in
             Loading_screen.await ();
-            Saves.new_game position.x name)
+            launch_new_game position.y name)
           else ())
 
 let rec choose (saves : int -> Saves.save_preview option) mode =

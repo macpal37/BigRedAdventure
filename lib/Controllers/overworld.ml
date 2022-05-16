@@ -145,7 +145,7 @@ let redraw _ =
   draw ();
   Draw.present ()
 
-let rec run_tick _ =
+let rec run_tick save_preview =
   (match Input.get_ctrl_option (Input.poll_key_option ()) with
   | Some Up -> attempt_move 0 1 Player.N
   | Some Left -> attempt_move (-1) 0 Player.W
@@ -157,6 +157,6 @@ let rec run_tick _ =
   | None -> ());
   redraw ();
   Input.sleep Draw.tick_rate ();
-  run_tick ()
+  run_tick save_preview
 
-let run_overworld _ = run_tick ()
+let run_overworld save_preview = run_tick save_preview
