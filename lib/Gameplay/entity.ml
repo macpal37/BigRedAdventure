@@ -1,4 +1,5 @@
 open Draw
+open Creature
 (* open Yojson.Basic.Util *)
 
 type coord = int * int
@@ -39,6 +40,7 @@ type item_props = {
 }
 
 type trainer_props = {
+  name:string;
   alt_dialogue:string;
   party:creature list;
 }
