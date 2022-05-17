@@ -1,4 +1,5 @@
 open Draw
+open Creature
 (* open Yojson.Basic.Util *)
 
 type coord = int * int
@@ -38,8 +39,15 @@ type item_props = {
   mutable disappear : bool;
 }
 
+type trainer_props = {
+  name : string;
+  alt_dialogue : string;
+  party : creature list;
+  line_of_sight : coord list;
+}
+
 type entity_interaction =
-  | Trainer of string
+  | Trainer of trainer_props
   | Sign
   | Item of item_props
   | Grass
@@ -69,15 +77,20 @@ type entity = {
 let get_trigger entity = entity.e_type
 let get_orientation entity = entity.orie
 let get_position entity = entity.pos
-let is_obstacle e = if e.state = 0 then e.obstacle 
-  else match e.e_type with
-  | Item i -> not i.disappear
-  | _ -> true
 
-let is_visible e = if e.state = 0 then true 
-  else match e.e_type with
-  | Item i -> not i.disappear
-  | _ -> true
+let is_obstacle e =
+  if e.state = 0 then e.obstacle
+  else
+    match e.e_type with
+    | Item i -> not i.disappear
+    | _ -> true
+
+let is_visible e =
+  if e.state = 0 then true
+  else
+    match e.e_type with
+    | Item i -> not i.disappear
+    | _ -> true
 
 (** 0 = show, 1 = invisible *)
 let get_state e = e.state
@@ -121,11 +134,11 @@ let get_dialogue n = n.dialogue
 let give_item e item p =
   (if item.given = false then
    let item = Item.get_item item.name in
-   let inventory = p |> Player.inventory in
+   let inventory = p () |> Player.inventory in
    Inventory.add_item inventory item);
 
-  item.given <-
-    true; if item.disappear then e.state <- 1
+  item.given <- true;
+  if item.disappear then e.state <- 1
 
 let heal c =
   let max_hp = (Creature.get_stats c).max_hp in
@@ -134,18 +147,19 @@ let heal c =
   if status <> Healthy then Creature.remove_status c status
 
 let heal_party p () =
-  let party = p |> Player.party in
+  let party = p () |> Player.party in
   List.iter heal party
 
 let interact e p redraw =
   if String.length e.dialogue > 0 then
-  Animation.display_text_box e.dialogue false redraw ();
+    Animation.display_text_box e.dialogue false redraw ();
   match e.e_type with
   | Sign -> ()
-  | Item a -> 
-    if e.state = 0 then give_item e a p
+  | Item a -> if e.state = 0 then give_item e a p
   | Heal -> heal_party p ()
   | _ -> ()
+
+let has_changed e = e.state <> 0
 
 (* let update e p redraw = failwith "Unimplemented" *)
 

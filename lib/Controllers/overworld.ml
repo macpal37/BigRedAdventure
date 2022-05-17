@@ -207,7 +207,7 @@ let attempt_action () =
         (Map.get_entities (State.map ()))
     in
     if Entity.is_obstacle e then
-      Entity.interact e (State.player ()) (fun () ->
+      Entity.interact e State.player (fun () ->
           Ui.add_first_background draw;
           Ui.add_first_gameplay
             (Draw.draw_sprite DrawText.battle_bot 0 0))

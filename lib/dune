@@ -28,7 +28,6 @@
   entity
   ; =====Other=====
   animation
-  animator
   spritesheet
   draw
   author
