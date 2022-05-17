@@ -432,4 +432,8 @@ let load_maps _ =
 
 let get_entities t = t.entities
 let get_map s = Hashtbl.find ~!loaded_maps s
+
+let get_map2 s =
+  Hashtbl.find ~!loaded_maps ("assets/maps/" ^ s ^ ".json")
+
 let get_maps _ = ~!loaded_maps
