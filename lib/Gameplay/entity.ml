@@ -72,12 +72,12 @@ let get_position entity = entity.pos
 let is_obstacle e = if e.state = 0 then e.obstacle 
   else match e.e_type with
   | Item i -> not i.disappear
-  | _ -> false
+  | _ -> true
 
 let is_visible e = if e.state = 0 then true 
   else match e.e_type with
   | Item i -> not i.disappear
-  | _ -> false
+  | _ -> true
 
 (** 0 = show, 1 = invisible *)
 let get_state e = e.state
