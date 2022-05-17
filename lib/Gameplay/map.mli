@@ -20,6 +20,7 @@ type tile_type =
   | Obstacle  (** type representing the type of a tile on the map *)
 
 val null_map : t
+(** Null map value*)
 
 val load_map : string -> t
 (** [load_map file] is the map represented by [file]. Raises
@@ -52,8 +53,21 @@ val encounter_creature : encounters -> Creature.creature option
     encountered *)
 
 val get_name : t -> string
+(** [get_name t] is the name of [t]*)
+
 val graphics_matrix : t -> string array array
+(** Debug utility*)
+
 val string_of_encounters : encounters -> string
+
 val load_maps : unit -> unit
+(** Load maps into memory*)
+
 val get_map : string -> t
+(** [get_map s] is the map with name [s]*)
+
+val get_map2 : string -> t
+(** [get_map2 s] is the map with name [s] (without boilerplate)*)
+
 val get_maps : unit -> (string, t) Hashtbl.t
+(** [get_maps] returns the table of all loaded maps*)

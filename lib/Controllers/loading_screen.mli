@@ -1,3 +1,6 @@
+(** Module for showing the loading screen while waiting for a concurrent
+    task to finish*)
+
 val loading_label : string
 (** The label corresponding to loading assets*)
 

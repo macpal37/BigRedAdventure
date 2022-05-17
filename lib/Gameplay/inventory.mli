@@ -42,11 +42,13 @@ val add_item : inventory -> Item.item -> unit
     bag.This call mutates [inventory]*)
 
 val consume_item : inventory -> Item.item -> unit
-
 (** [consume_item inventory item] removes 1 copy of [item] from its
     respective bag. This call mutates the [inventory]. Raises
     [Insufficient r] if the number of copies [r] of [item] is less than
     [c]*)
 
 val serialize : inventory -> Yojson.Basic.t
+(** [serialize i] is a json representation of [i]*)
+
 val deserialize : Yojson.Basic.t -> inventory
+(** [deserialize j] is the inventory encoded by [j]*)
