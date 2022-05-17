@@ -14,9 +14,10 @@ type item_props = {
 }
 
 type trainer_props = {
-  name:string;
-  alt_dialogue:string;
-  party:creature list;
+  name : string;
+  alt_dialogue : string;
+  party : creature list;
+  line_of_sight : coord list;
 }
 
 type entity_interaction =
@@ -34,16 +35,16 @@ type orientation =
   | S
   | E
   | W  (** Type representing the four orientations *)
-  
-  type entity = {
-    e_type : entity_interaction;
-    mutable orie : orientation;
-    mutable pos : coord;
-    dialogue : string;
-    sprite : sprite;
-    mutable state : int;
-    obstacle : bool;
-  }
+
+type entity = {
+  e_type : entity_interaction;
+  mutable orie : orientation;
+  mutable pos : coord;
+  dialogue : string;
+  sprite : sprite;
+  mutable state : int;
+  obstacle : bool;
+}
 
 (* val load_entity : string -> entity *)
 (** [load_entity file] is the entity represented by [file]. Raises
@@ -76,9 +77,7 @@ val interact : entity -> (unit -> Player.player) -> Ui.draw_func -> unit
 (** [interact n] is what happens when the player interacts with n *)
 
 val get_state : entity -> int
-
 val set_state : entity -> int -> unit
-
 val has_changed : entity -> bool
 
 (* val go : entity -> orientation -> int -> unit (** [go e d n] moves n
