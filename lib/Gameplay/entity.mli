@@ -1,4 +1,5 @@
 open Draw
+open Creature
 
 (** abstract data type representing an entity *)
 
@@ -12,8 +13,14 @@ type item_props = {
   mutable disappear : bool;
 }
 
+type trainer_props = {
+  name:string;
+  alt_dialogue:string;
+  party:creature list;
+}
+
 type entity_interaction =
-  | Trainer of string
+  | Trainer of trainer_props
   | Sign
   | Item of item_props
   | Grass
@@ -71,6 +78,8 @@ val interact : entity -> (unit -> Player.player) -> Ui.draw_func -> unit
 val get_state : entity -> int
 
 val set_state : entity -> int -> unit
+
+val has_changed : entity -> bool
 
 (* val go : entity -> orientation -> int -> unit (** [go e d n] moves n
    tiles in direction [d]. In addition, this stops [n]'s movement loop

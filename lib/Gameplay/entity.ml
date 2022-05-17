@@ -1,4 +1,5 @@
 open Draw
+open Creature
 (* open Yojson.Basic.Util *)
 
 type coord = int * int
@@ -38,8 +39,15 @@ type item_props = {
   mutable disappear : bool;
 }
 
+type trainer_props = {
+  name : string;
+  alt_dialogue : string;
+  party : creature list;
+  line_of_sight : coord list;
+}
+
 type entity_interaction =
-  | Trainer of string
+  | Trainer of trainer_props
   | Sign
   | Item of item_props
   | Grass
@@ -150,6 +158,8 @@ let interact e p redraw =
   | Item a -> if e.state = 0 then give_item e a p
   | Heal -> heal_party p ()
   | _ -> ()
+
+let has_changed e = e.state <> 0
 
 (* let update e p redraw = failwith "Unimplemented" *)
 
