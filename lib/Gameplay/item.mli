@@ -42,4 +42,7 @@ val get_cost : item -> int
 (** [get_cost i] is the monetary cost of item [i]*)
 
 val load_items : unit -> unit
+(** Loads items into memory*)
+
 val get_item : string -> item
+(** [get_item s] is the item with name [s]*)

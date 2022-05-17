@@ -91,7 +91,10 @@ val set_orie : orientations -> player -> unit
     [p]*)
 
 val serialize : player -> Yojson.Basic.t
+(** [serialize p] is the json representation of [p]*)
+
 val deserialize : Yojson.Basic.t -> player
+(** [deserialize j] is the player encoded by [j]*)
 
 val get_orie : player -> orientations
 (** [get_orie p] returns the orientation of [p].*)
