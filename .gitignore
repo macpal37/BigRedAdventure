@@ -14,3 +14,6 @@ _build
 \#*\#
 .DS_Store
 
+#ignore saves
+*.saves
+

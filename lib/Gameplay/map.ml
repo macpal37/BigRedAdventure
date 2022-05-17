@@ -37,6 +37,7 @@ type t = {
   tiles : tile array array;
   entities : (coord * entity) list;
   spritesheet : Spritesheet.sprite_sheet;
+  name : string;
 }
 
 let null_map =
@@ -44,6 +45,7 @@ let null_map =
     tiles = [||];
     entities = [];
     spritesheet = Spritesheet.empty_spritesheet;
+    name = "";
   }
 
 let json_val json f key = json |> member key |> f
@@ -294,7 +296,16 @@ let generate_entities h tiles objs =
         | _ -> (NoEntity, Draw.empty_sprite)
       in
 
-      (pos, { e_type; orie; pos; dialogue; sprite; state = 0; obstacle = true })
+      ( pos,
+        {
+          e_type;
+          orie;
+          pos;
+          dialogue;
+          sprite;
+          state = 0;
+          obstacle = true;
+        } )
     with Yojson.Basic.Util.Type_error (_, _) ->
       ( (0, 0),
         {
@@ -332,7 +343,7 @@ let load_map map_name =
       set_encounters tile_m encounter_id_m encounter_l;
       let spritesheet = json_spritesheet tile_t in
       let entities = generate_entities h entities_l entities_m in
-      { tiles = tile_m; entities; spritesheet }
+      { tiles = tile_m; entities; spritesheet; name = map_name }
   | [], _ | _ :: _, _ -> raise (Malformed_Json "Impossible case!")
 
 (*let e = all_encounters_of_json json in let g = sprites_of_json json in
@@ -390,6 +401,8 @@ let encounter_creature e =
   | None -> None
   | Some { name; level } -> Some (Creature.create_creature name level)
 
+let get_name (m : t) = m.name
+
 let graphics_matrix m =
   matrix_map
     (fun t ->
@@ -419,3 +432,4 @@ let load_maps _ =
 
 let get_entities t = t.entities
 let get_map s = Hashtbl.find ~!loaded_maps s
+let get_maps _ = ~!loaded_maps

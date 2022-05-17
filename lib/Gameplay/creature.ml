@@ -494,7 +494,7 @@ let create_creature_mod n (level : int) normal shiny =
   let shiny_chance = if normal then shiny else Random.int 100 = 0 in
   let sprite_sheet =
     if String.lowercase_ascii n <> "missingno" then
-      Sprite_assets.get_spritesheet
+      Spritesheet.get_spritesheet
         ("assets/creature_sprites/"
         ^ String.lowercase_ascii name
         ^ ".png")
@@ -720,7 +720,7 @@ let evolve c =
     create_creature_mod c.evolution.name c.level true c.shiny
   in
   let spsh =
-    Sprite_assets.get_spritesheet
+    Spritesheet.get_spritesheet
       ("assets/creature_sprites/"
       ^ String.lowercase_ascii c.evolution.name
       ^ ".png")

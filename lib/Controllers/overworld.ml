@@ -7,7 +7,7 @@ let player_spritesheet = Util.null ()
 
 let load_assets _ =
   player_spritesheet
-  *= Sprite_assets.get_spritesheet
+  *= Spritesheet.get_spritesheet
        "assets/entity_sprites/player_sprite_overworld.png"
 
 let player_sprite_n_walk i =
@@ -47,13 +47,13 @@ let draw_entities tile_x tile_y graphic_x graphic_y =
 
   for i = 0 to List.length entities - 1 do
     let _, e = List.nth entities i in
-    if Entity.is_visible e then (
-    let x, y = (fst e.pos - tile_x + 6, snd e.pos - tile_y + 5) in
-    let w, h = Draw.get_dimension e.sprite in
-    Draw.draw_sprite e.sprite
-      ((x * tile_size) - graphic_x - (w / 4))
-      ((y * tile_size) - graphic_y + (h / 4))
-      ())
+    if Entity.is_visible e then
+      let x, y = (fst e.pos - tile_x + 6, snd e.pos - tile_y + 5) in
+      let w, h = Draw.get_dimension e.sprite in
+      Draw.draw_sprite e.sprite
+        ((x * tile_size) - graphic_x - (w / 4))
+        ((y * tile_size) - graphic_y + (h / 4))
+        ()
   done
 
 let draw_tiles tile_x tile_y graphic_x graphic_y =
@@ -121,10 +121,22 @@ let encounter_anim _ =
     Draw.set_color 0;
     draw ();
     Draw.fill_rect (400 - (7 * i)) (360 - (6 * i)) (14 * i) (12 * i);
+    draw_player (Player.orie (State.player ()));
     Draw.present ();
     Input.sleep Draw.tick_rate ()
   done;
-  Input.sleep 0.3 ()
+  for i = 1 to 10 do
+    Draw.set_color 0;
+    Draw.fill_rect 0 0 Draw.width Draw.height;
+    draw_player (Player.orie (State.player ()));
+    Draw.set_draw_color ~a:(i * 25) 0 0 0;
+    Draw.fill_rect 0 0 Draw.width Draw.height;
+    Draw.present ();
+    Input.sleep Draw.tick_rate ()
+  done;
+  Draw.set_color 0;
+  Draw.fill_rect 0 0 Draw.width Draw.height;
+  Draw.present ()
 
 let move_scroll dx dy =
   let speed = 12 in
@@ -180,7 +192,7 @@ let redraw _ =
   draw ();
   Draw.present ()
 
-let attemp_action () =
+let attempt_action () =
   let new_x, new_y =
     match Player.get_orie (State.player ()) with
     | N -> (0, 1)
@@ -200,51 +212,41 @@ let attemp_action () =
           Ui.add_first_gameplay
             (Draw.draw_sprite DrawText.battle_bot 0 0))
   with Not_found -> ()
-  
-  (* let coord_add (orie : Entity.orientation) = 
-    match orie with
-    | N -> (0, 1)
-    | E -> (1, 0)
-    | S -> (0, -1)
-    | W -> (-1, 0)
 
-let rec incr_coord_list (x, y) dir num =
-  let add_x, add_y = coord_add dir in
-  if num = 0 then []
-  else (x + add_x * num, y + add_y * num) :: incr_coord_list (x, y) dir (num - 1)
+(* let coord_add (orie : Entity.orientation) = match orie with | N ->
+   (0, 1) | E -> (1, 0) | S -> (0, -1) | W -> (-1, 0)
 
-let max_sight_coords pos dir = incr_coord_list pos dir 4 |> List.rev
+   let rec incr_coord_list (x, y) dir num = let add_x, add_y = coord_add
+   dir in if num = 0 then [] else (x + add_x * num, y + add_y * num) ::
+   incr_coord_list (x, y) dir (num - 1)
 
-let is_obstacle (x, y) = 
-  let e = List.assoc (x, y) (Map.get_entities (State.map ())) in 
-  let is_e_obs = e.obstacle in 
-  let is_t_obs = Map.get_type (State.map ()) (x, y) = Map.Obstacle in
-  is_e_obs || is_t_obs
+   let max_sight_coords pos dir = incr_coord_list pos dir 4 |> List.rev
 
-let rec sight_len clist = 
-  match clist with
-  | [] -> 4
-  | h :: _ when is_obstacle h -> List.length clist
-  | _ :: t -> sight_len t
+   let is_obstacle (x, y) = let e = List.assoc (x, y) (Map.get_entities
+   (State.map ())) in let is_e_obs = e.obstacle in let is_t_obs =
+   Map.get_type (State.map ()) (x, y) = Map.Obstacle in is_e_obs ||
+   is_t_obs
 
-let sight_dist trainer = 
-  let pos = Entity.get_position trainer in
-  let dir = Entity.get_orientation trainer in 
-  max_sight_coords pos dir |> sight_len *)
-  
-let rec run_tick _ =
+   let rec sight_len clist = match clist with | [] -> 4 | h :: _ when
+   is_obstacle h -> List.length clist | _ :: t -> sight_len t
+
+   let sight_dist trainer = let pos = Entity.get_position trainer in let
+   dir = Entity.get_orientation trainer in max_sight_coords pos dir |>
+   sight_len *)
+
+let rec run_tick save_preview =
   (match Input.get_ctrl_option (Input.poll_key_option ()) with
   | Some Up -> attempt_move 0 1 Player.N
   | Some Left -> attempt_move (-1) 0 Player.W
   | Some Down -> attempt_move 0 (-1) Player.S
   | Some Right -> attempt_move 1 0 Player.E
-  | Some Action -> attemp_action ()
+  | Some Action -> attempt_action ()
   | Some Start -> Party_menu.init OverworldMode ()
   | Some Back -> ()
   | Some k -> ignore k
   | None -> ());
   redraw ();
   Input.sleep Draw.tick_rate ();
-  run_tick ()
+  run_tick save_preview
 
-let run_overworld _ = run_tick ()
+let run_overworld save_preview = run_tick save_preview

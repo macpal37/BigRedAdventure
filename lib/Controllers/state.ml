@@ -13,6 +13,8 @@ let player _ = !current_state.player
 let player_x _ = Player.x !current_state.player
 let player_y _ = Player.y !current_state.player
 let map _ = !current_state.map
+let set_player p = current_state := { !current_state with player = p }
+let set_map m = !current_state.map <- m
 
 let adhoc_init () =
   (* Player.set_x 4 (player ()); Player.set_y 4 (player ()); *)

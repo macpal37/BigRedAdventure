@@ -58,14 +58,14 @@ let level_up_screen = Util.null ()
 let ball_anim = Util.null ()
 
 let load_assets _ =
-  battle_right *= Sprite_assets.get_sprite2 "battle_top" GUI_Folder;
-  moves_window *= Sprite_assets.get_sprite2 "moves_window" GUI_Folder;
-  combat_hud *= Sprite_assets.get_sprite2 "opponent_hud" GUI_Folder;
-  player_hud *= Sprite_assets.get_sprite2 "player_hud" GUI_Folder;
-  battle_bg1 *= Sprite_assets.get_sprite2 "battle-bg1" GUI_Folder;
-  level_up_screen *= Sprite_assets.get_sprite2 "level_up" GUI_Folder;
+  battle_right *= Draw.get_sprite2 "battle_top" GUI_Folder;
+  moves_window *= Draw.get_sprite2 "moves_window" GUI_Folder;
+  combat_hud *= Draw.get_sprite2 "opponent_hud" GUI_Folder;
+  player_hud *= Draw.get_sprite2 "player_hud" GUI_Folder;
+  battle_bg1 *= Draw.get_sprite2 "battle-bg1" GUI_Folder;
+  level_up_screen *= Draw.get_sprite2 "level_up" GUI_Folder;
   ball_anim
-  *= Sprite_assets.get_spritesheet
+  *= Spritesheet.get_spritesheet
        "assets/item_sprites/pokeball_capture.png"
 
 (*****************************************************************)

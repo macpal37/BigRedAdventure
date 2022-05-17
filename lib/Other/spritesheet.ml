@@ -1,4 +1,6 @@
 open Draw
+open Yojson.Basic.Util
+open Util
 
 type sprite_sheet = {
   sprites : sprite array;
@@ -82,3 +84,44 @@ let set_text_color ss i c =
   for j = 0 to Array.length ss.sprites - 1 do
     change_color ss.sprites.(j) (i + 1) c
   done
+
+let loaded_spritesheets = Util.null ()
+
+let load_spritesheets _ =
+  let t = Hashtbl.create 16 in
+  Yojson.Basic.from_file "assets/entity_sprites/entity_sprites.json"
+  |> member "spritesheets" |> to_list
+  |> List.iter (fun j ->
+         let file =
+           "assets/entity_sprites/" ^ (j |> member "file" |> to_string)
+         in
+         let w = j |> member "w" |> to_int in
+         let h = j |> member "h" |> to_int in
+         let dpi = j |> member "dpi" |> to_int in
+         Hashtbl.add t file (init_spritesheet file w h dpi));
+  Yojson.Basic.from_file "assets/util/creature_list.json"
+  |> to_assoc
+  |> List.iter (fun (_, j) ->
+         let name = j |> member "name" |> to_string in
+         let file =
+           "assets/creature_sprites/"
+           ^ String.lowercase_ascii name
+           ^ ".png"
+         in
+         Hashtbl.add t file (init_spritesheet file 80 80 3));
+  Yojson.Basic.from_file "assets/item_sprites/item_sprites.json"
+  |> member "spritesheets" |> to_list
+  |> List.iter (fun j ->
+         let file =
+           "assets/item_sprites/" ^ (j |> member "file" |> to_string)
+         in
+         let w = j |> member "w" |> to_int in
+         let h = j |> member "h" |> to_int in
+         let dpi = j |> member "dpi" |> to_int in
+         Hashtbl.add t file (init_spritesheet file w h dpi));
+  loaded_spritesheets *= t
+
+let get_spritesheet s = Hashtbl.find ~!loaded_spritesheets s
+
+let get_spritesheet2 name folder =
+  Hashtbl.find ~!loaded_spritesheets (Draw.sprite_path name folder)

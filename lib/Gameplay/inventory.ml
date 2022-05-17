@@ -1,3 +1,5 @@
+open Yojson.Basic.Util
+
 exception Insufficient of int
 
 module ItemTypeMap = Stdlib.Map.Make (struct
@@ -56,3 +58,37 @@ let add_item (i : inventory) (item : Item.item) =
 let consume_item (i : inventory) (item : Item.item) =
   let bag = get_bag i (Item.get_type item) in
   consume bag item
+
+let serialize i =
+  `Assoc
+    ([
+       ("Key", Item.Key);
+       ("Ball", Ball);
+       ("Medicine", Medicine);
+       ("Misc", Misc);
+     ]
+    |> List.map (fun (ts, tv) ->
+           ( ts,
+             `List
+               (list_items (get_bag i tv)
+               |> List.map (fun (i, c) ->
+                      `List [ `String (Item.get_name i); `Int c ])) )))
+
+let deserialize j =
+  let i = new_inventory () in
+  [
+    ("Key", Item.Key);
+    ("Ball", Ball);
+    ("Medicine", Medicine);
+    ("Misc", Misc);
+  ]
+  |> List.iter (fun (ts, tv) ->
+         let b = get_bag i tv in
+         j |> member ts |> to_list
+         |> List.iter (fun l ->
+                match l |> to_list with
+                | n :: c :: _ ->
+                    add b ~count:(c |> to_int)
+                      (Item.get_item (n |> to_string))
+                | _ -> failwith "Deserialization error"));
+  i

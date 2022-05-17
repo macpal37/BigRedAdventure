@@ -47,3 +47,6 @@ val consume_item : inventory -> Item.item -> unit
     respective bag. This call mutates the [inventory]. Raises
     [Insufficient r] if the number of copies [r] of [item] is less than
     [c]*)
+
+val serialize : inventory -> Yojson.Basic.t
+val deserialize : Yojson.Basic.t -> inventory
