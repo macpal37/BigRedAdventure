@@ -108,6 +108,11 @@ let rec run_tick () =
   Input.sleep 0.016 ();
   let key =
     match Input.pop_key_option () with
+    | Some Sdlkeycode.A ->
+        let item = Item.get_item "potion" in
+        let inventory = State.player () |> Player.inventory in
+        Inventory.add_item inventory item;
+        NoKey
     | Some c -> get_ctrl_key c
     | None -> NoKey
   in

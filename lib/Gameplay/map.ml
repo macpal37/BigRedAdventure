@@ -277,8 +277,8 @@ let generate_entities h tiles objs =
         | "Item" ->
             ( Item
                 {
-                  name = find_o props "item" to_string "potiton";
-                  given = true;
+                  name = find_o props "item_name" to_string "potion";
+                  given = false;
                   disappear = find_o props "will_disappear" to_bool true;
                 },
               Spritesheet.get_sprite entity_sprites 4 )

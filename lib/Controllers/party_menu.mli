@@ -2,6 +2,7 @@ type menu =
   | MainMenu
   | MiniMenu
   | SwitchMode
+  | ItemMode
   | Exit
 
 type combat_mode =

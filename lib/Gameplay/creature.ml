@@ -348,10 +348,9 @@ let generate_moves learnset level =
          learnset)
   in
   let moves = Array.make 4 None in
-  for i = 1 to 4 do
-    if i <= List.length possible_moves then
-      moves.(List.length possible_moves - i) <-
-        Some (snd (List.nth possible_moves (i - 1)))
+  for i = 0 to 3 do
+    if i < List.length possible_moves then
+      moves.(3 - i) <- Some (snd (List.nth possible_moves i))
   done;
 
   moves

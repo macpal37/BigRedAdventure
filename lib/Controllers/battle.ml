@@ -577,13 +577,10 @@ let handle_item item () =
         | 2 -> 2.0
         | _ -> 1.0
       in
-
       let catch_results = Combat.capture ~!bs modifier in
-
       Animation.animate_capture ~!ball_anim
         (get_front_sprite ~!bs.enemy_battler.creature)
         catch_results ball_type (refresh_battle 0);
-
       if ~!bs.battle_status = Catch then begin
         display_text_box
           ("You captured "
@@ -645,7 +642,6 @@ let handle_party () =
 
 let rec handle_inventory () =
   Inventory_menu.init ();
-  Ui.add_first_gameplay (clear_text DrawText.battle_bot);
   match !Inventory_menu.selected_item with
   | Some i ->
       let valid_item = handle_item i () in

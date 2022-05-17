@@ -17,6 +17,7 @@ let current_item = null ()
 let set_current_item i = current_item := Some i
 let get_current_item = !current_item
 let move_menu = null ()
+let small_text = ref ""
 
 let load_assets _ =
   party_menu_bg *= Sprite_assets.get_sprite2 "party_menu" GUI_Folder;
@@ -38,6 +39,7 @@ type menu =
   | MainMenu
   | MiniMenu
   | SwitchMode
+  | ItemMode
   | Exit
 
 let menu_mode = ref MainMenu
@@ -154,7 +156,7 @@ let refresh () =
   draw_menu (Player.party_i (State.player ()) 0) ();
   if !battle_mode <> InventoryMode then
     Ui.add_first_foreground
-      (draw_string_colored 36 32 Large "Choose a CREATURE" text_color2
+      (draw_string_colored 36 32 Large !small_text text_color2
          text_color)
 
 let moves_ptr = Util.new_point ()
@@ -207,7 +209,6 @@ let choose_move creature =
   learn_move_event ()
 
 let use_item creature item =
-  print_endline "Hello?";
   let id = Item.get_id item in
   try
     (match id with
@@ -236,15 +237,8 @@ let use_item creature item =
     | 13 -> Creature.remove_status creature (Sleep (ref 1))
     | 14 -> Creature.apply_status creature Healthy
     | _ -> print_endline "NICE ITEM BRO :)");
-    current_item := None;
-    menu_mode := Exit
-  with NoEffect ->
-    refresh ();
-    Ui.add_first_foreground
-      (draw_string_colored 36 32 Large "It has no effect" text_color2
-         text_color);
-    ();
-    menu_mode := MainMenu
+    current_item := None
+  with NoEffect -> small_text := "It has no effect"
 
 let minimenu () =
   let x, y, dif, f = (630, 166, 44, Medium) in
@@ -291,6 +285,19 @@ let switch () =
   let new_party = switch_creature [] party in
   Player.set_party new_party (State.player ())
 
+let handle_item item =
+  match Item.get_type item with
+  | Item.Medicine ->
+      set_current_item item;
+      menu_mode := ItemMode
+  | _ -> ()
+
+let handle_inventory () =
+  Inventory_menu.init ();
+  match !Inventory_menu.selected_item with
+  | Some item -> handle_item item
+  | None -> print_endline "None"
+
 let rec run_tick () =
   Input.sleep Draw.tick_rate ();
   let key =
@@ -322,7 +329,9 @@ let rec run_tick () =
                (if menu_position.x = 0 then 0 else menu_position.y + 1)
            in
            match !current_item with
-           | Some i -> use_item target_creature i
+           | Some i ->
+               use_item target_creature i;
+               menu_mode := Exit
            | None -> ());
           if key = Back then menu_mode := Exit
       | FaintedSwitch ->
@@ -341,12 +350,10 @@ let rec run_tick () =
         Creature_menu.set_creature (get_party_index ());
         Creature_menu.init ()
       end;
-      (* if key = Action && minimenu_position.y = 1 then begin
-         Creature_menu.set_creature (get_party_index ());
-         Creature_menu.init ();
-
-         end; *)
-      minimenu ();
+      if key = Action && minimenu_position.y = 2 then begin
+        handle_inventory ();
+        small_text := "Choose a creature."
+      end;
       (if key = Action && minimenu_position.y = 1 then
        match !battle_mode with
        | OverworldMode ->
@@ -382,6 +389,7 @@ let rec run_tick () =
       if key = Action && minimenu_position.y = 3 then
         menu_mode := MainMenu
   | SwitchMode ->
+      small_text := "Choose a creature.";
       if key = Action then begin
         switch ();
         menu_position.x <- switch_position.x + 0;
@@ -402,6 +410,19 @@ let rec run_tick () =
         switch_position.y <- 0;
         minimenu ()
       end
+  | ItemMode ->
+      (if key = Action then
+       let target_creature =
+         Player.party_i (State.player ())
+           (if menu_position.x = 0 then 0 else menu_position.y + 1)
+       in
+       match !current_item with
+       | Some i ->
+           use_item target_creature i;
+           menu_mode := MiniMenu;
+           Inventory.consume_item (Player.inventory (State.player ())) i
+       | None -> ());
+      if key = Back then menu_mode := MiniMenu
   | Exit -> ());
 
   refresh ();

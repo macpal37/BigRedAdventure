@@ -106,13 +106,16 @@ let get_sprite e = e.sprite
 let get_dialogue n = n.dialogue
 
 let give_item item p =
-  (if item.given = false then
-   let item = Item.get_item item.name in
-   let inventory = p |> Player.inventory in
-   Inventory.add_item inventory item);
-
-  item.given <-
-    true (* check if disappear is true and if it is, remove from map *)
+  if item.given = false then begin
+    print_endline "GIVE";
+    print_endline ("NAME : " ^ item.name);
+    let i = Item.get_item item.name in
+    print_endline ("ITEM : " ^ Item.get_name i);
+    let inventory = p () |> Player.inventory in
+    Inventory.add_item inventory i;
+    item.given <- true
+  end
+(* check if disappear is true and if it is, remove from map *)
 
 let heal c =
   let max_hp = (Creature.get_stats c).max_hp in
@@ -121,7 +124,7 @@ let heal c =
   if status <> Healthy then Creature.remove_status c status
 
 let heal_party p () =
-  let party = p |> Player.party in
+  let party = p () |> Player.party in
   List.iter heal party
 
 let interact e p redraw =

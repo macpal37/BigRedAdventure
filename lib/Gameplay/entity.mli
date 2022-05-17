@@ -62,7 +62,7 @@ val is_obstacle : entity -> bool
 (* val update : entity -> unit *)
 (** [update npc] increments [npc]'s movement loop by one step *)
 
-val interact : entity -> Player.player -> Ui.draw_func -> unit
+val interact : entity -> (unit -> Player.player) -> Ui.draw_func -> unit
 (** [interact n] is what happens when the player interacts with n *)
 
 (* val go : entity -> orientation -> int -> unit (** [go e d n] moves n
