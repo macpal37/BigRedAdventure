@@ -1,7 +1,11 @@
 let busy_mutex = Mutex.create ()
-let channel = Event.new_channel ()
+
+(* let channel = Event.new_channel () *)
+let completed_jobs = ref []
+let loading_label = "loading_screen.ml:load_assets"
 
 let load_assets _ =
+  (* Unix.sleepf 10.; *)
   Draw.load_sprites ();
   Spritesheet.load_spritesheets ();
   Item.load_items ();
@@ -11,18 +15,18 @@ let load_assets _ =
   Battle.load_assets ();
   Event_menu.load_assets ();
   Inventory_menu.load_assets ();
-  Party_menu.load_assets ()
+  Party_menu.load_assets ();
+  loading_label
 (* print_endline "Done loading" *)
 
-let load _ =
+let submit_job f =
   ignore
     (Thread.create
        (fun _ ->
          try
            Mutex.lock busy_mutex;
-           let e = Event.send channel () in
-           Event.sync e;
-           load_assets ();
+           let l = f () in
+           completed_jobs := l :: !completed_jobs;
            Mutex.unlock busy_mutex
          with e ->
            let msg = Printexc.to_string e
@@ -31,9 +35,12 @@ let load _ =
              ("Loader thread encountered exception: " ^ msg
             ^ "\nStack trace:\n" ^ stack);
            exit 2)
-       ());
-  let e = Event.receive channel in
-  Event.sync e
+       ())
+
+let clear_labels _ =
+  Mutex.lock busy_mutex;
+  completed_jobs := [];
+  Mutex.unlock busy_mutex
 
 let draw ticks =
   Draw.set_draw_color 10 10 10;
@@ -59,18 +66,25 @@ let fade_out _ =
   done;
   Unix.sleepf 0.5
 
-let rec loading_screen_wait ticks =
+let jobs_completed jobs =
+  if Mutex.try_lock busy_mutex then
+    if List.for_all (fun s -> List.mem s !completed_jobs) jobs then (
+      Mutex.unlock busy_mutex;
+      true)
+    else (
+      Mutex.unlock busy_mutex;
+      false)
+  else false
+
+let rec loading_screen_wait ticks jobs =
   draw ticks;
   Draw.present ();
   Input.sleep Draw.tick_rate ();
-  if Mutex.try_lock busy_mutex then (
-    Mutex.unlock busy_mutex;
-    fade_out ())
-  else loading_screen_wait (ticks + 1)
+  if jobs_completed jobs then fade_out ()
+  else loading_screen_wait (ticks + 1) jobs
 
-let fade_in _ =
-  Unix.sleepf 0.5;
-  if Mutex.try_lock busy_mutex then Mutex.unlock busy_mutex
+let fade_in jobs =
+  if jobs_completed jobs then ()
   else (
     for i = 0 to 42 do
       draw i;
@@ -79,8 +93,10 @@ let fade_in _ =
       Draw.present ();
       Input.sleep Draw.tick_rate ()
     done;
-    loading_screen_wait 0)
+    loading_screen_wait 0 jobs)
 
-let await _ =
-  if Mutex.try_lock busy_mutex then Mutex.unlock busy_mutex
-  else fade_in ()
+let await jobs =
+  if jobs_completed jobs then ()
+  else (
+    Unix.sleepf 0.5;
+    fade_in jobs)

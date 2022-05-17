@@ -143,12 +143,14 @@ let fade_out saves =
 
 let launch_new_game id name =
   let save_preview : Saves.save_preview =
+    Loading_screen.await [ Loading_screen.loading_label ];
     { name; id; money = -1; time = 0 }
   in
   State.adhoc_init ();
   Overworld.run_overworld save_preview
 
 let launch_load_game save_preview =
+  Loading_screen.await [ Loading_screen.loading_label ];
   State.adhoc_init ();
   Overworld.run_overworld save_preview
 
@@ -158,26 +160,22 @@ let action mode saves =
   | New -> (
       match saves position.y with
       | Some _ ->
-          if confirm_overwrite saves mode then (
+          if confirm_overwrite saves mode then
             let name = request_name saves "" 0 in
-            Loading_screen.await ();
-            launch_new_game position.y name)
+            launch_new_game position.y name
           else ()
       | None ->
           let name = request_name saves "" 0 in
-          Loading_screen.await ();
           launch_new_game position.y name)
   | Load -> (
       match saves position.y with
       | Some s ->
           fade_out saves;
-          Loading_screen.await ();
           launch_load_game s
       | None ->
-          if confirm_overwrite saves mode then (
+          if confirm_overwrite saves mode then
             let name = request_name saves "" 0 in
-            Loading_screen.await ();
-            launch_new_game position.y name)
+            launch_new_game position.y name
           else ())
 
 let rec choose (saves : int -> Saves.save_preview option) mode =

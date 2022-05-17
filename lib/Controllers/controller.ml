@@ -4,7 +4,7 @@
    Inventory_menu.load_assets (); Party_menu.load_assets () *)
 
 let main _ =
-  Loading_screen.load ();
+  Loading_screen.submit_job Loading_screen.load_assets;
   Sdl.init [ `VIDEO; `JOYSTICK ];
   Main_menu.load_assets ();
   Saves_menu.load_assets ();
@@ -12,7 +12,5 @@ let main _ =
   Draw.open_window ();
 
   if false then Main_menu.init ()
-  else (
-    Loading_screen.await ();
-    Saves_menu.launch_new_game 0 "Red")
+  else Saves_menu.launch_new_game 0 "Red"
 (* Battle.start_wild_battle (Creature.create_creature "rafu" 4) *)
