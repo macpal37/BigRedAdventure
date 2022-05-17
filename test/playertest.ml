@@ -102,12 +102,8 @@ let player_orie_test
   let p = Lazy.force p in
   assert_equal expected_output (Player.orie p)
 
-let _ =
-  Item.load_items ();
-  Map.load_maps ()
-
 let creature_rafu = Creature.create_creature "rafu" 10
-let creature_chumpi = Creature.create_creature "chumpi" 20
+let creature_chumpi = Creature.create_creature "chumpi" 10
 let badge_boulder = "Boulder"
 let badge_cascade = "Cascade"
 
