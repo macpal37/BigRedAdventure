@@ -47,7 +47,7 @@ type trainer_props = {
 }
 
 type entity_interaction =
-  | Trainer of string (* trainer_props *)
+  | Trainer of trainer_props (* trainer_props *)
   | Sign
   | Item of item_props
   | Grass
@@ -156,6 +156,11 @@ let interact e p redraw =
   | _ -> ()
 
 let has_changed e = e.state <> 0
+
+let set_sight e l =
+  match e.e_type with
+  | Trainer t -> t.sight <- l
+  | _ -> ()
 
 (* let set_sight e l = 
   match e.e_type with

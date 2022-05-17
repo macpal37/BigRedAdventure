@@ -21,7 +21,7 @@ type trainer_props = {
 }
 
 type entity_interaction =
-  | Trainer of string(* trainer_props *)
+  | Trainer of trainer_props(* trainer_props *)
   | Sign
   | Item of item_props
   | Grass
@@ -79,6 +79,8 @@ val interact : entity -> Player.player -> Ui.draw_func -> unit
 val get_state : entity -> int
 
 val set_state : entity -> int -> unit
+
+val set_sight : entity -> coord list -> unit
 
 val has_changed : entity -> bool
 

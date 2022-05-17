@@ -240,10 +240,26 @@ let attempt_action () =
     | [] -> c_list
     | h::t -> if is_obstacle h then t else obs_sight t
 
-let entity_sight (e:Entity.entity) =
+let set_entity_sight (e:Entity.entity) =
   let o = Entity.get_orientation e in
   let pos = Entity.get_position e in
-  max_sight pos o |> obs_sight
+  max_sight pos o |> obs_sight |> Entity.set_sight e
+
+let rec init_t e_list = 
+  match e_list with
+  | [] -> ()
+  | (_ , e) :: t -> set_entity_sight e; init_t t
+
+let init_trainers () = State.map () |> Map.get_entities |> init_t
+
+let player_check e = 
+  let player_pos = (State.player_x (), State.player_y ()) in
+  match Entity.get_trigger e with
+  | Trainer t -> failwith "Implement trainer player detection and battle init"
+  | Door _ -> failwith "Implement teleport"
+  | _ -> ()
+
+
 
 (* let coord_add (orie : Entity.orientation) = match orie with | N ->
    (0, 1) | E -> (1, 0) | S -> (0, -1) | W -> (-1, 0)
