@@ -20,7 +20,7 @@ let f2 =
     font_sprite =
       init_spritesheet "assets/gui_sprites/text-font-medium.png" 20 40 1;
     hspacing = 16;
-    vspacing = 40;
+    vspacing = 46;
   }
 
 let f3 =
@@ -112,10 +112,10 @@ let draw_text_string_pos x y f_size char_cap (text : string) () =
 
 let text_display = ref ""
 let set_text_display (s : string) = text_display := s
-let box_cap = 40
+let box_cap = 44
 
 let clear_text clear_sprite () =
   let sx = 46 in
-  let sy = 128 in
+  let sy = 136 in
   draw_sprite clear_sprite 3 0 ();
   draw_text_string_pos sx sy Medium box_cap !text_display ()

@@ -122,3 +122,5 @@ let deserialize t =
       | "W" -> W
       | _ -> failwith "Deserialization error");
   }
+
+let get_orie p = p.orie

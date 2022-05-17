@@ -335,15 +335,17 @@ let rec run_tick () =
       minimenu ();
       if key = Back then begin
         minimenu_position.y <- 0;
-        menu_mode := MainMenu;
-        refresh ()
+        menu_mode := MainMenu
       end;
       if key = Action && minimenu_position.y = 0 then begin
         Creature_menu.set_creature (get_party_index ());
-        Creature_menu.init ();
-
-        refresh ()
+        Creature_menu.init ()
       end;
+      (* if key = Action && minimenu_position.y = 1 then begin
+         Creature_menu.set_creature (get_party_index ());
+         Creature_menu.init ();
+
+         end; *)
       minimenu ();
       (if key = Action && minimenu_position.y = 1 then
        match !battle_mode with

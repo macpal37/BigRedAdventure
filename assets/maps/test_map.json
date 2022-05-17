@@ -21,13 +21,101 @@
          "name":"id_map",
          "opacity":1,
          "type":"tilelayer",
-         "visible":true,
+         "visible":false,
          "width":20,
          "x":0,
          "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":7,
+         "name":"entitites",
+         "objects":[
+                {
+                 "gid":31,
+                 "height":16,
+                 "id":29,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"Hello World!"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":80,
+                 "y":208
+                }, 
+                {
+                 "gid":37,
+                 "height":16,
+                 "id":30,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"item_name",
+                         "type":"string",
+                         "value":"potion"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":32,
+                 "y":256
+                }, 
+                {
+                 "gid":36,
+                 "height":16,
+                 "id":31,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"Hello Trainer!"
+                        }, 
+                        {
+                         "name":"trainer_name",
+                         "type":"string",
+                         "value":"Eve"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":112,
+                 "y":240
+                }, 
+                {
+                 "gid":31,
+                 "height":16,
+                 "id":32,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"Hey guys, did you know that in terms of male human and female Pok\u00e9mon breeding, Vaporeon is the most compatible Pok\u00e9mon for humans? Not only are they in the field egg group, which is mostly comprised of mammals, Vaporeon are an average of 3\u201d03\u2019 tall and 63.9 pounds, this means they\u2019re large enough to be able handle human dicks, and with their impressive Base Stats for HP and access to Acid Armor, you can be rough with one. Due to their mostly water based biology, there\u2019s no doubt in my mind that an aroused Vaporeon would be incredibly wet, so wet that you could easily have sex with one for hours without getting sore. They can also learn the moves Attract, Baby-Doll Eyes, Captivate, Charm, and Tail Whip, along with not having fur to hide nipples, so it\u2019d be incredibly easy for one to get you in the mood. With their abilities Water Absorb and Hydration, they can easily recover from fatigue with enough water. No other Pok\u00e9mon comes close to this level of compatibility. Also, fun fact, if you pull out enough, you can make your Vaporeon turn white. Vaporeon is literally built for human dick. Ungodly defense stat+high HP pool+Acid Armor means it can take cock all day, all shapes and sizes and still come for more."
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":176,
+                 "y":208
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
         }],
- "nextlayerid":5,
- "nextobjectid":9,
+ "nextlayerid":8,
+ "nextobjectid":33,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.8.2",
@@ -40,6 +128,10 @@
         {
          "firstgid":21,
          "source":"..\/tile_sprites\/id_tiles.json"
+        }, 
+        {
+         "firstgid":30,
+         "source":"..\/tile_sprites\/entities_tilesets.json"
         }],
  "tilewidth":16,
  "type":"map",

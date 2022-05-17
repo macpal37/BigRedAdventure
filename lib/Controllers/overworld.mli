@@ -7,3 +7,5 @@ val load_assets : unit -> unit
 
 val run_overworld : Saves.save_preview -> unit
 (** [run_overworld _] runs the overworld. *)
+
+(* val respond_to_interact : bool -> int * int option -> unit *)

@@ -9,7 +9,7 @@ type t
 
 type coord = int * int
 (** type representing the coordinate of a tile on a map. (0, 0) is the
-    top left corner of the map *)
+    bottom left corner of the map *)
 
 type encounters
 (** type representing the possible encounters on a grass tile *)
@@ -31,6 +31,7 @@ val get_dim : t -> int * int
 
 val get_width : t -> int
 val get_height : t -> int
+val get_entities : t -> (coord * Entity.entity) list
 
 val get_type : t -> coord -> tile_type
 (** [get_type m c] is the type ([Path, Grass, Obstacle]) of the tile at

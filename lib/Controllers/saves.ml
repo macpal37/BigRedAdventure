@@ -51,19 +51,14 @@ let save_game save_preview =
                (fun s m l ->
                  ( s,
                    `List
-                     (ignore m;
-                      []
-                      (*Map.get_entities m*)
-                      |> List.map (fun ((x, y), r) ->
-                             `List
-                               [
-                                 `Int x;
-                                 `Int y;
-                                 `Int
-                                   (ignore r;
-                                    69)
-                                 (*Entity.get_state r*);
-                               ])) )
+                     (Map.get_entities m
+                     |> List.map (fun ((x, y), r) ->
+                            `List
+                              [
+                                `Int x;
+                                `Int y;
+                                `Int (Entity.get_state r);
+                              ])) )
                  :: l)
                (Map.get_maps ()) []) );
       ])
@@ -80,11 +75,8 @@ let load_game id =
          |> List.iter (fun d ->
                 match d |> to_list with
                 | x :: y :: s :: _ ->
-                    (*Entity.set_state*)
-                    ignore
-                      ((*Map.get_entities m*)
-                       (ignore m;
-                        [])
-                      |> List.assoc (x |> to_int, y |> to_int));
-                    ignore (s |> to_int)
+                    Entity.set_state
+                      (Map.get_entities m
+                      |> List.assoc (x |> to_int, y |> to_int))
+                      (s |> to_int)
                 | _ -> failwith "Loading error"))
