@@ -117,6 +117,7 @@ let give_item e item p =
    let item = Item.get_item item.name in
    let inventory = p |> Player.inventory in
    Inventory.add_item inventory item);
+
   item.given <-
     true; if item.disappear then e.state <- 1
 
@@ -134,12 +135,10 @@ let interact e p redraw =
   if String.length e.dialogue > 0 then
   Animation.display_text_box e.dialogue false redraw ();
   match e.e_type with
-  | Sign -> Animation.display_text_box e.dialogue false redraw ()
+  | Sign -> ()
   | Item a -> give_item e a p
   | Heal -> heal_party p ()
-  | Merchant -> failwith "Unimplemented"
-  | Door _ -> failwith "Unimplemented"
-  | _ -> failwith "Unimplemented"
+  | _ -> ()
 
 (* let update e p redraw = failwith "Unimplemented" *)
 

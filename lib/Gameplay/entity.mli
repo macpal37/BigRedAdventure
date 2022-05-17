@@ -27,7 +27,7 @@ type orientation =
   | S
   | E
   | W  (** Type representing the four orientations *)
-
+  
   type entity = {
     e_type : entity_interaction;
     mutable orie : orientation;

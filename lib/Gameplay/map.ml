@@ -282,7 +282,16 @@ let generate_entities h tiles objs =
                   disappear = find_o props "will_disappear" to_bool true;
                 },
               Spritesheet.get_sprite entity_sprites 4 )
-        | _ -> (NoEntity, Spritesheet.get_sprite entity_sprites 2)
+        | "Heal" -> (Heal, Spritesheet.get_sprite entity_sprites 5)
+        | "Merchant" ->
+            (Merchant, Spritesheet.get_sprite entity_sprites 6)
+        | "Door" ->
+            ( Door
+                ( find_o props "next_map" to_string "test_map",
+                  ( find_o props "teleport_x" to_int 0,
+                    find_o props "teleport_y" to_int 0 ) ),
+              Draw.empty_sprite )
+        | _ -> (NoEntity, Draw.empty_sprite)
       in
 
       (pos, { e_type; orie; pos; dialogue; sprite; state = 0; obstacle = true })
@@ -294,7 +303,7 @@ let generate_entities h tiles objs =
           pos = (0, 0);
           dialogue = "";
           state = 0;
-          sprite = Spritesheet.get_sprite trainer_sprites 1;
+          sprite = Draw.empty_sprite;
           obstacle = true;
         } )
   in
