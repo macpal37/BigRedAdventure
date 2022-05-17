@@ -493,7 +493,7 @@ let create_creature_mod n (level : int) normal shiny =
   let shiny_chance = if normal then shiny else Random.int 100 = 0 in
   let sprite_sheet =
     if String.lowercase_ascii n <> "missingno" then
-      Sprite_assets.get_spritesheet
+      Spritesheet.get_spritesheet
         ("assets/creature_sprites/"
         ^ String.lowercase_ascii name
         ^ ".png")
@@ -719,7 +719,7 @@ let evolve c =
     create_creature_mod c.evolution.name c.level true c.shiny
   in
   let spsh =
-    Sprite_assets.get_spritesheet
+    Spritesheet.get_spritesheet
       ("assets/creature_sprites/"
       ^ String.lowercase_ascii c.evolution.name
       ^ ".png")
@@ -764,6 +764,76 @@ let get_color_from_etype etype =
   | Ice -> Draw.rgb 152 216 216
   | Fighting -> Draw.rgb 192 48 40
   | _ -> Draw.rgb 0 0 0
+
+type creature = {
+  mutable nickname : string;
+  mutable species : string;
+  mutable level : int;
+  mutable current_hp : float;
+  mutable exp : float;
+  mutable base_stats : stats;
+  mutable current_stats : stats;
+  iv_stats : stats;
+  mutable ev_stats : stats;
+  mutable current_status : status;
+  mutable etypes : etype * etype;
+  nature : nature;
+  leveling_rate : leveling_rate;
+  mutable ev_gain : stat * int;
+  mutable poke_id : int;
+  mutable catch_rate : int;
+  mutable base_exp : float;
+  mutable friendship : int;
+  mutable learnset : learnset_moves list;
+  moves : move option array;
+  mutable front_sprite : Draw.sprite;
+  mutable back_sprite : Draw.sprite;
+  mutable evolution : evolution;
+  shiny : bool;
+}
+
+let serialize_stat stats =
+  let s =
+    [
+      stats.max_hp;
+      stats.attack;
+      stats.defense;
+      stats.sp_attack;
+      stats.sp_defense;
+      stats.speed;
+    ]
+  in
+  List.map int_of_float s
+
+let serialize c =
+  `Assoc
+    [
+      ("species", `String c.species);
+      ("nickname", `String c.nickname);
+      ("current_hp", `Int (int_of_float c.current_hp));
+      ("level", `Int c.level);
+      ( "current_stats",
+        `List
+          (serialize_stat c.current_stats |> List.map (fun s -> `Int s))
+      );
+      ( "party",
+        `List
+          (p.party
+          |> List.map (fun c -> `String (Creature.get_nickname c))) );
+      ( "creatures",
+        `List
+          (p.party
+          |> List.map (fun c -> `String (Creature.get_nickname c))) );
+      ("x", `Int p.x);
+      ("y", `Int p.y);
+      ( "orie",
+        `String
+          (match p.orie with
+          | N -> "N"
+          | S -> "S"
+          | E -> "E"
+          | W -> "W") );
+    ]
 
 (* let get_color_from_etype etype = match etype with | Neutral -> rgb
    196 196 196 | Fire -> rgb 239 128 48 | Water -> rgb 103 144 240 |

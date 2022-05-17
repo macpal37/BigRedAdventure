@@ -60,4 +60,7 @@ val list_index_fun : 'a list -> int -> 'a
     integer to the element with that integer index in the list*)
 
 val print_matrix : string array array -> unit
+(** Print string matrix*)
+
 val print_matrix_upside_down : string array array -> unit
+(** Print string matrix upside down*)

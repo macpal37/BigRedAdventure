@@ -13,8 +13,7 @@ let inventory_menu = Util.null ()
 let selected_item = null ()
 
 let load_assets _ =
-  inventory_menu
-  *= Sprite_assets.get_sprite2 "inventory_menu" GUI_Folder
+  inventory_menu *= Draw.get_sprite2 "inventory_menu" GUI_Folder
 
 type menu_mode =
   | Selecting

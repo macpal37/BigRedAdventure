@@ -20,11 +20,11 @@ let move_menu = null ()
 let small_text = ref ""
 
 let load_assets _ =
-  party_menu_bg *= Sprite_assets.get_sprite2 "party_menu" GUI_Folder;
-  active *= Sprite_assets.get_sprite2 "active_party_creature" GUI_Folder;
-  minimenu1 *= Sprite_assets.get_sprite2 "party_minimenu" GUI_Folder;
+  party_menu_bg *= Draw.get_sprite2 "party_menu" GUI_Folder;
+  active *= Draw.get_sprite2 "active_party_creature" GUI_Folder;
+  minimenu1 *= Draw.get_sprite2 "party_minimenu" GUI_Folder;
 
-  move_menu *= Sprite_assets.get_sprite2 "level_up" GUI_Folder
+  move_menu *= Draw.get_sprite2 "level_up" GUI_Folder
 
 type combat_mode =
   | OverworldMode

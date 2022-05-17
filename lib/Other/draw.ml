@@ -1,3 +1,6 @@
+open Yojson.Basic.Util
+open Util
+
 type color = int
 
 type sprite = {
@@ -288,3 +291,22 @@ let change_color sprite i c =
         if j = i then c :: replace (j + 1) t else h :: replace (j + 1) t
   in
   sprite.color_palette <- replace 0 sprite.color_palette
+
+let loaded_sprites = Util.null ()
+
+let load_sprites _ =
+  let t = Hashtbl.create 16 in
+  Yojson.Basic.from_file "assets/gui_sprites/gui_sprites.json"
+  |> member "sprites" |> to_list
+  |> List.iter (fun j ->
+         let file =
+           "assets/gui_sprites/" ^ (j |> member "name" |> to_string)
+         in
+         let dpi = j |> member "dpi" |> to_int in
+         Hashtbl.add t file (load_sprite_from_filepath file dpi ()));
+  loaded_sprites *= t
+
+let get_sprite s = Hashtbl.find ~!loaded_sprites s
+
+let get_sprite2 name folder =
+  Hashtbl.find ~!loaded_sprites (sprite_path name folder)

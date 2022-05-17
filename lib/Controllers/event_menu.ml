@@ -12,9 +12,9 @@ let target_creature = null ()
 let nickname = ref ""
 
 let load_assets _ =
-  event_menu *= Sprite_assets.get_sprite2 "event_menu" GUI_Folder;
-  decision_menu *= Sprite_assets.get_sprite2 "decision_menu" GUI_Folder;
-  nameholder *= Sprite_assets.get_sprite2 "nameholder" GUI_Folder
+  event_menu *= Draw.get_sprite2 "event_menu" GUI_Folder;
+  decision_menu *= Draw.get_sprite2 "decision_menu" GUI_Folder;
+  nameholder *= Draw.get_sprite2 "nameholder" GUI_Folder
 
 type menu =
   | Captured_Creature
@@ -127,7 +127,7 @@ let rec run_tick () =
       let old_sprite, new_sprite =
         ( get_front_sprite ~!target_creature,
           Spritesheet.get_sprite
-            (Sprite_assets.get_spritesheet
+            (Spritesheet.get_spritesheet
                ("assets/creature_sprites/"
                ^ String.lowercase_ascii
                    (get_evolution_name ~!target_creature)
