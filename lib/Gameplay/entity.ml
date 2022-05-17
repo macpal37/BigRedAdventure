@@ -38,8 +38,13 @@ type item_props = {
   mutable disappear : bool;
 }
 
+type trainer_props = {
+  alt_dialogue:string;
+  party:creature list;
+}
+
 type entity_interaction =
-  | Trainer of string
+  | Trainer of trainer_props
   | Sign
   | Item of item_props
   | Grass
