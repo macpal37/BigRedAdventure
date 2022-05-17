@@ -69,9 +69,15 @@ type entity = {
 let get_trigger entity = entity.e_type
 let get_orientation entity = entity.orie
 let get_position entity = entity.pos
-let is_obstacle e = if e.state = 0 then e.obstacle else false
+let is_obstacle e = if e.state = 0 then e.obstacle 
+  else match e.e_type with
+  | Item i -> not i.disappear
+  | _ -> false
 
-let is_visible e = if e.state = 0 then true else false
+let is_visible e = if e.state = 0 then true 
+  else match e.e_type with
+  | Item i -> not i.disappear
+  | _ -> false
 
 (** 0 = show, 1 = invisible *)
 let get_state e = e.state
@@ -136,7 +142,8 @@ let interact e p redraw =
   Animation.display_text_box e.dialogue false redraw ();
   match e.e_type with
   | Sign -> ()
-  | Item a -> give_item e a p
+  | Item a -> 
+    if e.state = 0 then give_item e a p
   | Heal -> heal_party p ()
   | _ -> ()
 
