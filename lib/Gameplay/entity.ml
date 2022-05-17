@@ -49,14 +49,15 @@ type entity_interaction =
   | NoEntity
 
 type entity = {
-  e_type : entity_interaction;
+  mutable e_type : entity_interaction;
   mutable orie : orientation;
   mutable pos : coord;
-  dialogue : string;
-  sprite : sprite;
-  (* path : movement; *)
-  (* animations : (sprite_step, sprite array) Hashtbl.t;*)
-  obstacle : bool;
+  mutable dialogue : string;
+  mutable sprite : sprite;
+  mutable obstacle : bool;
+      (* path : movement; *)
+      (* animations : (sprite_step, sprite array) Hashtbl.t;*)
+
       (* fields for movement/animation *)
       (*mutable interval_frac : float; priority_queue : step Queue.t; *)
 }
@@ -109,6 +110,7 @@ let give_item item p =
    let item = Item.get_item item.name in
    let inventory = p |> Player.inventory in
    Inventory.add_item inventory item);
+
   item.given <-
     true (* check if disappear is true and if it is, remove from map *)
 
@@ -123,13 +125,14 @@ let heal_party p () =
   List.iter heal party
 
 let interact e p redraw =
+  Animation.display_text_box e.dialogue false redraw ();
   match e.e_type with
-  | Sign -> Animation.display_text_box e.dialogue false redraw ()
-  | Item a -> give_item a p
+  | Sign -> ()
+  | Item a ->
+      give_item a p;
+      if a.disappear then e.obstacle <- false else ()
   | Heal -> heal_party p ()
-  | Merchant -> failwith "Unimplemented"
-  | Door _ -> failwith "Unimplemented"
-  | _ -> failwith "Unimplemented"
+  | _ -> ()
 
 (* let update = failwith "Unimplemented" *)
 
