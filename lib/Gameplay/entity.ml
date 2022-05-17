@@ -154,7 +154,7 @@ let interact e p redraw =
   | Heal -> heal_party p ()
   | _ -> ()
 
-let has_changed e = e.state = 0
+let has_changed e = e.state <> 0
 
 (* let update e p redraw = failwith "Unimplemented" *)
 
