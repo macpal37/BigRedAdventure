@@ -17,10 +17,11 @@ type trainer_props = {
   name:string;
   alt_dialogue:string;
   party:creature list;
+  mutable sight:coord list;
 }
 
 type entity_interaction =
-  | Trainer of trainer_props
+  | Trainer of string(* trainer_props *)
   | Sign
   | Item of item_props
   | Grass

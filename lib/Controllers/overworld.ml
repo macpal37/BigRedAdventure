@@ -213,6 +213,38 @@ let attempt_action () =
             (Draw.draw_sprite DrawText.battle_bot 0 0))
   with Not_found -> ()
 
+  let is_obstacle c = 
+    let map = State.map () in
+    let is_obs_entity = try (Map.get_entities map |> List.assoc c |> Entity.is_obstacle) 
+  with Not_found -> false in 
+    let is_obs_tile = (Map.get_type map c) = Map.Obstacle in
+    is_obs_entity || is_obs_tile
+  
+  let orie_coords (o:Entity.orientation) =
+    match o with
+    | N -> (0, 1)
+    | E -> (1, 0)
+    | S -> (0, -1)
+    | W -> (-1, 0)
+  
+  let rec coord_list (x, y) (o:Entity.orientation) i =
+    let ox, oy = orie_coords o in
+    match i with 
+    | 0 -> []
+    | _ -> (x + i * ox, y + i * oy) :: coord_list (x, y) o (i-1)
+  
+  let max_sight c (o:Entity.orientation) = coord_list c o 4 |> List.rev
+
+  let rec obs_sight c_list = 
+    match c_list with
+    | [] -> c_list
+    | h::t -> if is_obstacle h then t else obs_sight t
+
+let entity_sight (e:Entity.entity) =
+  let o = Entity.get_orientation e in
+  let pos = Entity.get_position e in
+  max_sight pos o |> obs_sight
+
 (* let coord_add (orie : Entity.orientation) = match orie with | N ->
    (0, 1) | E -> (1, 0) | S -> (0, -1) | W -> (-1, 0)
 
@@ -233,7 +265,7 @@ let attempt_action () =
    let sight_dist trainer = let pos = Entity.get_position trainer in let
    dir = Entity.get_orientation trainer in max_sight_coords pos dir |>
    sight_len *)
-
+  
 let rec run_tick save_preview =
   (match Input.get_ctrl_option (Input.poll_key_option ()) with
   | Some Up -> attempt_move 0 1 Player.N
