@@ -764,33 +764,6 @@ let get_color_from_etype etype =
   | Fighting -> Draw.rgb 192 48 40
   | _ -> Draw.rgb 0 0 0
 
-type creature = {
-  mutable nickname : string;
-  mutable species : string;
-  mutable level : int;
-  mutable current_hp : float;
-  mutable exp : float;
-  mutable base_stats : stats;
-  mutable current_stats : stats;
-  iv_stats : stats;
-  mutable ev_stats : stats;
-  mutable current_status : status;
-  mutable etypes : etype * etype;
-  nature : nature;
-  leveling_rate : leveling_rate;
-  mutable ev_gain : stat * int;
-  mutable poke_id : int;
-  mutable catch_rate : int;
-  mutable base_exp : float;
-  mutable friendship : int;
-  mutable learnset : learnset_moves list;
-  moves : move option array;
-  mutable front_sprite : Draw.sprite;
-  mutable back_sprite : Draw.sprite;
-  mutable evolution : evolution;
-  shiny : bool;
-}
-
 let serialize_stat s =
   let s =
     [
@@ -824,7 +797,7 @@ let serialize_move m_opt =
         [
           ("name", `String "None");
           ("max_pp", `Int 0);
-          ("curr_pp", `Int0);
+          ("curr_pp", `Int 0);
         ]
 
 let deserialize_move json =

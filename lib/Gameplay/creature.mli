@@ -275,3 +275,9 @@ val is_shiny : creature -> bool
 val level_up_move : creature -> Move.move
 (** [level_up_move creature] returns a possible move when levels up.
     Raise Not_foundwhen when ther is no possible move.*)
+
+val serialize : creature -> Yojson.Basic.t
+(** [serialize c] is the json representation of [c]*)
+
+val deserialize : Yojson.Basic.t -> creature
+(** [deserialize j] is the creature encoded by [j]*)
