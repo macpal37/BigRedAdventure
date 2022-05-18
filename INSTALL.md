@@ -2,11 +2,11 @@
 
 ## About the project
 
-BigRedAdventures is a Creature-collecting RPG game created using OCaml, other external libraries, and some help from Java. All the graphics engine was built from the ground up using the OCaml graphics library. All images are represented as json files.
+BigRedAdventures is a Creature-collecting RPG game created using OCaml!
 
 ## OPAM Package Installation
 
-The most critical package used for this project is the OCaml Graphics library, which uses XQuartz to run and display a window. Unfortunately, XQuartz can only be run in Mac OS devices. However, there is still another way to run Graphics for both Windows and Linux, but it is more complicated.
+A critical package used for this project is the OCamlSDL2 library. However, there is still another way to run Graphics for both Windows and Linux, but it is more complicated.
 
 ### Mac Installation
 
@@ -29,29 +29,28 @@ opam install -y utop odoc ounit2 qtest qcheck yojson lwt lwt_ppx menhir ansiterm
 Finally install graphics
 
 ```
-opam install -y graphics
+opam install -y ocamlsdl2
 ```
 
-* NOTE: you will be prompted to install XQuartz, if you haven't already. Do so in order to run the game.
 
 ### ** Most Importantly: Make sure to restart your Mac/PC afterwards to complete the installation
 
 ### Windows Installation
 
-First, follow the instructions above in the Mac installation
+First, follow the instructions above in the Mac installation up to install SDL
+
+Then run
+```
+sudo apt-get update
+sudo apt-get install -y libsdl2-dev
+opam install -y ocamlsdl2
+```
 
 Then, follow the instructions here to install X server for Windows:
 <https://aalonso.dev/blog/how-to-use-gui-apps-in-wsl2-forwarding-x-server-cdj>
 
 ## Running the Game
 
-Unzip ms2.zip.
-Then open the folder ms1 in VSCode.
-Then run:
-```
-dune build
-```
-In your terminal inside the ms2 directory.
-Finally, to run the game, open the terminal and simply type `make play` to begin the game.
+Open the terminal and simply type `make play` to begin the game.
 
 # ENJOY :)
