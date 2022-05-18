@@ -175,7 +175,18 @@ let attempt_move dx dy orie =
         with Not_found ->
           move_scroll dx dy;
           Player.set_coord new_x new_y (State.player ()))
-    | Obstacle -> ()
+    | Obstacle -> (
+        let e =
+          List.assoc (new_x, new_y) (Map.get_entities (State.map ()))
+        in
+        match e.e_type with
+        | Door (map, coord) ->
+            let x, y = coord in
+            State.set_map (Map.get_map map);
+
+            Player.set_x x (State.player ());
+            Player.set_y y (State.player ())
+        | _ -> ())
     | Grass e ->
         move_scroll dx dy;
         Player.set_coord new_x new_y (State.player ());

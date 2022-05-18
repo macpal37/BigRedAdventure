@@ -306,6 +306,14 @@
         {
          "firstgid":73,
          "source":"..\/tile_sprites\/id_tiles.json"
+        }, 
+        {
+         "firstgid":82,
+         "source":"..\/tile_sprites\/house_tileset.json"
+        }, 
+        {
+         "firstgid":187,
+         "source":"..\/tile_sprites\/dungeon_tileset.json"
         }],
  "tilewidth":16,
  "type":"map",

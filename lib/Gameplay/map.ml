@@ -69,15 +69,17 @@ let encounter_of_json json =
 (* let all_encounters_of_json json = json_list json encounters_of_json
    "encounters" |> Array.of_list *)
 
-let encounters =
+let encounters map_name =
   let json = Yojson.Basic.from_file "assets/util/encounters.json" in
-  json |> member "test_map"
+
+  json
+  |> member (List.hd (String.split_on_char '.' map_name))
   (*Unnecessary member? Json will likely be reformatted*)
   |> member "encounters"
   |> to_list
   |> List.map (fun j -> j |> to_list |> List.map encounter_of_json)
 
-let encounter_of_id = Util.list_index_fun encounters
+let encounter_of_id map_name = Util.list_index_fun (encounters map_name)
 let ll_to_matrix ll = Array.of_list (List.map Array.of_list ll)
 let matrix_map f m = Array.(map (map f) m)
 let matrix_get i j m = Array.get (Array.get m i) j
@@ -184,9 +186,10 @@ let build_tile_matrix id_m tileset =
     (fun t ->
       let ot = t - offset in
 
-      (* Util.print_int "OT: " ot; *)
+      Util.print_int "OT: " ot;
 
-      (* Util.print_int "T: " t; *)
+      Util.print_int "T: " t;
+
       match tile_f ot with
       | "Grass" -> { graphic = ot; ttype = Grass [] }
       | "Path" -> { graphic = ot; ttype = Path }
@@ -194,7 +197,7 @@ let build_tile_matrix id_m tileset =
       | _ -> raise (Malformed_Json "Impossible tile type"))
     id_m
 
-let set_encounters tile_m encounter_m e =
+let set_encounters tile_m encounter_m e map_name =
   let offset, l = e in
   let e_f = Util.list_index_fun l in
   for i = 0 to Array.length tile_m - 1 do
@@ -207,9 +210,13 @@ let set_encounters tile_m encounter_m e =
          else
            match t.ttype with
            | Grass [] ->
+               Util.print_int "EID: " e_id;
+               Util.print_int "off: " offset;
                {
                  t with
-                 ttype = Grass (encounter_of_id (e_f (e_id - offset)));
+                 ttype =
+                   Grass
+                     (encounter_of_id map_name (e_f (e_id - offset)));
                }
            | _ -> raise (Malformed_Json "Impossible tile type"))
     done
@@ -296,8 +303,13 @@ let generate_entities h tiles objs =
         | "Merchant" ->
             (Merchant, Spritesheet.get_sprite entity_sprites 6)
         | "Door" ->
+            let map_name =
+              find_o props "next_map" to_string "test_map" ^ ".json"
+            in
+            (* let json = Yojson.Basic.from_file ("assets/maps/" ^
+               map_name) in let _, h2 = read_dim json in *)
             ( Door
-                ( find_o props "next_map" to_string "test_map",
+                ( map_name,
                   ( find_o props "teleport_x" to_int 0,
                     find_o props "teleport_y" to_int 0 ) ),
               Draw.empty_sprite )
@@ -330,7 +342,6 @@ let generate_entities h tiles objs =
   List.map entity_of_json objs
 
 let load_map map_name =
-  print_endline ("Name: " ^ map_name);
   let json = Yojson.Basic.from_file ("assets/maps/" ^ map_name) in
   let w, h = read_dim json in
   Util.print_int "W: " w;
@@ -348,7 +359,7 @@ let load_map map_name =
         json_entities (List.assoc "entities_tilesets.json" tilesets)
       in
       let tile_m = build_tile_matrix tile_id_m tileset_l in
-      set_encounters tile_m encounter_id_m encounter_l;
+      set_encounters tile_m encounter_id_m encounter_l map_name;
       let spritesheet = json_spritesheet tile_t in
       let entities = generate_entities h entities_l entities_m in
       { tiles = tile_m; entities; spritesheet; name = map_name }
