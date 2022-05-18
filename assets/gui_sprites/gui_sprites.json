@@ -95,6 +95,10 @@
     {
       "name": "title.png",
       "dpi": 3
+    },
+    {
+      "name": "game_over.png",
+      "dpi": 3
     }
   ]
 }
