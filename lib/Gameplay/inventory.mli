@@ -26,7 +26,7 @@ val get_bag : inventory -> item_type -> bag
 
 val list_items : bag -> (item * int) list
 (** [list_items b] is list of pairs of items and their number of copies
-    present in [b]*)
+    present in [b] *)
 
 val add : bag -> ?count:int -> item -> unit
 (** [add b ~count:c i] adds [c] copies of item [t] in bag [b]. [c] is 1
