@@ -282,13 +282,7 @@ let generate_entities h tiles objs =
               | _ -> Spritesheet.get_sprite trainer_sprites 0
             in
 
-            ( Trainer
-                {
-                  name;
-                  alt_dialogue = "";
-                  party = [];
-                  line_of_sight = [];
-                },
+            ( Trainer { name; alt_dialogue = ""; party = []; sight = [] },
               sprite )
         | "Sign" -> (Sign, Spritesheet.get_sprite entity_sprites 1)
         | "Item" ->

@@ -157,6 +157,16 @@ let move_scroll dx dy =
     Input.sleep Draw.tick_rate ()
   done
 
+let player_check e =
+  (* let e_pos = Entity.get_position e in *)
+  let player_pos = (State.player_x (), State.player_y ()) in
+  match Entity.get_trigger e with
+  | Trainer t ->
+      if List.mem player_pos t.sight then print_endline "I SEE YOU"
+  (* | Door _ -> if e_pos = player_pos then failwith "TODO: DO DOOR
+     TELEPORTAION" *)
+  | _ -> ()
+
 let attempt_move dx dy orie =
   if Player.get_orie (State.player ()) = orie then begin
     let new_x, new_y =
@@ -175,7 +185,8 @@ let attempt_move dx dy orie =
         | Some e ->
             if Entity.is_obstacle e = false then begin
               move_scroll dx dy;
-              Player.set_coord new_x new_y (State.player ())
+              Player.set_coord new_x new_y (State.player ());
+              player_check e
             end
         | None ->
             move_scroll dx dy;
@@ -228,6 +239,37 @@ let attempt_action () =
           Ui.add_first_gameplay
             (Draw.draw_sprite DrawText.battle_bot 0 0))
   with Not_found -> ()
+
+(* let is_obstacle c = let map = State.map () in let is_obs_entity = try
+   Map.get_entities map |> List.assoc c |> Entity.is_obstacle with
+   Not_found -> false in let is_obs_tile = Map.get_type map c =
+   Map.Obstacle in is_obs_entity || is_obs_tile *)
+
+(* let orie_coords (o : Entity.orientation) = match o with | N -> (0, 1)
+   | E -> (1, 0) | S -> (0, -1) | W -> (-1, 0) *)
+
+(* let rec coord_list (x, y) (o : Entity.orientation) i = let ox, oy =
+   orie_coords o in match i with | 0 -> [] | _ -> (x + (i * ox), y + (i
+   * oy)) :: coord_list (x, y) o (i - 1) *)
+
+(* let max_sight c (o : Entity.orientation) = coord_list c o 4 |>
+   List.rev *)
+
+(* let rec obs_sight c_list = match c_list with | [] -> c_list | h :: t
+   -> if is_obstacle h then t else obs_sight t *)
+
+(* let set_entity_sight (e : Entity.entity) = let o =
+   Entity.get_orientation e in let pos = Entity.get_position e in
+   max_sight pos o |> obs_sight |> Entity.set_sight e *)
+
+(* let rec init_t e_list = match e_list with | [] -> () | (_, e) :: t ->
+   set_entity_sight e; init_t t *)
+
+(** TODO: RUN THIS METHOD WHEN THE MAP IS INITIALIZED IT WILL INITIALIZE
+    EACH TRAINERS LINE OF SIGHT *)
+(* let init_trainers () = State.map () |> Map.get_entities |> init_t *)
+
+(** TODO: RUN THIS ON EVERY ENTITY DURING EVERY TICK *)
 
 (* let coord_add (orie : Entity.orientation) = match orie with | N ->
    (0, 1) | E -> (1, 0) | S -> (0, -1) | W -> (-1, 0)

@@ -43,11 +43,11 @@ type trainer_props = {
   name : string;
   alt_dialogue : string;
   party : creature list;
-  line_of_sight : coord list;
+  mutable sight : coord list;
 }
 
 type entity_interaction =
-  | Trainer of trainer_props
+  | Trainer of trainer_props (* trainer_props *)
   | Sign
   | Item of item_props
   | Grass
@@ -160,6 +160,14 @@ let interact e p redraw =
   | _ -> ()
 
 let has_changed e = e.state <> 0
+
+let set_sight e l =
+  match e.e_type with
+  | Trainer t -> t.sight <- l
+  | _ -> ()
+
+(* let set_sight e l = match e.e_type with | Trainer i -> i.sight <- l |
+   _ -> () *)
 
 (* let update e p redraw = failwith "Unimplemented" *)
 
