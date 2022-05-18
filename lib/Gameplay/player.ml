@@ -73,6 +73,16 @@ let set_coord x y p =
 let set_orie o p = p.orie <- o
 
 let serialize p =
+  let creature_array = Array.of_list p.party in
+  let out_array = Array.make (Array.length creature_array) (`Int 69) in
+  for i = 0 to Array.length creature_array - 1 do
+    out_array.(i) <-
+      `Assoc
+        [
+          ("id", `Int i);
+          ("creature", Creature.serialize (Array.get creature_array i));
+        ]
+  done;
   `Assoc
     [
       ("name", `String p.name);
@@ -80,14 +90,8 @@ let serialize p =
       ("inventory", Inventory.serialize p.inventory);
       ("time_played", `Int p.time_played);
       ("badges", `List (p.badges |> List.map (fun s -> `String s)));
-      ( "party",
-        `List
-          (p.party
-          |> List.map (fun c -> `String (Creature.get_nickname c))) );
-      ( "creatures",
-        `List
-          (p.party
-          |> List.map (fun c -> `String (Creature.get_nickname c))) );
+      ("party", `List (Array.to_list out_array));
+      ("creatures", `String "unimplemented");
       ("x", `Int p.x);
       ("y", `Int p.y);
       ( "orie",
@@ -100,18 +104,19 @@ let serialize p =
     ]
 
 let deserialize t =
+  let party =
+    t |> member "party" |> to_list
+    |> List.map (fun o ->
+           o |> member "creature" |> Creature.deserialize)
+  in
   {
     name = t |> member "name" |> to_string;
     money = t |> member "money" |> to_int;
     inventory = Inventory.deserialize (t |> member "inventory");
     time_played = t |> member "time_played" |> to_int;
     badges = t |> member "badges" |> to_list |> List.map to_string;
-    party =
-      t |> member "party" |> to_list
-      |> List.map (fun s -> Creature.create_creature (to_string s) 10);
-    creatures =
-      t |> member "creatures" |> to_list
-      |> List.map (fun s -> Creature.create_creature (to_string s) 10);
+    party;
+    creatures = party;
     x = t |> member "x" |> to_int;
     y = t |> member "y" |> to_int;
     orie =

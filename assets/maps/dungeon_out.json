@@ -32,24 +32,6 @@
          "name":"entities",
          "objects":[
                 {
-                 "gid":116,
-                 "height":16,
-                 "id":1,
-                 "name":"",
-                 "properties":[
-                        {
-                         "name":"next_map",
-                         "type":"string",
-                         "value":"dungeon"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":16,
-                 "x":160,
-                 "y":192
-                }, 
-                {
                  "gid":114,
                  "height":16,
                  "id":3,
@@ -642,7 +624,7 @@
                 {
                  "gid":116,
                  "height":16,
-                 "id":75,
+                 "id":76,
                  "name":"",
                  "properties":[
                         {
@@ -674,7 +656,7 @@
          "y":0
         }],
  "nextlayerid":4,
- "nextobjectid":76,
+ "nextobjectid":77,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.8.2",

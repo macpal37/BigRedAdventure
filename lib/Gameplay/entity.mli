@@ -40,7 +40,7 @@ type entity = {
   e_type : entity_interaction;
   mutable orie : orientation;
   mutable pos : coord;
-  dialogue : string;
+  mutable dialogue : string;
   sprite : sprite;
   mutable state : int;
   obstacle : bool;

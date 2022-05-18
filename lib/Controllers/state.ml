@@ -16,11 +16,11 @@ let map _ = !current_state.map
 let set_player p = current_state := { !current_state with player = p }
 let set_map m = !current_state.map <- m
 
-let adhoc_init () =
+let new_game () =
   Player.set_x 6 (player ());
   Player.set_y 6 (player ());
-  !current_state.map <- Map.get_map "starting_scene.json";
-  let clefairy = Creature.create_creature "clefairy" 50 in
+  !current_state.map <- Map.get_map "dungeon_out.json";
+  let clefairy = Creature.create_creature "clefairy" 5 in
   Player.add_creature clefairy !current_state.player;
   Creature.set_nickname clefairy "Ya Boi";
   let inventory = Player.inventory !current_state.player in
