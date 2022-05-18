@@ -316,6 +316,23 @@ let trainer_detect e =
       match Entity.get_state e with
       | 0 ->
           if List.mem player_pos t.sight then (
+            draw ();
+            let x, y = e.pos in
+            DrawText.draw_string_colored
+              (((x - State.player_x ()) * tile_size)
+              + (Draw.width / 2) - 12)
+              (((y - State.player_y ()) * tile_size)
+              + (Draw.height / 2) + 40)
+              DrawText.Huge "!" 0 0 ();
+            DrawText.draw_string_colored
+              (((x - State.player_x ()) * tile_size)
+              + (Draw.width / 2) - 10)
+              (((y - State.player_y ()) * tile_size)
+              + (Draw.height / 2) + 38)
+              DrawText.Huge "!" Draw.white 0 ();
+            Draw.present ();
+            Input.sleep 0.8 ();
+            encounter_anim ();
             Battle.start_trainer_battle t.party;
             Entity.set_state e 1;
             e.dialogue <- t.alt_dialogue)
