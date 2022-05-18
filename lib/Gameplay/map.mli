@@ -39,10 +39,6 @@ val get_type : t -> coord -> tile_type
     [c] in map [m]. Raises [Out_of_Bounds] if [c] is not a valid
     coordinate *)
 
-val get_graphic_id : t -> coord -> int
-(** [get_graphic_id m c] is the id of the graphic of the tile at [c] in
-    map [m]. Raises [Out_of_Bounds] if [c] is not a valid coordinate *)
-
 val get_sprite : t -> coord -> Draw.sprite
 (** [get_graphic_id m c] is the sprite of the graphic of the tile at [c]
     in map [m]. Raises [Out_of_Bounds] if [c] is not a valid coordinate *)
@@ -54,9 +50,6 @@ val encounter_creature : encounters -> Creature.creature option
 
 val get_name : t -> string
 (** [get_name t] is the name of [t]*)
-
-val graphics_matrix : t -> string array array
-(** Debug utility*)
 
 val string_of_encounters : encounters -> string
 
