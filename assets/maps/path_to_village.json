@@ -1157,6 +1157,11 @@
                  "name":"",
                  "properties":[
                         {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"Hello. Let's fight!"
+                        }, 
+                        {
                          "name":"trainer_name",
                          "type":"string",
                          "value":"Eve"
