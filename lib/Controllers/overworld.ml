@@ -162,31 +162,36 @@ let attempt_move dx dy orie =
     let new_x, new_y =
       (State.player_x () + dx, State.player_y () + dy)
     in
+    let e_opt =
+      try
+        Some
+          (List.assoc (new_x, new_y) (Map.get_entities (State.map ())))
+      with Not_found -> None
+    in
+
     match Map.get_type (State.map ()) (new_x, new_y) with
     | Path -> (
-        try
-          let e =
-            List.assoc (new_x, new_y) (Map.get_entities (State.map ()))
-          in
-          if Entity.is_obstacle e = false then begin
+        match e_opt with
+        | Some e ->
+            if Entity.is_obstacle e = false then begin
+              move_scroll dx dy;
+              Player.set_coord new_x new_y (State.player ())
+            end
+        | None ->
             move_scroll dx dy;
-            Player.set_coord new_x new_y (State.player ())
-          end
-        with Not_found ->
-          move_scroll dx dy;
-          Player.set_coord new_x new_y (State.player ()))
+            Player.set_coord new_x new_y (State.player ()))
     | Obstacle -> (
-        let e =
-          List.assoc (new_x, new_y) (Map.get_entities (State.map ()))
-        in
-        match e.e_type with
-        | Door (map, coord) ->
-            let x, y = coord in
-            State.set_map (Map.get_map map);
+        match e_opt with
+        | Some e -> (
+            match e.e_type with
+            | Door (map, coord) ->
+                let x, y = coord in
+                State.set_map (Map.get_map map);
 
-            Player.set_x x (State.player ());
-            Player.set_y y (State.player ())
-        | _ -> ())
+                Player.set_x x (State.player ());
+                Player.set_y y (State.player ())
+            | _ -> ())
+        | None -> ())
     | Grass e ->
         move_scroll dx dy;
         Player.set_coord new_x new_y (State.player ());
