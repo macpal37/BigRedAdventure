@@ -2,9 +2,11 @@
 
 ## Controls
 
-- e: continue/select
-- q: go back
-- w: move up
-- s: move down
-- a: move left
-- d: move down
+- x: continue/select
+- z: go back
+- c: start
+- up arrow: move up
+- down arrow: move down
+- left arrow: move left
+- right arrow: move down
+- s: save
