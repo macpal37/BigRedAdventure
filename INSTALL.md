@@ -6,7 +6,7 @@ BigRedAdventures is a Creature-collecting RPG game created using OCaml!
 
 ## OPAM Package Installation
 
-A critical package used for this project is the OCamlSDL2 library. However, there is still another way to run Graphics for both Windows and Linux, but it is more complicated.
+A critical package used for this project is the OCamlSDL2 library. It works on all platforms, but it is more complicated to install on Windows and Linux.
 
 ### Mac Installation
 
