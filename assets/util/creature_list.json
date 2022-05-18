@@ -350,7 +350,7 @@
     "ev_amount": 1,
     "evolution": {
       "name": "jaxel",
-      "level_up": 24
+      "level_up": 8
     },
     "learnset": [
       {
@@ -432,7 +432,7 @@
     "ev_amount": 1,
     "evolution": {
       "name": "faresse",
-      "level_up": 24
+      "level_up": 8
     },
     "learnset": [
       {
@@ -450,6 +450,51 @@
       {
         "move": "Draining Kiss",
         "level": 5
+      }
+    ]
+  },
+  "faresse": {
+    "name": "Faresse",
+    "poke_id": 20,
+    "catch_rate": 170,
+    "base_exp": 76,
+    "level_rate": "Medium Fast",
+    "type1": "Fairy",
+    "type2": "None",
+    "base_stats": {
+      "hp": 105,
+      "attack": 60,
+      "defense": 100,
+      "sp_attack": 80,
+      "sp_defense": 100,
+      "speed": 38
+    },
+    "ev_stat": "hp",
+    "ev_amount": 1,
+    "evolution": {
+      "name": "None",
+      "level_up": -1
+    },
+    "learnset": [
+      {
+        "move": "Pound",
+        "level": 1
+      },
+      {
+        "move": "Growl",
+        "level": 3
+      },
+      {
+        "move": "Round",
+        "level": 13
+      },
+      {
+        "move": "Draining Kiss",
+        "level": 5
+      },
+      {
+        "move": "Moonblas",
+        "level": 10
       }
     ]
   }

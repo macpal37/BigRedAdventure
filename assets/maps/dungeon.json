@@ -45,7 +45,7 @@
                         {
                          "name":"trainer_name",
                          "type":"string",
-                         "value":"Demon Henchman"
+                         "value":"Akira"
                         }],
                  "rotation":0,
                  "type":"",
@@ -68,7 +68,7 @@
                         {
                          "name":"trainer_name",
                          "type":"string",
-                         "value":"Demon Henchman"
+                         "value":"Anne"
                         }],
                  "rotation":0,
                  "type":"",
@@ -91,7 +91,7 @@
                         {
                          "name":"trainer_name",
                          "type":"string",
-                         "value":"Demon"
+                         "value":"Martha"
                         }],
                  "rotation":0,
                  "type":"",
@@ -114,13 +114,13 @@
                         {
                          "name":"trainer_name",
                          "type":"string",
-                         "value":"Demon Henchman"
+                         "value":"Mary"
                         }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":16,
-                 "x":48,
+                 "x":64,
                  "y":48
                 }, 
                 {
@@ -156,6 +156,12 @@
                  "height":16,
                  "id":10,
                  "name":"",
+                 "properties":[
+                        {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"The sight of Martha fills you withdetermination!"
+                        }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -170,15 +176,43 @@
                  "name":"",
                  "properties":[
                         {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"You found a burn heal!"
+                        }, 
+                        {
                          "name":"item_name",
                          "type":"string",
-                         "value":"burn_heal"
+                         "value":"burn heal"
                         }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":16,
                  "x":32,
+                 "y":176
+                }, 
+                {
+                 "gid":85,
+                 "height":16,
+                 "id":13,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"You found an awakening!"
+                        }, 
+                        {
+                         "name":"item_name",
+                         "type":"string",
+                         "value":"awakening"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":144,
                  "y":176
                 }],
          "opacity":1,
@@ -188,7 +222,7 @@
          "y":0
         }],
  "nextlayerid":4,
- "nextobjectid":13,
+ "nextobjectid":14,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.8.2",

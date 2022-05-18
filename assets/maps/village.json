@@ -711,9 +711,14 @@
                  "name":"",
                  "properties":[
                         {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"You received a great ball!"
+                        }, 
+                        {
                          "name":"item_name",
                          "type":"string",
-                         "value":"pokeball"
+                         "value":"great ball"
                         }],
                  "rotation":0,
                  "type":"",
@@ -729,16 +734,21 @@
                  "name":"",
                  "properties":[
                         {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"You received an ultra ball!"
+                        }, 
+                        {
                          "name":"item_name",
                          "type":"string",
-                         "value":"pokeball"
+                         "value":"ultra ball"
                         }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":16,
                  "x":192,
-                 "y":128
+                 "y":160
                 }, 
                 {
                  "gid":149,
@@ -747,9 +757,14 @@
                  "name":"",
                  "properties":[
                         {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"You received an antidote!"
+                        }, 
+                        {
                          "name":"item_name",
                          "type":"string",
-                         "value":"pokeball"
+                         "value":"antidote"
                         }],
                  "rotation":0,
                  "type":"",

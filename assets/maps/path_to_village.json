@@ -346,7 +346,7 @@
                         {
                          "name":"dialogue",
                          "type":"string",
-                         "value":"YO PICK ME UP!"
+                         "value":"You found a potion!"
                         }, 
                         {
                          "name":"item_name",
@@ -899,7 +899,12 @@
                         {
                          "name":"dialogue",
                          "type":"string",
-                         "value":"DEAD"
+                         "value":"Heall fellow trainer! Clarkson Here, just wanted to tell you to enjoy your summer and make sure to study for the secret Exam 5 which will boost your grade by 500% if you pass. Happy Easter!"
+                        }, 
+                        {
+                         "name":"orientation",
+                         "type":"string",
+                         "value":"North"
                         }, 
                         {
                          "name":"trainer_name",

@@ -36,47 +36,17 @@
                  "height":16,
                  "id":9,
                  "name":"",
+                 "properties":[
+                        {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"Your creatures are healed up!"
+                        }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":16,
                  "x":48,
-                 "y":80
-                }, 
-                {
-                 "gid":114,
-                 "height":16,
-                 "id":10,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":16,
-                 "x":64,
-                 "y":80
-                }, 
-                {
-                 "gid":114,
-                 "height":16,
-                 "id":11,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":16,
-                 "x":80,
-                 "y":80
-                }, 
-                {
-                 "gid":114,
-                 "height":16,
-                 "id":12,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":16,
-                 "x":96,
                  "y":80
                 }, 
                 {
@@ -124,6 +94,88 @@
                  "width":16,
                  "x":80,
                  "y":160
+                }, 
+                {
+                 "gid":114,
+                 "height":16,
+                 "id":16,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"Your creatures are healed up!"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":64,
+                 "y":80
+                }, 
+                {
+                 "gid":114,
+                 "height":16,
+                 "id":17,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"Your creatures are healed up!"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":80,
+                 "y":80
+                }, 
+                {
+                 "gid":114,
+                 "height":16,
+                 "id":18,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"Your creatures are healed up!"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":96,
+                 "y":80
+                }, 
+                {
+                 "gid":112,
+                 "height":16,
+                 "id":19,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"Hello"
+                        }, 
+                        {
+                         "name":"orientation",
+                         "type":"string",
+                         "value":"North"
+                        }, 
+                        {
+                         "name":"trainer_name",
+                         "type":"string",
+                         "value":"Eve"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":80,
+                 "y":64
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -132,7 +184,7 @@
          "y":0
         }],
  "nextlayerid":4,
- "nextobjectid":16,
+ "nextobjectid":20,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.8.2",

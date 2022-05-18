@@ -38,9 +38,14 @@
                  "name":"",
                  "properties":[
                         {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"You found a poke ball!"
+                        }, 
+                        {
                          "name":"item_name",
                          "type":"string",
-                         "value":"pokeball"
+                         "value":"poke ball"
                         }],
                  "rotation":0,
                  "type":"",
@@ -56,9 +61,14 @@
                  "name":"",
                  "properties":[
                         {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"You found a full heal!"
+                        }, 
+                        {
                          "name":"item_name",
                          "type":"string",
-                         "value":"pokeball"
+                         "value":"full heal"
                         }],
                  "rotation":0,
                  "type":"",
@@ -74,9 +84,14 @@
                  "name":"",
                  "properties":[
                         {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"You found a poke ball!"
+                        }, 
+                        {
                          "name":"item_name",
                          "type":"string",
-                         "value":"pokeball"
+                         "value":"poke ball"
                         }],
                  "rotation":0,
                  "type":"",

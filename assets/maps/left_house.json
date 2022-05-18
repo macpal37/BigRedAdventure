@@ -9,7 +9,7 @@
          "name":"Overworld",
          "opacity":1,
          "type":"tilelayer",
-         "visible":false,
+         "visible":true,
          "width":10,
          "x":0,
          "y":0
@@ -40,12 +40,17 @@
                         {
                          "name":"dialogue",
                          "type":"string",
-                         "value":"Welcome! Today's menu is a spicy battle, get ready . . . !"
+                         "value":"I'm waiting...."
+                        }, 
+                        {
+                         "name":"orientation",
+                         "type":"string",
+                         "value":"North"
                         }, 
                         {
                          "name":"trainer_name",
                          "type":"string",
-                         "value":"Bartender"
+                         "value":"Martha"
                         }],
                  "rotation":0,
                  "type":"",
@@ -55,33 +60,20 @@
                  "y":48
                 }, 
                 {
-                 "gid":114,
-                 "height":16,
-                 "id":14,
-                 "name":"",
-                 "properties":[
-                        {
-                         "name":"dialogue",
-                         "type":"string",
-                         "value":"All healed up!"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":16,
-                 "x":32,
-                 "y":128
-                }, 
-                {
                  "gid":113,
                  "height":16,
                  "id":15,
                  "name":"",
                  "properties":[
                         {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"You found a max ether!"
+                        }, 
+                        {
                          "name":"item_name",
                          "type":"string",
-                         "value":"poke ball"
+                         "value":"max ether"
                         }],
                  "rotation":0,
                  "type":"",

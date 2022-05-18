@@ -81,12 +81,12 @@
     "name": "Elieen",
     "party": [
       {
-        "creature": "Clefairy",
+        "creature": "fispie",
         "level": 4
       },
       {
-        "creature": "Clefairy",
-        "level": 10
+        "creature": "faresse",
+        "level": 5
       }
     ],
     "money": 1200,

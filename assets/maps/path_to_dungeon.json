@@ -21,7 +21,7 @@
          "name":"id_layer",
          "opacity":1,
          "type":"tilelayer",
-         "visible":false,
+         "visible":true,
          "width":16,
          "x":0,
          "y":0
@@ -801,7 +801,7 @@
                         {
                          "name":"trainer_name",
                          "type":"string",
-                         "value":"Young Trainer"
+                         "value":"Elieen"
                         }],
                  "rotation":0,
                  "type":"",
@@ -820,6 +820,11 @@
                          "name":"dialogue",
                          "type":"string",
                          "value":"Man... what are you doin out here? I thought this was MY secret hiding spot... guess we'll have to fight for it!"
+                        }, 
+                        {
+                         "name":"trainer_name",
+                         "type":"string",
+                         "value":"Caspie"
                         }],
                  "rotation":0,
                  "type":"",
@@ -842,7 +847,7 @@
                         {
                          "name":"trainer_name",
                          "type":"string",
-                         "value":"Witch"
+                         "value":"Bella"
                         }],
                  "rotation":0,
                  "type":"",
@@ -892,6 +897,17 @@
                  "height":16,
                  "id":156,
                  "name":"",
+                 "properties":[
+                        {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"You found a revive!"
+                        }, 
+                        {
+                         "name":"item_name",
+                         "type":"string",
+                         "value":"revive"
+                        }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -904,6 +920,17 @@
                  "height":16,
                  "id":157,
                  "name":"",
+                 "properties":[
+                        {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"You found a potion!"
+                        }, 
+                        {
+                         "name":"item_name",
+                         "type":"string",
+                         "value":"potion"
+                        }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -916,6 +943,17 @@
                  "height":16,
                  "id":158,
                  "name":"",
+                 "properties":[
+                        {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"You found a full heal!"
+                        }, 
+                        {
+                         "name":"item_name",
+                         "type":"string",
+                         "value":"full heal"
+                        }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -1037,7 +1075,7 @@
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":false,
+         "visible":true,
          "x":0,
          "y":0
         }],
