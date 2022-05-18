@@ -32,6 +32,7 @@ type entity_interaction =
   | Heal
   | Merchant
   | Door of string * coord
+  | Win
   | NoEntity
 (* [entity_interaction]: variant that describes all interactable
    code. *)
