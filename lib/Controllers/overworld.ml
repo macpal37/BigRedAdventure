@@ -168,7 +168,7 @@ let player_check e =
   | _ -> ()
 
 let attempt_move dx dy orie =
-  if Player.get_orie (State.player ()) = orie then begin
+  if Player.get_orie (State.player ()) = orie then
     let new_x, new_y =
       (State.player_x () + dx, State.player_y () + dy)
     in
@@ -179,40 +179,43 @@ let attempt_move dx dy orie =
       with Not_found -> None
     in
 
-    match Map.get_type (State.map ()) (new_x, new_y) with
-    | Path -> (
-        match e_opt with
-        | Some e ->
-            if Entity.is_obstacle e = false then begin
+    let process_move _ =
+      match Map.get_type (State.map ()) (new_x, new_y) with
+      | Path -> (
+          match e_opt with
+          | Some e ->
+              if Entity.is_obstacle e = false then begin
+                move_scroll dx dy;
+                Player.set_coord new_x new_y (State.player ());
+                player_check e
+              end
+          | None ->
               move_scroll dx dy;
-              Player.set_coord new_x new_y (State.player ());
-              player_check e
-            end
-        | None ->
-            move_scroll dx dy;
-            Player.set_coord new_x new_y (State.player ()))
-    | Obstacle -> (
-        match e_opt with
-        | Some e -> (
-            match e.e_type with
-            | Door (map, coord) ->
-                let x, y = coord in
-                State.set_map (Map.get_map map);
+              Player.set_coord new_x new_y (State.player ()))
+      | Obstacle -> ()
+      | Grass e ->
+          move_scroll dx dy;
+          Player.set_coord new_x new_y (State.player ());
+          if Random.float 1. < 0.2 then (
+            encounter_anim ();
+            let c = Map.encounter_creature e in
+            match c with
+            | Some c -> Battle.start_wild_battle c
+            | None -> failwith "no creature encountered")
+    in
 
-                Player.set_x x (State.player ());
-                Player.set_y y (State.player ())
-            | _ -> ())
-        | None -> ())
-    | Grass e ->
-        move_scroll dx dy;
-        Player.set_coord new_x new_y (State.player ());
-        if Random.float 1. < 0.2 then (
-          encounter_anim ();
-          let c = Map.encounter_creature e in
-          match c with
-          | Some c -> Battle.start_wild_battle c
-          | None -> failwith "no creature encountered")
-  end
+    match e_opt with
+    | Some e -> (
+        match e.e_type with
+        | Door (map, coord) ->
+            move_scroll dx dy;
+            let x, y = coord in
+            State.set_map (Map.get_map map);
+
+            Player.set_x x (State.player ());
+            Player.set_y y (State.player ())
+        | _ -> process_move ())
+    | None -> process_move ()
   else Player.set_orie orie (State.player ())
 
 let redraw _ =
@@ -288,7 +291,21 @@ let trainer_detect e =
 
 let trainer_action () =  State.map () |> Map.get_entities |> iter_entities trainer_detect
 
-let rec run_tick save_preview =
+
+let save (save_p : Saves.save_preview) time_start =
+  Saves.save_game
+    {
+      save_p with
+      money = Player.money (State.player ());
+      time = int_of_float (Unix.time ()) - time_start + save_p.time;
+    };
+  Animation.display_text_box "Saved the game!" false
+    (fun _ ->
+      draw ();
+      Draw.draw_sprite DrawText.battle_bot 0 0 ())
+    ()
+
+let rec run_tick save_preview time_start =
   trainer_action ();
   (match Input.get_ctrl_option (Input.poll_key_option ()) with
   | Some Up -> attempt_move 0 1 Player.N
@@ -297,11 +314,12 @@ let rec run_tick save_preview =
   | Some Right -> attempt_move 1 0 Player.E
   | Some Action -> attempt_action ()
   | Some Start -> Party_menu.init OverworldMode ()
-  | Some Back -> ()
+  | Some Save -> save save_preview time_start
   | Some k -> ignore k
   | None -> ());
   redraw ();
   Input.sleep Draw.tick_rate ();
-  run_tick save_preview
+  run_tick save_preview time_start
 
-let run_overworld save_preview = run_tick save_preview
+let run_overworld save_preview =
+  run_tick save_preview (int_of_float (Unix.time ()))

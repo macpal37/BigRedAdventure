@@ -838,7 +838,9 @@ let serialize c =
     ]
 
 let deserialize json =
-  let species = json |> member "species" |> to_string in
+  let species =
+    String.lowercase_ascii (json |> member "species" |> to_string)
+  in
   let level = json |> member "level" |> to_int in
   let is_shiny = json |> member "is_shiny" |> to_bool in
   let c = create_creature_mod species level true is_shiny in

@@ -146,12 +146,15 @@ let launch_new_game id name =
     Loading_screen.await [ Loading_screen.loading_label ];
     { name; id; money = -1; time = 0 }
   in
-  State.adhoc_init ();
+  State.new_game ();
   Overworld.run_overworld save_preview
 
-let launch_load_game save_preview =
-  Loading_screen.await [ Loading_screen.loading_label ];
-  State.adhoc_init ();
+let launch_load_game (save_preview : Saves.save_preview) =
+  Loading_screen.submit_job (fun _ ->
+      Saves.load_game save_preview.id;
+      "loaded_save");
+  Loading_screen.await [ Loading_screen.loading_label; "loaded_save" ];
+
   Overworld.run_overworld save_preview
 
 let action mode saves =

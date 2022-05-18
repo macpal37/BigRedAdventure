@@ -25,6 +25,7 @@ type control_key =
   | Back
   | Start
   | Select
+  | Save
   | Debug
   | NoKey
 

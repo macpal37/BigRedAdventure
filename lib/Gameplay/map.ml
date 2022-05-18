@@ -349,7 +349,7 @@ let generate_entities h tiles objs trainers =
           obstacle = true;
         } )
     with Yojson.Basic.Util.Type_error (_, _) -> (
-      print_endline ("gid" ^ string_of_int gid);
+      (* print_endline ("gid" ^ string_of_int gid); *)
       match List.assoc_opt gid tiles with
       | Some "Grass" ->
           let sprite =
