@@ -57,10 +57,8 @@ val animate_raise_stat_effect : sprite -> bool -> draw_func -> unit
 (** Cool Random Effects :)*)
 
 val animate_switch_out : sprite -> bool -> draw_func -> unit
-val animate_switch_in : sprite -> bool -> draw_func -> unit
 
-(* val animate_switch : sprite -> sprite -> bool -> string -> string ->
-   draw_func -> unit *)
+val animate_switch_in : sprite -> bool -> draw_func -> unit
 (** [animate_switch switch_out switch_in player out_name in_name rf (_)]
     Animates the switch out/switch in animation using the [switch_out]
     [switch_in] sprites. [player] determines whether the player or enemy
@@ -91,3 +89,10 @@ val animate_status :
   sprite -> bool -> Creature.status -> draw_func -> unit
 (** [animate_status sprite player status ref] Performs the status effect
     animation*)
+
+val animate_switch_out_trainer :
+  sprite -> sprite -> Spritesheet.sprite_sheet -> draw_func -> unit
+(** [animate_switch_out_trainer switch_out switch_in sprite_sheet rf (_)]
+    Animates the switch out/switch in animation for trainers using the
+    [switch_out] [switch_in] sprites and the ball [sprite_sheet] [rf]
+    represents the refresh function.*)

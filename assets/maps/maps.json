@@ -1,5 +1,12 @@
 [
   "route2.json",
   "starting_scene.json",
-  "path_to_village.json"
+  "path_to_village.json",
+  "village.json",
+  "left_house.json",
+  "mid_house.json",
+  "right_house.json",
+  "path_to_dungeon.json",
+  "dungeon_out.json",
+  "dungeon.json"
 ]

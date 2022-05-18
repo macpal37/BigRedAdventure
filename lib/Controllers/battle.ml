@@ -553,11 +553,24 @@ let handle_combat move =
     Combat.battle_actions := [];
     (***============= Resolution =============***)
     if ~!bs.enemy_battler.active = false then (
-      combat_mode := End_Battle;
       ~!bs.enemy_battler.active <- false;
       Ui.add_last_gameplay (Input.sleep 0.5);
 
-      handle_exp player enemy ());
+      handle_exp player enemy ();
+
+      if ~!bs.battle_status <> Victory then begin
+        let c_bef = ~!bs.enemy_battler.creature in
+        let c_aft = Combat.switch_trainer ~!bs in
+
+        animate_switch_out_trainer
+          (get_front_sprite c_bef)
+          (get_front_sprite c_aft)
+          ~!ball_anim (refresh_battle 0);
+        update_player e_hud_stats c_aft;
+        combat_mode := Commands
+      end
+      else combat_mode := End_Battle);
+
     if ~!bs.player_battler.active = false then combat_mode := Attack
   end
 
@@ -644,7 +657,7 @@ let handle_party () =
       combat_mode := Attack;
       let b = ~!bs.player_battler.creature in
       switch_creatures b c true;
-      Combat.switch_player ~!bs c (Player.party (State.player ()));
+      Combat.switch_player ~!bs c;
       Combat.switching_pending := None;
       handle_combat None;
       cmd_pos.x <- 0;
@@ -837,8 +850,7 @@ let rec run_tick () =
           match !Combat.switching_pending with
           | Some c ->
               switch_creatures b c true;
-              Combat.switch_player ~!bs c
-                (Player.party (State.player ()));
+              Combat.switch_player ~!bs c;
               combat_mode := Commands;
               Combat.switching_pending := None;
               cmd_pos.x <- 0;
@@ -850,6 +862,9 @@ let rec run_tick () =
         if ~!bs.battle_status <> Victory then combat_mode := Commands
         else combat_mode := End_Battle
   | End_Battle ->
+      if ~!bs.battle_type = Trainer then
+        Animation.display_text_box "You Won!" false (refresh_battle 2)
+          ();
       Player.set_party ~!bs.player_creatures (State.player ());
       (match !captured_creature with
       | None -> ()

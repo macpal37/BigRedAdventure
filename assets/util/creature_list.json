@@ -43,9 +43,9 @@
     "ev_stat": "hp",
     "ev_amount": 2,
     "evolution": {
-      "name": "Clefable",
+      "name": "clefable",
       "poke_id": 12,
-      "level_up": 35
+      "level_up": 12
     },
     "learnset": [
       {
@@ -62,7 +62,53 @@
       },
       {
         "move": "Flamethrower",
-        "level": 35
+        "level": 7
+      }
+    ]
+  },
+  "clefable": {
+    "name": "Clefable",
+    "poke_id": 11,
+    "catch_rate": 150,
+    "base_exp": 113,
+    "level_rate": "Fast",
+    "type1": "Fairy",
+    "type2": "None",
+    "base_stats": {
+      "hp": 95,
+      "attack": 70,
+      "defense": 74,
+      "sp_attack": 85,
+      "sp_defense": 90,
+      "speed": 60
+    },
+    "ev_stat": "hp",
+    "ev_amount": 3,
+    "evolution": {
+      "name": "None",
+      "poke_id": -1,
+      "level_up": -1
+    },
+    "learnset": [
+      {
+        "move": "Pound",
+        "level": 1
+      },
+      {
+        "move": "Growl",
+        "level": 3
+      },
+      {
+        "move": "Disarming Voice",
+        "level": 6
+      },
+      {
+        "move": "Flamethrower",
+        "level": 8
+      },
+      {
+        "move": "Moonblast",
+        "level": 12
       }
     ]
   },
@@ -132,6 +178,48 @@
     "ev_amount": 1,
     "evolution": {
       "name": "Golduck",
+      "poke_id": -1,
+      "level_up": -1
+    },
+    "learnset": [
+      {
+        "move": "Pound",
+        "level": 1
+      },
+      {
+        "move": "Growl",
+        "level": 3
+      },
+      {
+        "move": "Water Gun",
+        "level": 6
+      },
+      {
+        "move": "Mystical Power",
+        "level": 35
+      }
+    ]
+  },
+  "vaporeon": {
+    "name": "Vaporeon",
+    "poke_id": 54,
+    "catch_rate": 190,
+    "base_exp": 64,
+    "level_rate": "Medium Fast",
+    "type1": "Water",
+    "type2": "None",
+    "base_stats": {
+      "hp": 50,
+      "attack": 52,
+      "defense": 48,
+      "sp_attack": 65,
+      "sp_defense": 50,
+      "speed": 55
+    },
+    "ev_stat": "sp_attack",
+    "ev_amount": 1,
+    "evolution": {
+      "name": "None",
       "poke_id": -1,
       "level_up": -1
     },
@@ -262,7 +350,7 @@
     "ev_amount": 1,
     "evolution": {
       "name": "jaxel",
-      "level_up": 24
+      "level_up": 8
     },
     "learnset": [
       {
@@ -344,7 +432,7 @@
     "ev_amount": 1,
     "evolution": {
       "name": "faresse",
-      "level_up": 24
+      "level_up": 8
     },
     "learnset": [
       {
@@ -362,6 +450,51 @@
       {
         "move": "Draining Kiss",
         "level": 5
+      }
+    ]
+  },
+  "faresse": {
+    "name": "Faresse",
+    "poke_id": 20,
+    "catch_rate": 170,
+    "base_exp": 76,
+    "level_rate": "Medium Fast",
+    "type1": "Fairy",
+    "type2": "None",
+    "base_stats": {
+      "hp": 105,
+      "attack": 60,
+      "defense": 100,
+      "sp_attack": 80,
+      "sp_defense": 100,
+      "speed": 38
+    },
+    "ev_stat": "hp",
+    "ev_amount": 1,
+    "evolution": {
+      "name": "None",
+      "level_up": -1
+    },
+    "learnset": [
+      {
+        "move": "Pound",
+        "level": 1
+      },
+      {
+        "move": "Growl",
+        "level": 3
+      },
+      {
+        "move": "Round",
+        "level": 13
+      },
+      {
+        "move": "Draining Kiss",
+        "level": 5
+      },
+      {
+        "move": "Moonblas",
+        "level": 10
       }
     ]
   }

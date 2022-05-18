@@ -448,6 +448,69 @@ let animate_toss_ball (ss : sprite array) (anim : animation) () =
   Ui.add_last_gameplay (draw_sprite (Array.get ss (frame mod 3)) x y);
   anim.finished <- frame = 21
 
+let animate_toss_switch (ss : sprite array) (anim : animation) () =
+  let frame = anim.frame in
+  let x = 800 - (20 * frame) in
+  let y = ((x - 650) * (x - 650) / -150) + 600 in
+  Ui.add_last_gameplay (draw_sprite (Array.get ss (frame mod 3)) x y);
+  anim.finished <- frame = 14
+
+let switch_out_trainer
+    (switching_out : sprite)
+    (switching_in : sprite)
+    (spritesheet : Spritesheet.sprite_sheet)
+    (anim : animation)
+    () =
+  let frame = anim.frame in
+  let c = spritesheet.columns - 1 in
+  (match frame with
+  | 0 ->
+      run_animation
+        (make_animation anim.refresh_func
+           (animate_effect switching_out false 255 255 255 4)
+           0)
+  | 1 ->
+      let small1 = Draw.change_dpi switching_out 2 in
+      Ui.add_last_gameplay (draw_creature small1 false)
+  | 2 ->
+      let small2 = Draw.change_dpi switching_out 1 in
+      Ui.add_last_gameplay (draw_creature small2 false);
+      Ui.add_last_gameplay (reset_rgb switching_out)
+  | 3 ->
+      let toss_anim =
+        Array.init 3 (fun i ->
+            let ix = i * c in
+            get_sprite spritesheet ix)
+      in
+      run_animation
+        (make_animation anim.refresh_func
+           (animate_toss_switch toss_anim)
+           0)
+  | 4 ->
+      let capture_anim =
+        Array.init 6 (fun i ->
+            if i < 12 then get_sprite spritesheet ((i + 3) * c)
+            else get_sprite spritesheet (18 * c))
+      in
+      run_animation
+        (make_animation
+           (fun () -> anim.refresh_func ())
+           (animate_sprite capture_anim 520 540)
+           0)
+  | 5 -> Ui.add_first_gameplay (draw_creature switching_in false)
+  | _ -> ());
+  anim.finished <- frame >= 5
+
+let animate_switch_out_trainer
+    (switching_out : sprite)
+    (switching_in : sprite)
+    (spritesheet : Spritesheet.sprite_sheet)
+    (refresh_func : draw_func) =
+  run_animation
+    (make_animation refresh_func
+       (switch_out_trainer switching_out switching_in spritesheet)
+       0)
+
 let capture spritesheet creature results ball_type (anim : animation) ()
     =
   let frame = anim.frame in

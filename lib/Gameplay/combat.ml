@@ -120,6 +120,16 @@ let trainer_init plist elist =
     creatures_switched = [ player ];
   }
 
+let switch_trainer brecord =
+  let cl =
+    List.filter
+      (fun c -> get_status c <> Fainted)
+      brecord.enemy_creatures
+  in
+  let c = List.nth cl (Util.rand (List.length cl) ()) in
+  brecord.enemy_battler <- generate_battler c false;
+  c
+
 (*HELPERS FOR TURN_BUILDER*)
 let rand_move brecord =
   let rec rand_move_rec () =
@@ -680,7 +690,7 @@ let reset_battler battler =
   | Poison t -> t := 0
   | _ -> ()
 
-let switch_player brecord (switch_in : creature) _ =
+let switch_player brecord (switch_in : creature) =
   add_action (brecord.player_battler, Switch switch_in, "");
   reset_battler brecord.player_battler;
   if List.mem switch_in brecord.creatures_switched = false then

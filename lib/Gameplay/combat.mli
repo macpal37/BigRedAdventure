@@ -60,7 +60,7 @@ type battle_record = {
   mutable turn_counter : int;
   mutable creatures_switched : creature list;
 }
-(** The abstract type that represents the standing data of a Pokemon
+(** The abstract type that represents the standing data of a Creature
     battle at a given turn. This type will store the pokemon engaged in
     battle, as well as their evolving victory status.*)
 
@@ -69,29 +69,19 @@ type battle_action = battle_creature * action * string
 val battle_actions : battle_action list ref
 
 val wild_init : creature list -> creature list -> battle_record
-(**Initializes a battle record for a wild creature encounter.*)
+(**[wild_init p_cl e_cl] initializes a wild battle battle_record with
+   [p_cl] creatures for the player and [e_cl] creatures for the enemy .*)
 
 val trainer_init : creature list -> creature list -> battle_record
-(**Initializes a battle record for a trainer encounter.*)
+(**[trainer_init p_cl e_cl] initializes a trainer battle battle_record
+   with [p_cl] creatures for the player and [e_cl] creatures for the
+   trainer.*)
 
 val battle_sim : battle_record -> move option -> unit
 (**Given a brecord and a move chosen for the player creature to execute,
    turn_builder will return a battle record with player move, enemy
    move, and turn_position ready for a battle phase. Raises:
    NotBuilderReady if turn_pos is not Choosing*)
-
-(* val turn_builder : battle_record -> move option -> unit *)
-
-(* val battle_sim_fh : battle_record -> unit *)
-(**Given a turn-ready battle record, battle_sim_fh will execute the
-   first half of battle based on the creature who has not yet acted.
-   Raises: NotBattleReady if battle record's turn_pos is not Pending*)
-
-(* val battle_sim_sh : battle_record -> unit *)
-(**Given a halfway executed battle record, battle_sim_sh will execute
-   the second half of battle based on the creature who has not yet
-   acted. Raises: NotBattleReady if battle record's turn_pos is not
-   Halfway*)
 
 val run_away : battle_record -> unit
 (**Given a battle record, checks if the player is able to run away. If
@@ -103,5 +93,17 @@ val capture : battle_record -> float -> bool list
    Catch*)
 
 val reset_battler : battle_creature -> unit
-val switch_player : battle_record -> creature -> creature list -> unit
+(**[reset_battler bc ] resets all mutable properties of battle_creature
+   [bc].*)
+
+val switch_player : battle_record -> creature -> unit
+(**[switch_player bc c] Switches the current player_battler with
+   creature [c] and modifies battle record [bc].*)
+
+val switch_trainer : battle_record -> creature
+(**[switch_trainer bc ] Switches the current enemy_battler with a random
+   alive creature from [enemy_creatures] and modifeis the battle_record
+   [bc].*)
+
 val switching_pending : creature option ref
+(** [switch_trainer] the current player creature pending to switch out.*)
