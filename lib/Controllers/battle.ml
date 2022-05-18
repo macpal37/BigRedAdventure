@@ -4,7 +4,7 @@ open Creature.Move
 open Animation
 open Util
 open Input
-open DrawText
+open Draw_text
 
 let moves_position = new_point ()
 let cmd_pos = new_point ()
@@ -461,6 +461,7 @@ let handle_exp player_creature enemy_creature () =
               Ui.add_last_foreground (draw_level_up target 1);
               Ui.update_all ();
               wait (-1) ();
+              update_player p_hud_stats player_creature;
               handle_learn_move target
             end;
             level_up_handler lvl t
@@ -667,7 +668,7 @@ let handle_party () =
 
 let rec handle_inventory () =
   Inventory_menu.init ();
-  match !Inventory_menu.selected_item with
+  match !(Inventory_menu.get_item_selected ()) with
   | Some i ->
       let valid_item = handle_item i () in
       if valid_item then begin
@@ -718,9 +719,9 @@ let rec game_over_loop _ =
         Draw.set_draw_color 0 0 0;
         Draw.fill_rect 0 0 Draw.width Draw.height;
         Draw.draw_sprite_centered ~!game_over (Draw.width / 2) 640 ();
-        DrawText.draw_string_colored
+        Draw_text.draw_string_colored
           ((Draw.width / 2) - 170)
-          300 DrawText.Medium "Press any key to exit" Draw.white
+          300 Draw_text.Medium "Press any key to exit" Draw.white
           Draw.text_color ();
         Draw.set_draw_color ~a:(min (i * 4) 255) 0 0 0;
         Draw.fill_rect 0 0 Draw.width Draw.height;
@@ -731,9 +732,9 @@ let rec game_over_loop _ =
       Draw.set_draw_color 0 0 0;
       Draw.fill_rect 0 0 Draw.width Draw.height;
       Draw.draw_sprite_centered ~!game_over (Draw.width / 2) 640 ();
-      DrawText.draw_string_colored
+      Draw_text.draw_string_colored
         ((Draw.width / 2) - 170)
-        300 DrawText.Medium "Press any key to exit" Draw.white
+        300 Draw_text.Medium "Press any key to exit" Draw.white
         Draw.text_color ();
       Draw.present ();
       Input.sleep Draw.tick_rate ();
@@ -796,7 +797,7 @@ let rec run_tick () =
 
   (match !combat_mode with
   | Commands -> (
-      DrawText.set_text_display "";
+      Draw_text.set_text_display "";
       if key = Action then
         match selected_command () with
         | Fight ->

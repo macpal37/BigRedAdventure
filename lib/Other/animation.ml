@@ -1,7 +1,7 @@
 open Draw
 open Util
 open Spritesheet
-open DrawText
+open Draw_text
 open Ui
 open Input
 
@@ -116,7 +116,7 @@ let draw_hp_val x y (curr : float) (max : float) player () =
     let combat_bg = white in
     set_color combat_bg;
     fill_rect (current_x () - 2) (current_y () - 4) 100 24;
-    (DrawText.draw_string_colored x (y - 8) Small
+    (Draw_text.draw_string_colored x (y - 8) Small
        (hp_to_string curr ^ "/" ^ hp_to_string max)
        white text_color)
       ()

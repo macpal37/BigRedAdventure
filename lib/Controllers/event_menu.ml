@@ -1,7 +1,7 @@
 open Draw
 open Creature
 open Util
-open DrawText
+open Draw_text
 open Input
 
 let event_menu = Util.null ()
@@ -166,7 +166,7 @@ let init_capture creature () =
     true refresh ();
   Ui.add_last_foreground draw_decision;
 
-  print_endline !DrawText.text_display;
+  print_endline !Draw_text.get_text_display;
   run_tick ()
 
 let init_evolution creature () =

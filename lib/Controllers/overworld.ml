@@ -265,7 +265,7 @@ let attempt_action () =
       Entity.interact e State.player (fun () ->
           Ui.add_first_background draw;
           Ui.add_first_gameplay
-            (Draw.draw_sprite DrawText.battle_bot 0 0))
+            (Draw.draw_sprite Draw_text.battle_bot 0 0))
     (* match e.e_type with | Trainer t -> if e.state = 0 then
        Battle.start_trainer_battle t.party | _ -> () *)
   with Not_found -> ()
@@ -287,18 +287,18 @@ let trainer_detect e =
           if List.mem player_pos t.sight then (
             draw ();
             let x, y = e.pos in
-            DrawText.draw_string_colored
+            Draw_text.draw_string_colored
               (((x - State.player_x ()) * tile_size)
               + (Draw.width / 2) - 12)
               (((y - State.player_y ()) * tile_size)
               + (Draw.height / 2) + 40)
-              DrawText.Huge "!" 0 0 ();
-            DrawText.draw_string_colored
+              Draw_text.Huge "!" 0 0 ();
+            Draw_text.draw_string_colored
               (((x - State.player_x ()) * tile_size)
               + (Draw.width / 2) - 10)
               (((y - State.player_y ()) * tile_size)
               + (Draw.height / 2) + 38)
-              DrawText.Huge "!" Draw.white 0 ();
+              Draw_text.Huge "!" Draw.white 0 ();
             Draw.present ();
             Input.sleep 0.8 ();
             encounter_anim ();
@@ -321,7 +321,7 @@ let save (save_p : Saves.save_preview) time_start =
   Animation.display_text_box "Saved the game!" false
     (fun _ ->
       draw ();
-      Draw.draw_sprite DrawText.battle_bot 0 0 ())
+      Draw.draw_sprite Draw_text.battle_bot 0 0 ())
     ()
 
 let rec run_tick save_preview time_start =

@@ -1,3 +1,7 @@
+(** Module that handles all player input. Inputs are queue and can be
+    popped when neeeded. Custom control keys allows us to easily modify
+    keyboard bindings.*)
+
 val input_poll : unit -> unit
 (** Polls for event queue the latest key press. May exit the program.*)
 
@@ -13,9 +17,7 @@ val pop_key_option : unit -> Sdlkeycode.t option
 val sleep : float -> unit -> unit
 (** [sleep f _] sleeps for [f] seconds then calls [input_poll _]*)
 
-(*****************************************************************)
-(***************    Game Control Keys     *********************)
-(*****************************************************************)
+(** {1 Game Control Keys}*)
 type control_key =
   | Up
   | Down

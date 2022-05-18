@@ -13,14 +13,14 @@ let draw_title _ =
 
 let draw_box _ =
   Draw.draw_sprite_centered ~!main_box (Draw.width / 2) 270 ();
-  DrawText.draw_string_colored 232
+  Draw_text.draw_string_colored 232
     (358 - (position.y * 104))
-    DrawText.Medium ">" Draw.white Draw.text_color ();
-  DrawText.draw_string_colored 232 354 DrawText.Medium "  New Game"
+    Draw_text.Medium ">" Draw.white Draw.text_color ();
+  Draw_text.draw_string_colored 232 354 Draw_text.Medium "  New Game"
     Draw.white Draw.text_color ();
-  DrawText.draw_string_colored 232 250 DrawText.Medium "  Continue"
+  Draw_text.draw_string_colored 232 250 Draw_text.Medium "  Continue"
     Draw.white Draw.text_color ();
-  DrawText.draw_string_colored 232 146 DrawText.Medium "  Exit"
+  Draw_text.draw_string_colored 232 146 Draw_text.Medium "  Exit"
     Draw.white Draw.text_color ()
 
 let action _ =

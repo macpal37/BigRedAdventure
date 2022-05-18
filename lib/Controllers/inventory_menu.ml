@@ -3,7 +3,7 @@ open Draw
 open Inventory
 open Item
 open Util
-open DrawText
+open Draw_text
 open Input
 
 let display_queue = ref []
@@ -11,6 +11,7 @@ let max_list_size = 10
 let max_items = ref 0
 let inventory_menu = Util.null ()
 let selected_item = null ()
+let get_item_selected () = selected_item
 
 let load_assets _ =
   inventory_menu *= Draw.get_sprite2 "inventory_menu" GUI_Folder

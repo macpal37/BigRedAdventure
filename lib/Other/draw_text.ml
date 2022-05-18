@@ -110,12 +110,12 @@ let draw_text_string_pos x y f_size char_cap (text : string) () =
       font (List.nth transcript i) ()
   done
 
-let text_display = ref ""
-let set_text_display (s : string) = text_display := s
+let get_text_display = ref ""
+let set_text_display (s : string) = get_text_display := s
 let box_cap = 44
 
 let clear_text clear_sprite () =
   let sx = 46 in
   let sy = 136 in
   draw_sprite clear_sprite 3 0 ();
-  draw_text_string_pos sx sy Medium box_cap !text_display ()
+  draw_text_string_pos sx sy Medium box_cap !get_text_display ()

@@ -1,7 +1,7 @@
 open Draw
 open Creature
 open Animation
-open DrawText
+open Draw_text
 open Input
 open Util
 
