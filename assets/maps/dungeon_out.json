@@ -579,7 +579,7 @@
                         {
                          "name":"teleport_x",
                          "type":"int",
-                         "value":6
+                         "value":7
                         }, 
                         {
                          "name":"teleport_y",
@@ -607,7 +607,7 @@
                         {
                          "name":"teleport_x",
                          "type":"int",
-                         "value":7
+                         "value":8
                         }, 
                         {
                          "name":"teleport_y",
