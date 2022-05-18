@@ -214,6 +214,29 @@
                  "width":16,
                  "x":128,
                  "y":32
+                }, 
+                {
+                 "gid":43,
+                 "height":16,
+                 "id":43,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"dialogue",
+                         "type":"string",
+                         "value":"Your days are numbered."
+                        }, 
+                        {
+                         "name":"trainer_name",
+                         "type":"string",
+                         "value":"Martha"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":64,
+                 "y":48
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -222,7 +245,7 @@
          "y":0
         }],
  "nextlayerid":5,
- "nextobjectid":42,
+ "nextobjectid":44,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.8.2",

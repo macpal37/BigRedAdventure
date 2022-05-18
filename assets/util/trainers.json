@@ -39,5 +39,68 @@
     ],
     "money": 1200,
     "defeat_dialogue": "EeeeeeK!!"
+  },
+  "Akira": {
+    "name": "Akira",
+    "party": [
+      {
+        "creature": "rafu",
+        "level": 4
+      }
+    ],
+    "money": 1200,
+    "defeat_dialogue": "I Love money!!"
+  },
+  "Bella": {
+    "name": "Bella",
+    "party": [
+      {
+        "creature": "fispie",
+        "level": 4
+      }
+    ],
+    "money": 1200,
+    "defeat_dialogue": "I hate krabby patties!!"
+  },
+  "Caspie": {
+    "name": "Caspie",
+    "party": [
+      {
+        "creature": "Clefairy",
+        "level": 4
+      },
+      {
+        "creature": "Clefairy",
+        "level": 10
+      }
+    ],
+    "money": 1200,
+    "defeat_dialogue": "I hate krabby patties!!"
+  },
+  "Elieen": {
+    "name": "Elieen",
+    "party": [
+      {
+        "creature": "Clefairy",
+        "level": 4
+      },
+      {
+        "creature": "Clefairy",
+        "level": 10
+      }
+    ],
+    "money": 1200,
+    "defeat_dialogue": "I hate krabby patties!!"
+  },
+  "Martha": {
+    "name": "Martha",
+    "party": [
+      {
+        "creature": "rafu",
+        "level": 15
+      }
+    ],
+    "money": 42069,
+    "defeat_dialogue": "If it weren't for you meddling kid I would ahve ruled the world!"
   }
 }
