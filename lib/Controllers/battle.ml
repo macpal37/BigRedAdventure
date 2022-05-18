@@ -56,6 +56,7 @@ let player_hud = Util.null ()
 let battle_bg1 = Util.null ()
 let level_up_screen = Util.null ()
 let ball_anim = Util.null ()
+let game_over = Util.null ()
 
 let load_assets _ =
   battle_right *= Draw.get_sprite2 "battle_top" GUI_Folder;
@@ -66,7 +67,8 @@ let load_assets _ =
   level_up_screen *= Draw.get_sprite2 "level_up" GUI_Folder;
   ball_anim
   *= Spritesheet.get_spritesheet
-       "assets/item_sprites/pokeball_capture.png"
+       "assets/item_sprites/pokeball_capture.png";
+  game_over *= Draw.get_sprite2 "game_over" GUI_Folder
 
 (*****************************************************************)
 (***************     Combat Drawing Commands     *********************)
@@ -79,7 +81,7 @@ let draw_moves creature () =
   let box_w, box_h = (370, 92) in
   let box_x, box_y = (28, 200 - box_h) in
   (* Height of Box 212 *)
-  let text_x, text_y = (38, (4 * 212 / 5) - 12) in
+  let text_x, text_y = (38, (4 * 212 / 5) - 12 - 95) in
   let text_xdif, text_ydif = (376, 95) in
   set_line_width 6;
   let rec draw_all_moves i j length =
@@ -88,7 +90,7 @@ let draw_moves creature () =
       let move =
         get_move_i ~!bs.player_battler.creature (i + (j * 2))
       in
-      let x, y = (text_x + (text_xdif * i), text_y - (text_ydif * j)) in
+      let x, y = (text_x + (text_xdif * i), text_y + (text_ydif * j)) in
       (match move with
       | None -> ()
       | Some m ->
@@ -696,9 +698,56 @@ let selected_command () =
   else if cmd_pos.y = 0 then Party
   else Run
 
+let rec game_over_loop _ =
+  match Input.pop_key_option () with
+  | Some _ ->
+      for i = 0 to 80 do
+        Draw.set_draw_color 0 0 0;
+        Draw.fill_rect 0 0 Draw.width Draw.height;
+        Draw.draw_sprite_centered ~!game_over (Draw.width / 2) 640 ();
+        DrawText.draw_string_colored
+          ((Draw.width / 2) - 170)
+          300 DrawText.Medium "Press any key to exit" Draw.white
+          Draw.text_color ();
+        Draw.set_draw_color ~a:(min (i * 4) 255) 0 0 0;
+        Draw.fill_rect 0 0 Draw.width Draw.height;
+        Draw.present ()
+      done;
+      exit 0
+  | None ->
+      Draw.set_draw_color 0 0 0;
+      Draw.fill_rect 0 0 Draw.width Draw.height;
+      Draw.draw_sprite_centered ~!game_over (Draw.width / 2) 640 ();
+      DrawText.draw_string_colored
+        ((Draw.width / 2) - 170)
+        300 DrawText.Medium "Press any key to exit" Draw.white
+        Draw.text_color ();
+      Draw.present ();
+      Input.sleep Draw.tick_rate ();
+      game_over_loop ()
+
+let game_over_fade _ =
+  for i = 0 to 70 do
+    refresh_battle 1 ();
+    Ui.add_last_foreground (fun _ ->
+        Draw.set_draw_color ~a:(min (i * 4) 255) 0 0 0;
+        Draw.fill_rect 0 0 Draw.width Draw.height;
+        Draw.draw_sprite_centered ~!game_over (Draw.width / 2)
+          (int_of_float
+             (900.
+             -. 260.
+                *. Float.pow (float_of_int (max (i - 35) 45) /. 45.) 0.5
+             ))
+          ());
+    Ui.update_all ();
+    Input.sleep Draw.tick_rate ()
+  done;
+  game_over_loop ()
+
 let game_over () =
   Animation.display_text_box "You faded to black..." false
-    (refresh_battle 1) ()
+    (refresh_battle 1) ();
+  game_over_fade ()
 
 let rec run_tick () =
   Input.sleep Draw.tick_rate ();
@@ -765,14 +814,16 @@ let rec run_tick () =
               combat_mode := Commands
             end)
   | Moves ->
-      if key = Action then begin
-        let move =
-          (get_move_i ~!bs.player_battler.creature)
-            (moves_position.x + (2 * moves_position.y))
-        in
-        combat_mode := Attack;
-        handle_combat move
-      end;
+      (if key = Action then
+       let move =
+         (get_move_i ~!bs.player_battler.creature)
+           (moves_position.x + (2 * (1 - moves_position.y)))
+       in
+       match move with
+       | Some _ ->
+           combat_mode := Attack;
+           handle_combat move
+       | None -> ());
       if key = Back then combat_mode := Commands
   | Attack ->
       let b = ~!bs.player_battler.creature in

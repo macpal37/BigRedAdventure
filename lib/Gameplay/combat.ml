@@ -421,9 +421,8 @@ let check_active_status brecord =
     add_action
       ( brecord.enemy_battler,
         Fainted,
-        "The WILD "
-        ^ get_nickname brecord.enemy_battler.creature
-        ^ " fainted!" )
+        (* "The WILD " ^ *)
+        get_nickname brecord.enemy_battler.creature ^ " fainted!" )
   end
 
 let exec_turn attacker defender =
