@@ -98,6 +98,10 @@
       {
         "creature": "rafu",
         "level": 15
+      },
+      {
+        "creature": "touchdown",
+        "level": 20
       }
     ],
     "money": 42069,

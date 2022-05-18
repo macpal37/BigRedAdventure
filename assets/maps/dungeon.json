@@ -97,7 +97,7 @@
                  "type":"",
                  "visible":true,
                  "width":16,
-                 "x":288,
+                 "x":336,
                  "y":176
                 }, 
                 {
@@ -160,7 +160,7 @@
                         {
                          "name":"dialogue",
                          "type":"string",
-                         "value":"The sight of Martha fills you withdetermination!"
+                         "value":"You feel someone's wrath."
                         }],
                  "rotation":0,
                  "type":"",

@@ -19,8 +19,8 @@ let set_map m = !current_state.map <- m
 let new_game () =
   Player.set_x 6 (player ());
   Player.set_y 6 (player ());
-  !current_state.map <- Map.get_map "starting_scene.json";
-  let clefairy = Creature.create_creature "clefairy" 10 in
+  !current_state.map <- Map.get_map "dungeon.json";
+  let clefairy = Creature.create_creature "clefairy" 20 in
   Player.add_creature clefairy !current_state.player;
   Creature.set_nickname clefairy "Ya Boi";
   let inventory = Player.inventory !current_state.player in

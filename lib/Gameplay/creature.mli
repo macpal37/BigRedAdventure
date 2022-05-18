@@ -109,6 +109,7 @@ module Move : sig
 end
 
 val null_creature : creature
+(** [null_creature] represents an empty creature*)
 
 val empty_stats : unit -> stats
 (** Represents an emtpy set of stats*)

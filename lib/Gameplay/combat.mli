@@ -62,6 +62,7 @@ type battle_creature = {
   mutable active : bool;
   is_player : bool;
 }
+(** Record that reprsents a creatue during battle.*)
 
 type battle_record = {
   mutable player_creatures : Creature.creature list;
@@ -80,8 +81,11 @@ type battle_record = {
     battle, as well as their evolving victory status.*)
 
 type battle_action = battle_creature * action * string
+(**[battle_action] represents a an action taken by a creature during
+   combat.*)
 
 val battle_actions : battle_action list ref
+(**[battle_actions] the list of battle actions performed during a turn..*)
 
 val wild_init :
   Creature.creature list -> Creature.creature list -> battle_record
