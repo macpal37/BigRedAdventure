@@ -293,8 +293,10 @@ let generate_entities h tiles objs trainers =
             let name = find_o props "trainer_name" to_string "Eve" in
             let sprite =
               match name with
-              | "Eve" -> Spritesheet.get_sprite trainer_sprites 1
-              | _ -> Spritesheet.get_sprite trainer_sprites 0
+              | "Martha" -> Spritesheet.get_sprite trainer_sprites 3
+              | _ ->
+                  Spritesheet.get_sprite trainer_sprites
+                    (Util.rand 3 ())
             in
             let t = trainers |> member name in
             ( Trainer
