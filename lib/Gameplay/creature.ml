@@ -348,10 +348,9 @@ let generate_moves learnset level =
          learnset)
   in
   let moves = Array.make 4 None in
-  for i = 1 to 4 do
-    if i <= List.length possible_moves then
-      moves.(List.length possible_moves - i) <-
-        Some (snd (List.nth possible_moves (i - 1)))
+  for i = 0 to 3 do
+    if i < List.length possible_moves then
+      moves.(3 - i) <- Some (snd (List.nth possible_moves i))
   done;
 
   moves
@@ -478,7 +477,6 @@ let create_creature_mod n (level : int) normal shiny =
   let json =
     Yojson.Basic.from_file "assets/util/creature_list.json" |> member n
   in
-
   Random.self_init ();
   let name = json |> member "name" |> to_string in
   let bstats = stats_of_json (json |> member "base_stats") in
@@ -766,10 +764,96 @@ let get_color_from_etype etype =
   | Fighting -> Draw.rgb 192 48 40
   | _ -> Draw.rgb 0 0 0
 
-(* let get_color_from_etype etype = match etype with | Neutral -> rgb
-   196 196 196 | Fire -> rgb 239 128 48 | Water -> rgb 103 144 240 |
-   Nature -> rgb 120 200 79 | Light -> rgb 238 153 172 | Specter -> rgb
-   102 46 145 | Earth -> rgb 184 160 56 | Shadow -> rgb 112 88 72 |
-   Metal -> rgb 184 184 208 | Electric -> rgb 248 207 48 | Acid -> rgb
-   160 64 159 | Air -> rgb 224 192 104 | Cosmic -> rgb 112 56 248 | Ice
-   -> rgb 152 216 216 | _ -> rgb 0 0 0 *)
+let serialize_stat s =
+  let s =
+    [
+      s.max_hp; s.attack; s.defense; s.sp_attack; s.sp_defense; s.speed;
+    ]
+  in
+  List.map int_of_float s
+
+let deserialize_stats json =
+  let l = json |> to_list |> List.map to_int |> List.map float_of_int in
+  {
+    max_hp = List.nth l 0;
+    attack = List.nth l 1;
+    defense = List.nth l 2;
+    sp_attack = List.nth l 3;
+    sp_defense = List.nth l 4;
+    speed = List.nth l 5;
+  }
+
+let serialize_move m_opt =
+  match m_opt with
+  | Some m ->
+      `Assoc
+        [
+          ("name", `String m.move_name);
+          ("max_pp", `Int m.max_pp);
+          ("curr_pp", `Int m.curr_pp);
+        ]
+  | None ->
+      `Assoc
+        [
+          ("name", `String "None");
+          ("max_pp", `Int 0);
+          ("curr_pp", `Int 0);
+        ]
+
+let deserialize_move json =
+  let name = json |> member "name" |> to_string in
+  if name = "None" then None
+  else
+    let m = Move.create_move name in
+    Some
+      {
+        m with
+        move_name = name;
+        max_pp = json |> member "max_pp" |> to_int;
+        curr_pp = json |> member "curr_pp" |> to_int;
+      }
+
+let serialize c =
+  `Assoc
+    [
+      ("species", `String c.species);
+      ("nickname", `String c.nickname);
+      ("current_hp", `Int (int_of_float c.current_hp));
+      ("level", `Int c.level);
+      ( "current_stats",
+        `List
+          (serialize_stat c.current_stats |> List.map (fun s -> `Int s))
+      );
+      ( "iv_stats",
+        `List (serialize_stat c.ev_stats |> List.map (fun s -> `Int s))
+      );
+      ( "ev_stats",
+        `List (serialize_stat c.ev_stats |> List.map (fun s -> `Int s))
+      );
+      ("exp", `Int (int_of_float c.exp));
+      ("current_status", `String (string_of_status c.current_status));
+      ("friendship", `Int c.friendship);
+      ("is_shiny", `Bool c.shiny);
+      ("moves", `List (Array.to_list c.moves |> List.map serialize_move));
+    ]
+
+let deserialize json =
+  let species = json |> member "species" |> to_string in
+  let level = json |> member "level" |> to_int in
+  let is_shiny = json |> member "is_shiny" |> to_bool in
+  let c = create_creature_mod species level true is_shiny in
+  let moves =
+    json |> member "moves" |> to_list |> List.map deserialize_move
+  in
+  {
+    c with
+    nickname = json |> member "nickname" |> to_string;
+    level = json |> member "level" |> to_int;
+    current_hp = json |> member "current_hp" |> to_int |> float_of_int;
+    exp = json |> member "exp" |> to_int |> float_of_int;
+    current_stats = json |> member "current_stats" |> deserialize_stats;
+    iv_stats = json |> member "iv_stats" |> deserialize_stats;
+    ev_stats = json |> member "ev_stats" |> deserialize_stats;
+    friendship = json |> member "friendship" |> to_int;
+    moves = Array.init 4 (fun i -> List.nth moves i);
+  }
