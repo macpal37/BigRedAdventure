@@ -814,14 +814,16 @@ let rec run_tick () =
               combat_mode := Commands
             end)
   | Moves ->
-      if key = Action then begin
-        let move =
-          (get_move_i ~!bs.player_battler.creature)
-            (moves_position.x + (2 * (1 - moves_position.y)))
-        in
-        combat_mode := Attack;
-        handle_combat move
-      end;
+      (if key = Action then
+       let move =
+         (get_move_i ~!bs.player_battler.creature)
+           (moves_position.x + (2 * (1 - moves_position.y)))
+       in
+       match move with
+       | Some _ ->
+           combat_mode := Attack;
+           handle_combat move
+       | None -> ());
       if key = Back then combat_mode := Commands
   | Attack ->
       let b = ~!bs.player_battler.creature in
