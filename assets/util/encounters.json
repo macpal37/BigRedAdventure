@@ -104,5 +104,128 @@
         }
       ]
     ]
+  },
+  "starting_scene": {
+    "encounters": [
+      [
+        {
+          "creatures": "nuxel",
+          "level_range": "4-5",
+          "encounter_rate": 0.25
+        },
+        {
+          "creatures": "rafu",
+          "level_range": "3-4",
+          "encounter_rate": 0.25
+        },
+        {
+          "creatures": "fispie",
+          "level_range": "3-4",
+          "encounter_rate": 0.25
+        },
+        {
+          "creatures": "chumpi",
+          "level_range": "5-6",
+          "encounter_rate": 0.10
+        },
+        {
+          "creatures": "stregoom",
+          "level_range": "5-6",
+          "encounter_rate": 0.14
+        },
+        {
+          "creatures": "psyduck",
+          "level_range": "1-100",
+          "encounter_rate": 0.01
+        }
+      ]
+    ]
+  },
+  "path_to_village": {
+    "encounters": [
+      [
+        {
+          "creatures": "nuxel",
+          "level_range": "4-5",
+          "encounter_rate": 0.25
+        },
+        {
+          "creatures": "rafu",
+          "level_range": "3-4",
+          "encounter_rate": 0.25
+        },
+        {
+          "creatures": "fispie",
+          "level_range": "3-4",
+          "encounter_rate": 0.25
+        },
+        {
+          "creatures": "chumpi",
+          "level_range": "5-6",
+          "encounter_rate": 0.10
+        },
+        {
+          "creatures": "stregoom",
+          "level_range": "5-6",
+          "encounter_rate": 0.14
+        },
+        {
+          "creatures": "psyduck",
+          "level_range": "1-100",
+          "encounter_rate": 0.01
+        }
+      ],
+      [
+        {
+          "creatures": "clefairy",
+          "level_range": "30-55",
+          "encounter_rate": 0.33
+        },
+        {
+          "creatures": "chumpi",
+          "level_range": "10-55",
+          "encounter_rate": 0.34
+        },
+        {
+          "creatures": "stregoom",
+          "level_range": "8-52",
+          "encounter_rate": 0.33
+        }
+      ],
+      [
+        {
+          "creatures": "clefairy",
+          "level_range": "30-55",
+          "encounter_rate": 0.33
+        },
+        {
+          "creatures": "chumpi",
+          "level_range": "10-55",
+          "encounter_rate": 0.34
+        },
+        {
+          "creatures": "stregoom",
+          "level_range": "8-52",
+          "encounter_rate": 0.33
+        }
+      ],
+      [
+        {
+          "creatures": "clefairy",
+          "level_range": "30-55",
+          "encounter_rate": 0.33
+        },
+        {
+          "creatures": "chumpi",
+          "level_range": "10-55",
+          "encounter_rate": 0.34
+        },
+        {
+          "creatures": "stregoom",
+          "level_range": "8-52",
+          "encounter_rate": 0.33
+        }
+      ]
+    ]
   }
 }
