@@ -227,30 +227,7 @@ let json_entities json =
   let gid = json |> member "firstgid" |> to_int in
   src_json |> member "tiles" |> to_list |> List.map (to_entity gid)
 
-<<<<<<< HEAD
-let set_encounters tile_m encounter_m e =
-=======
-let build_tile_matrix id_m tileset =
-  let offset, l = tileset in
-  Util.print_int "Tile Set LENGTH: " (List.length l);
-  let tile_f = Util.list_index_fun l in
-  matrix_map
-    (fun t ->
-      let ot = t - offset in
-
-      Util.print_int "OT: " ot;
-
-      Util.print_int "T: " t;
-
-      match tile_f ot with
-      | "Grass" -> { graphic = ot; ttype = Grass [] }
-      | "Path" -> { graphic = ot; ttype = Path }
-      | "Obstacle" -> { graphic = ot; ttype = Obstacle }
-      | _ -> raise (Malformed_Json "Impossible tile type"))
-    id_m
-
 let set_encounters tile_m encounter_m e map_name =
->>>>>>> 427898cf15bc7ed5ebc8197360468b1939473fe0
   let offset, l = e in
   let e_f = Util.list_index_fun l in
   for i = 0 to Array.length tile_m - 1 do
@@ -261,24 +238,11 @@ let set_encounters tile_m encounter_m e map_name =
         (let e_id = matrix_get i j encounter_m in
          if e_id = 0 then t
          else
-<<<<<<< HEAD
            {
              t with
-             ttype = Grass (encounter_of_id (e_f (e_id - offset)));
+             ttype =
+               Grass (encounter_of_id map_name (e_f (e_id - offset)));
            })
-=======
-           match t.ttype with
-           | Grass [] ->
-               Util.print_int "EID: " e_id;
-               Util.print_int "off: " offset;
-               {
-                 t with
-                 ttype =
-                   Grass
-                     (encounter_of_id map_name (e_f (e_id - offset)));
-               }
-           | _ -> raise (Malformed_Json "Impossible tile type"))
->>>>>>> 427898cf15bc7ed5ebc8197360468b1939473fe0
     done
   done
 
@@ -313,7 +277,7 @@ let generate_entities h tiles objs =
       let orie = find_o props "orientation" orie_of_json S in
       let dialogue = find_o props "dialogue" to_string "" in
 
-      let e_type, sprite, obstacle =
+      let e_type, sprite =
         match List.assoc gid tiles with
         | "Trainer" ->
             let name = find_o props "trainer_name" to_string "Eve" in
@@ -322,15 +286,9 @@ let generate_entities h tiles objs =
               | "Eve" -> Spritesheet.get_sprite trainer_sprites 1
               | _ -> Spritesheet.get_sprite trainer_sprites 0
             in
-<<<<<<< HEAD
-            (Trainer name, sprite, true)
-        | "Sign" -> (Sign, Spritesheet.get_sprite entity_sprites 1, true)
-=======
-
             ( Trainer { name; alt_dialogue = ""; party = []; sight = [] },
               sprite )
         | "Sign" -> (Sign, Spritesheet.get_sprite entity_sprites 1)
->>>>>>> 427898cf15bc7ed5ebc8197360468b1939473fe0
         | "Item" ->
             ( Item
                 {
@@ -338,11 +296,10 @@ let generate_entities h tiles objs =
                   given = false;
                   disappear = find_o props "will_disappear" to_bool true;
                 },
-              Spritesheet.get_sprite entity_sprites 4,
-              true )
-        | "Heal" -> (Heal, Spritesheet.get_sprite entity_sprites 5, true)
+              Spritesheet.get_sprite entity_sprites 4 )
+        | "Heal" -> (Heal, Spritesheet.get_sprite entity_sprites 5)
         | "Merchant" ->
-            (Merchant, Spritesheet.get_sprite entity_sprites 6, true)
+            (Merchant, Spritesheet.get_sprite entity_sprites 6)
         | "Door" ->
             let map_name =
               find_o props "next_map" to_string "test_map" ^ ".json"
@@ -353,14 +310,22 @@ let generate_entities h tiles objs =
                 ( map_name,
                   ( find_o props "teleport_x" to_int 0,
                     find_o props "teleport_y" to_int 0 ) ),
-              Draw.empty_sprite,
-              false )
+              Draw.empty_sprite )
         | s ->
             print_endline ("strange" ^ s);
-            (NoEntity, Draw.empty_sprite, false)
+            (NoEntity, Draw.empty_sprite)
       in
 
-      (pos, { e_type; orie; pos; dialogue; sprite; state = 0; obstacle })
+      ( pos,
+        {
+          e_type;
+          orie;
+          pos;
+          dialogue;
+          sprite;
+          state = 0;
+          obstacle = true;
+        } )
     with Yojson.Basic.Util.Type_error (_, _) -> (
       print_endline ("gid" ^ string_of_int gid);
       match List.assoc_opt gid tiles with
@@ -417,7 +382,6 @@ let load_map map_name =
       let entities_l =
         json_entities (List.assoc "entities_tilesets.json" tilesets)
       in
-<<<<<<< HEAD
 
       (* let tile_t = List.assoc "forest_tileset.json" tilesets in *)
       (* let tileset_l = json_tileset tilesets in *)
@@ -425,13 +389,8 @@ let load_map map_name =
       (* let spritesheet = json_spritesheet tile_t in *)
       let tile_m = build_tile_matrix tile_id_m tilesets in
 
-      set_encounters tile_m encounter_id_m encounter_l;
-
-=======
-      let tile_m = build_tile_matrix tile_id_m tileset_l in
       set_encounters tile_m encounter_id_m encounter_l map_name;
-      let spritesheet = json_spritesheet tile_t in
->>>>>>> 427898cf15bc7ed5ebc8197360468b1939473fe0
+
       let entities = generate_entities h entities_l entities_m in
 
       { tiles = tile_m; entities; name = map_name }
