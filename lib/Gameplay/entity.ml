@@ -69,15 +69,20 @@ type entity = {
 let get_trigger entity = entity.e_type
 let get_orientation entity = entity.orie
 let get_position entity = entity.pos
-let is_obstacle e = if e.state = 0 then e.obstacle 
-  else match e.e_type with
-  | Item i -> not i.disappear
-  | _ -> true
 
-let is_visible e = if e.state = 0 then true 
-  else match e.e_type with
-  | Item i -> not i.disappear
-  | _ -> true
+let is_obstacle e =
+  if e.state = 0 then e.obstacle
+  else
+    match e.e_type with
+    | Item i -> not i.disappear
+    | _ -> true
+
+let is_visible e =
+  if e.state = 0 then true
+  else
+    match e.e_type with
+    | Item i -> not i.disappear
+    | _ -> true
 
 (** 0 = show, 1 = invisible *)
 let get_state e = e.state
@@ -124,8 +129,8 @@ let give_item e item p =
    let inventory = p |> Player.inventory in
    Inventory.add_item inventory item);
 
-  item.given <-
-    true; if item.disappear then e.state <- 1
+  item.given <- true;
+  if item.disappear then e.state <- 1
 
 let heal c =
   let max_hp = (Creature.get_stats c).max_hp in
@@ -139,11 +144,10 @@ let heal_party p () =
 
 let interact e p redraw =
   if String.length e.dialogue > 0 then
-  Animation.display_text_box e.dialogue false redraw ();
+    Animation.display_text_box e.dialogue false redraw ();
   match e.e_type with
   | Sign -> ()
-  | Item a -> 
-    if e.state = 0 then give_item e a p
+  | Item a -> if e.state = 0 then give_item e a p
   | Heal -> heal_party p ()
   | _ -> ()
 
