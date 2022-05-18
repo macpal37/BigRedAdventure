@@ -813,3 +813,25 @@ let start_wild_battle c =
 
   (* ========= Draw the Battle ========= *)
   run_tick ()
+
+let start_trainer_battle creatures =
+  combat_mode := Commands;
+  (* ========= Start the Battle ========= *)
+  (* ========= Filter out the fainted creatures ========= *)
+  let rec battle_party fainted = function
+    | [] -> fainted
+    | h :: t ->
+        if get_status h = Fainted then battle_party (h :: fainted) t
+        else (h :: t) @ fainted
+  in
+
+  bs *= Combat.trainer_init (Player.party (State.player ())) creatures;
+  update_player p_hud_stats ~!bs.player_battler.creature;
+  update_player e_hud_stats ~!bs.enemy_battler.creature;
+
+  Player.set_party
+    (battle_party [] (Player.party (State.player ())))
+    (State.player ());
+
+  (* ========= Draw the Battle ========= *)
+  run_tick ()
