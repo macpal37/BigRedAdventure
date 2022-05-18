@@ -29,25 +29,17 @@ type tile_type =
   | Obstacle
 
 type tile = {
-  graphic : int;
+  sprite : Draw.sprite;
   ttype : tile_type;
 }
 
 type t = {
   tiles : tile array array;
   entities : (coord * entity) list;
-  spritesheet : Spritesheet.sprite_sheet;
   name : string;
 }
 
-let null_map =
-  {
-    tiles = [||];
-    entities = [];
-    spritesheet = Spritesheet.empty_spritesheet;
-    name = "";
-  }
-
+let null_map = { tiles = [||]; entities = []; name = "" }
 let json_val json f key = json |> member key |> f
 let json_list json f key = json |> member key |> to_list |> List.map f
 
@@ -121,6 +113,34 @@ let build_id_arrays json w =
 (* json |> member "layers" |> to_list |> List.map (json_build_matrix
    w) *)
 
+let tileset_path_parser p =
+  "assets/" ^ String.sub p 3 (String.length p - 3)
+
+let spritesheet_cache = Hashtbl.create 16
+
+let json_spritesheet json =
+  let src_path = json |> member "source" |> to_string in
+  let png_path =
+    "assets/"
+    ^ String.sub src_path 3 (String.length src_path - 8)
+    ^ ".png"
+  in
+  match Hashtbl.find_opt spritesheet_cache png_path with
+  | Some s -> s
+  | None ->
+      let t_json =
+        Yojson.Basic.from_file (tileset_path_parser src_path)
+      in
+      let tilewidth = t_json |> member "tilewidth" |> to_int in
+      let tileheight = t_json |> member "tileheight" |> to_int in
+      let sprite_sheet =
+        Spritesheet.init_spritesheet png_path tilewidth tileheight 4
+      in
+      Hashtbl.add spritesheet_cache png_path sprite_sheet;
+      sprite_sheet
+
+(** [json_tilesets j] is an association list of (sourcename, tileset ref
+    json)*)
 let json_tilesets json =
   let tilesets = json |> member "tilesets" |> to_list in
   List.map
@@ -132,12 +152,9 @@ let json_tilesets json =
         ts ))
     tilesets
 
-let tileset_path_parser p =
-  "assets/" ^ String.sub p 3 (String.length p - 3)
-
 let json_tileset json =
   let src_path = json |> member "source" |> to_string in
-  print_endline src_path;
+  (* print_endline src_path; *)
   let src_json =
     Yojson.Basic.from_file (tileset_path_parser src_path)
   in
@@ -147,6 +164,38 @@ let json_tileset json =
            j |> member "properties" |> to_list
            |> List.map (fun j -> j |> member "value" |> to_string)
            |> List.hd) )
+
+let build_tile_matrix id_m tilesets =
+  let tilesets_rev = List.rev tilesets in
+  (* Util.print_int "Tile Set LENGTH: " (List.length l); *)
+  let rec find_tileset id tilesets =
+    (* precondition: tilesets is in order of highest to lowest
+       firstgid*)
+    match tilesets with
+    | (_, j) :: t ->
+        if id >= (j |> member "firstgid" |> to_int) then j
+        else find_tileset id t
+    | [] -> failwith "id not within domain"
+  in
+
+  matrix_map
+    (fun t ->
+      let json = find_tileset t tilesets_rev in
+      let offset, l = json_tileset json in
+      let tile_f = Util.list_index_fun l in
+      let ot = t - offset in
+      let spritesheet = json_spritesheet json in
+      let sprite = Spritesheet.get_sprite spritesheet ot in
+
+      (* Util.print_int "OT: " ot; *)
+
+      (* Util.print_int "T: " t; *)
+      match tile_f ot with
+      | "Grass" -> { sprite; ttype = Grass [] }
+      | "Path" -> { sprite; ttype = Path }
+      | "Obstacle" -> { sprite; ttype = Obstacle }
+      | _ -> raise (Malformed_Json "Impossible tile type"))
+    id_m
 
 let json_encounters json =
   let src_path = json |> member "source" |> to_string in
@@ -178,25 +227,6 @@ let json_entities json =
   let gid = json |> member "firstgid" |> to_int in
   src_json |> member "tiles" |> to_list |> List.map (to_entity gid)
 
-let build_tile_matrix id_m tileset =
-  let offset, l = tileset in
-  Util.print_int "Tile Set LENGTH: " (List.length l);
-  let tile_f = Util.list_index_fun l in
-  matrix_map
-    (fun t ->
-      let ot = t - offset in
-
-      Util.print_int "OT: " ot;
-
-      Util.print_int "T: " t;
-
-      match tile_f ot with
-      | "Grass" -> { graphic = ot; ttype = Grass [] }
-      | "Path" -> { graphic = ot; ttype = Path }
-      | "Obstacle" -> { graphic = ot; ttype = Obstacle }
-      | _ -> raise (Malformed_Json "Impossible tile type"))
-    id_m
-
 let set_encounters tile_m encounter_m e map_name =
   let offset, l = e in
   let e_f = Util.list_index_fun l in
@@ -208,42 +238,13 @@ let set_encounters tile_m encounter_m e map_name =
         (let e_id = matrix_get i j encounter_m in
          if e_id = 0 then t
          else
-           match t.ttype with
-           | Grass [] ->
-               Util.print_int "EID: " e_id;
-               Util.print_int "off: " offset;
-               {
-                 t with
-                 ttype =
-                   Grass
-                     (encounter_of_id map_name (e_f (e_id - offset)));
-               }
-           | _ -> raise (Malformed_Json "Impossible tile type"))
+           {
+             t with
+             ttype =
+               Grass (encounter_of_id map_name (e_f (e_id - offset)));
+           })
     done
   done
-
-let spritesheet_cache = Hashtbl.create 16
-
-let json_spritesheet json =
-  let src_path = json |> member "source" |> to_string in
-  let png_path =
-    "assets/"
-    ^ String.sub src_path 3 (String.length src_path - 8)
-    ^ ".png"
-  in
-  match Hashtbl.find_opt spritesheet_cache png_path with
-  | Some s -> s
-  | None ->
-      let t_json =
-        Yojson.Basic.from_file (tileset_path_parser src_path)
-      in
-      let tilewidth = t_json |> member "tilewidth" |> to_int in
-      let tileheight = t_json |> member "tileheight" |> to_int in
-      let sprite_sheet =
-        Spritesheet.init_spritesheet png_path tilewidth tileheight 4
-      in
-      Hashtbl.add spritesheet_cache png_path sprite_sheet;
-      sprite_sheet
 
 let orie_of_json json =
   match json |> to_string with
@@ -260,6 +261,8 @@ let find_o props name f def =
   if List.length filter = 1 then List.hd filter |> member "value" |> f
   else def
 
+let grass_sprite = Util.null ()
+
 let generate_party json =
   Creature.create_creature
     (json |> member "creature" |> to_string)
@@ -271,14 +274,16 @@ let generate_entities h tiles objs trainers =
   let entity_of_json json =
     let gid = json |> member "gid" |> to_int in
 
+    let pos : coord =
+      ( (json |> member "x" |> to_int) / 16,
+        h - ((json |> member "y" |> to_int) / 16) )
+    in
+
     try
       let props = json |> member "properties" |> to_list in
       let orie = find_o props "orientation" orie_of_json S in
       let dialogue = find_o props "dialogue" to_string "" in
-      let pos : coord =
-        ( (json |> member "x" |> to_int) / 16,
-          h - ((json |> member "y" |> to_int) / 16) )
-      in
+
       let e_type, sprite =
         match List.assoc gid tiles with
         | "Trainer" ->
@@ -323,7 +328,9 @@ let generate_entities h tiles objs trainers =
                   ( find_o props "teleport_x" to_int 0,
                     find_o props "teleport_y" to_int 0 ) ),
               Draw.empty_sprite )
-        | _ -> (NoEntity, Draw.empty_sprite)
+        | s ->
+            print_endline ("strange" ^ s);
+            (NoEntity, Draw.empty_sprite)
       in
 
       ( pos,
@@ -336,17 +343,43 @@ let generate_entities h tiles objs trainers =
           state = 0;
           obstacle = true;
         } )
-    with Yojson.Basic.Util.Type_error (_, _) ->
-      ( (0, 0),
-        {
-          e_type = NoEntity;
-          orie = S;
-          pos = (0, 0);
-          dialogue = "";
-          state = 0;
-          sprite = Draw.empty_sprite;
-          obstacle = true;
-        } )
+    with Yojson.Basic.Util.Type_error (_, _) -> (
+      print_endline ("gid" ^ string_of_int gid);
+      match List.assoc_opt gid tiles with
+      | Some "Grass" ->
+          let sprite =
+            match !grass_sprite with
+            | Some s -> s
+            | None ->
+                let s =
+                  Draw.change_dpi
+                    (Spritesheet.get_sprite entity_sprites 0)
+                    4
+                in
+                grass_sprite := Some s;
+                s
+          in
+          ( pos,
+            {
+              e_type = Grass;
+              orie = S;
+              pos;
+              dialogue = "";
+              state = 0;
+              sprite;
+              obstacle = false;
+            } )
+      | _ ->
+          ( (0, 0),
+            {
+              e_type = NoEntity;
+              orie = S;
+              pos = (0, 0);
+              dialogue = "";
+              state = 0;
+              sprite = Draw.empty_sprite;
+              obstacle = false;
+            } ))
   in
 
   List.map entity_of_json objs
@@ -360,24 +393,30 @@ let load_map map_name =
   | [ tile_id_m; encounter_id_m ], entities_m ->
       let tilesets = json_tilesets json in
 
-      let tile_t = List.assoc "forest_tileset.json" tilesets in
-      let tileset_l = json_tileset tile_t in
       let encounter_l =
         json_encounters (List.assoc "id_tiles.json" tilesets)
       in
       let entities_l =
         json_entities (List.assoc "entities_tilesets.json" tilesets)
       in
-      let tile_m = build_tile_matrix tile_id_m tileset_l in
+
+      (* let tile_t = List.assoc "forest_tileset.json" tilesets in *)
+      (* let tileset_l = json_tileset tilesets in *)
+
+      (* let spritesheet = json_spritesheet tile_t in *)
+      let tile_m = build_tile_matrix tile_id_m tilesets in
+
       set_encounters tile_m encounter_id_m encounter_l map_name;
-      let spritesheet = json_spritesheet tile_t in
+
       let trainers =
         Yojson.Basic.from_file "assets/util/trainers.json"
       in
+
       let entities =
         generate_entities h entities_l entities_m trainers
       in
-      { tiles = tile_m; entities; spritesheet; name = map_name }
+
+      { tiles = tile_m; entities; name = map_name }
   | [], _ | _ :: _, _ -> raise (Malformed_Json "Impossible case!")
 
 (*let e = all_encounters_of_json json in let g = sprites_of_json json in
@@ -403,13 +442,7 @@ let get_type t c =
   match get_tile t c with
   | { ttype; _ } -> ttype
 
-let get_graphic_id t c =
-  match get_tile t c with
-  | { graphic; _ } -> graphic
-
-let get_sprite t c =
-  Spritesheet.get_sprite t.spritesheet (get_graphic_id t c)
-
+let get_sprite t c = (get_tile t c).sprite
 let creature_level (min, max) = min + Random.int (max - min + 1)
 
 type random_pokemon = {
@@ -436,13 +469,6 @@ let encounter_creature e =
   | Some { name; level } -> Some (Creature.create_creature name level)
 
 let get_name (m : t) = m.name
-
-let graphics_matrix m =
-  matrix_map
-    (fun t ->
-      if t.graphic < 10 then string_of_int t.graphic ^ " "
-      else string_of_int t.graphic)
-    m.tiles
 
 let string_of_encounters e =
   List.fold_left
