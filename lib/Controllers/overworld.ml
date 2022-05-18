@@ -167,6 +167,37 @@ let player_check e =
      TELEPORTAION" *)
   | _ -> ()
 
+let teleport map coord dx dy =
+  move_scroll dx dy;
+  Player.set_coord
+    (State.player_x () + dx)
+    (State.player_y () + dy)
+    (State.player ());
+  for i = 0 to 28 do
+    draw ();
+    Draw.set_draw_color ~a:(i * 9) 0 0 0;
+    Draw.fill_rect 0 0 Draw.width Draw.height;
+    Draw.present ();
+    Input.sleep Draw.tick_rate ()
+  done;
+  Draw.set_draw_color 0 0 0;
+  Draw.fill_rect 0 0 Draw.width Draw.height;
+  Draw.present ();
+  Input.sleep 0.2 ();
+
+  let x, y = coord in
+  State.set_map (Map.get_map map);
+
+  Player.set_x x (State.player ());
+  Player.set_y y (State.player ());
+  for i = 0 to 28 do
+    draw ();
+    Draw.set_draw_color ~a:(255 - (i * 9)) 0 0 0;
+    Draw.fill_rect 0 0 Draw.width Draw.height;
+    Draw.present ();
+    Input.sleep Draw.tick_rate ()
+  done
+
 let attempt_move dx dy orie =
   if Player.get_orie (State.player ()) = orie then
     let new_x, new_y =
@@ -207,13 +238,7 @@ let attempt_move dx dy orie =
     match e_opt with
     | Some e -> (
         match e.e_type with
-        | Door (map, coord) ->
-            move_scroll dx dy;
-            let x, y = coord in
-            State.set_map (Map.get_map map);
-
-            Player.set_x x (State.player ());
-            Player.set_y y (State.player ())
+        | Door (map, coord) -> teleport map coord dx dy
         | _ -> process_move ())
     | None -> process_move ()
   else Player.set_orie orie (State.player ())
@@ -243,17 +268,17 @@ let attempt_action () =
             (Draw.draw_sprite DrawText.battle_bot 0 0));
 
       match e.e_type with
-      | Trainer t -> if e.state = 0 then Battle.start_trainer_battle t.party
+      | Trainer t ->
+          if e.state = 0 then Battle.start_trainer_battle t.party
       | _ -> ()
     end
   with Not_found -> ()
 
-(**
-(** [is_obstacle c] is whether there is an obstacle at [c] *)
-let is_obstacle c = let map = State.map () in let is_obs_entity = try
-   Map.get_entities map |> List.assoc c |> Entity.is_obstacle with
-   Not_found -> false in let is_obs_tile = Map.get_type map c =
-   Map.Obstacle in is_obs_entity || is_obs_tile *)
+(** (** [is_obstacle c] is whether there is an obstacle at [c] *) let
+    is_obstacle c = let map = State.map () in let is_obs_entity = try
+    Map.get_entities map |> List.assoc c |> Entity.is_obstacle with
+    Not_found -> false in let is_obs_tile = Map.get_type map c =
+    Map.Obstacle in is_obs_entity || is_obs_tile *)
 
 (* let orie_coords (o : Entity.orientation) = match o with | N -> (0, 1)
    | E -> (1, 0) | S -> (0, -1) | W -> (-1, 0) *)
@@ -272,25 +297,33 @@ let is_obstacle c = let map = State.map () in let is_obs_entity = try
    Entity.get_orientation e in let pos = Entity.get_position e in
    max_sight pos o |> obs_sight |> Entity.set_sight e *)
 
-let rec iter_entities f e_list = match e_list with | [] -> () | (_, e) :: t ->
-   f e; iter_entities f t
+let rec iter_entities f e_list =
+  match e_list with
+  | [] -> ()
+  | (_, e) :: t ->
+      f e;
+      iter_entities f t
 
-(** 
-let init_trainers () = State.map () |> Map.get_entities |> iter_entities set_entity_sight *)
+(** let init_trainers () = State.map () |> Map.get_entities |>
+    iter_entities set_entity_sight *)
 
 (** TODO: RUN THIS ON EVERY ENTITY DURING EVERY TICK *)
 let trainer_detect e =
   let player_pos = (State.player_x (), State.player_y ()) in
   match Entity.get_trigger e with
-  | Trainer t -> 
-    print_endline (Entity.get_state e |> string_of_int);
-    (match Entity.get_state e with 
-    | 0 -> if List.mem player_pos t.sight then ((Battle.start_trainer_battle t.party); Entity.set_state e 1; e.dialogue <- t.alt_dialogue)
-    | _ -> ();)
+  | Trainer t -> (
+      print_endline (Entity.get_state e |> string_of_int);
+      match Entity.get_state e with
+      | 0 ->
+          if List.mem player_pos t.sight then (
+            Battle.start_trainer_battle t.party;
+            Entity.set_state e 1;
+            e.dialogue <- t.alt_dialogue)
+      | _ -> ())
   | _ -> ()
 
-let trainer_action () =  State.map () |> Map.get_entities |> iter_entities trainer_detect
-
+let trainer_action () =
+  State.map () |> Map.get_entities |> iter_entities trainer_detect
 
 let save (save_p : Saves.save_preview) time_start =
   Saves.save_game
