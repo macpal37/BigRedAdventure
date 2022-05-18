@@ -21,17 +21,17 @@ let new_game () =
   Player.set_x 6 (player ());
   Player.set_y 6 (player ());
   !current_state.map <- Map.get_map "starting_scene.json";
-  (* let nuxel = Creature.create_creature "nuxel" 23 in *)
-  let chumpi = Creature.create_creature "chumpi" 10 in
-  let rafu = Creature.create_creature "rafu" 10 in
-  Creature.set_current_hp chumpi 20.;
+  let clefairy = Creature.create_creature "clefairy" 5 in
+  (* let chumpi = Creature.create_creature "chumpi" 10 in *)
+  (* let rafu = Creature.create_creature "rafu" 10 in *)
+  (* Creature.set_current_hp chumpi 20.; *)
   (* Player.add_creature nuxel !current_state.player; *)
-  Player.add_creature chumpi !current_state.player;
-  Player.add_creature rafu !current_state.player;
+  (* Player.add_creature chumpi !current_state.player; *)
+  Player.add_creature clefairy !current_state.player;
 
   (* Creature.set_nickname nuxel "Sonic"; *)
-  Creature.set_nickname chumpi "Lucky";
-  Creature.set_nickname rafu "Ya Boi";
+  (* Creature.set_nickname chumpi "Lucky"; *)
+  Creature.set_nickname clefairy "Ya Boi";
 
   let inventory = Player.inventory !current_state.player in
 

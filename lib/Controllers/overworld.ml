@@ -236,64 +236,61 @@ let attempt_action () =
         (new_x + State.player_x (), new_y + State.player_y ())
         (Map.get_entities (State.map ()))
     in
-    if Entity.is_obstacle e then
+    if Entity.is_obstacle e then begin
       Entity.interact e State.player (fun () ->
           Ui.add_first_background draw;
           Ui.add_first_gameplay
-            (Draw.draw_sprite DrawText.battle_bot 0 0))
+            (Draw.draw_sprite DrawText.battle_bot 0 0));
+
+      match e.e_type with
+      | Trainer t -> if e.state = 0 then Battle.start_trainer_battle t.party
+      | _ -> ()
+    end
   with Not_found -> ()
 
-(* let is_obstacle c = let map = State.map () in let is_obs_entity = try
+(**
+(** [is_obstacle c] is whether there is an obstacle at [c] *)
+let is_obstacle c = let map = State.map () in let is_obs_entity = try
    Map.get_entities map |> List.assoc c |> Entity.is_obstacle with
    Not_found -> false in let is_obs_tile = Map.get_type map c =
-   Map.Obstacle in is_obs_entity || is_obs_tile
+   Map.Obstacle in is_obs_entity || is_obs_tile *)
 
-   let orie_coords (o : Entity.orientation) = match o with | N -> (0, 1)
-   | E -> (1, 0) | S -> (0, -1) | W -> (-1, 0)
+(* let orie_coords (o : Entity.orientation) = match o with | N -> (0, 1)
+   | E -> (1, 0) | S -> (0, -1) | W -> (-1, 0) *)
 
-   let rec coord_list (x, y) (o : Entity.orientation) i = let ox, oy =
+(* let rec coord_list (x, y) (o : Entity.orientation) i = let ox, oy =
    orie_coords o in match i with | 0 -> [] | _ -> (x + (i * ox), y + (i
-   * oy)) :: coord_list (x, y) o (i - 1)
+   * oy)) :: coord_list (x, y) o (i - 1) *)
 
-   let max_sight c (o : Entity.orientation) = coord_list c o 4 |>
-   List.rev *)
+(* let max_sight c (o : Entity.orientation) = coord_list c o 4 |>
+   List.rev
 
-(* let rec obs_sight c_list = match c_list with | [] -> c_list | h :: t
-   -> if is_obstacle h then t else obs_sight t *)
+   let rec obs_sight c_list = match c_list with | [] -> c_list | h :: t
+   -> if is_obstacle h then t else obs_sight t
 
-(* let set_entity_sight (e : Entity.entity) = let o =
+   let set_entity_sight (e : Entity.entity) = let o =
    Entity.get_orientation e in let pos = Entity.get_position e in
    max_sight pos o |> obs_sight |> Entity.set_sight e *)
 
-(* let rec init_t e_list = match e_list with | [] -> () | (_, e) :: t ->
-   set_entity_sight e; init_t t *)
+let rec iter_entities f e_list = match e_list with | [] -> () | (_, e) :: t ->
+   f e; iter_entities f t
 
-(** TODO: RUN THIS METHOD WHEN THE MAP IS INITIALIZED IT WILL INITIALIZE
-    EACH TRAINERS LINE OF SIGHT *)
-(* let init_trainers () = State.map () |> Map.get_entities |> init_t *)
+(** 
+let init_trainers () = State.map () |> Map.get_entities |> iter_entities set_entity_sight *)
 
 (** TODO: RUN THIS ON EVERY ENTITY DURING EVERY TICK *)
+let trainer_detect e =
+  let player_pos = (State.player_x (), State.player_y ()) in
+  match Entity.get_trigger e with
+  | Trainer t -> 
+    print_endline (Entity.get_state e |> string_of_int);
+    (match Entity.get_state e with 
+    | 0 -> if List.mem player_pos t.sight then ((Battle.start_trainer_battle t.party); Entity.set_state e 1; e.dialogue <- t.alt_dialogue)
+    | _ -> ();)
+  | _ -> ()
 
-(* let coord_add (orie : Entity.orientation) = match orie with | N ->
-   (0, 1) | E -> (1, 0) | S -> (0, -1) | W -> (-1, 0)
+let trainer_action () =  State.map () |> Map.get_entities |> iter_entities trainer_detect
 
-   let rec incr_coord_list (x, y) dir num = let add_x, add_y = coord_add
-   dir in if num = 0 then [] else (x + add_x * num, y + add_y * num) ::
-   incr_coord_list (x, y) dir (num - 1)
-
-   let max_sight_coords pos dir = incr_coord_list pos dir 4 |> List.rev
-
-   let is_obstacle (x, y) = let e = List.assoc (x, y) (Map.get_entities
-   (State.map ())) in let is_e_obs = e.obstacle in let is_t_obs =
-   Map.get_type (State.map ()) (x, y) = Map.Obstacle in is_e_obs ||
-   is_t_obs
-
-   let rec sight_len clist = match clist with | [] -> 4 | h :: _ when
-   is_obstacle h -> List.length clist | _ :: t -> sight_len t
-
-   let sight_dist trainer = let pos = Entity.get_position trainer in let
-   dir = Entity.get_orientation trainer in max_sight_coords pos dir |>
-   sight_len *)
 
 let save (save_p : Saves.save_preview) time_start =
   Saves.save_game
@@ -309,6 +306,7 @@ let save (save_p : Saves.save_preview) time_start =
     ()
 
 let rec run_tick save_preview time_start =
+  trainer_action ();
   (match Input.get_ctrl_option (Input.poll_key_option ()) with
   | Some Up -> attempt_move 0 1 Player.N
   | Some Left -> attempt_move (-1) 0 Player.W

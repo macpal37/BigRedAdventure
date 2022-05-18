@@ -570,43 +570,53 @@ let handle_item item () =
       | Some _ -> false
       | None -> true)
   | Item.Ball ->
-      let ball_type = Item.get_id item mod 50 in
-      let modifier =
-        match ball_type with
-        | 1 -> 1.5
-        | 2 -> 2.0
-        | _ -> 1.0
-      in
-      let catch_results = Combat.capture ~!bs modifier in
-      Animation.animate_capture ~!ball_anim
-        (get_front_sprite ~!bs.enemy_battler.creature)
-        catch_results ball_type (refresh_battle 0);
-      if ~!bs.battle_status = Catch then begin
-        display_text_box
-          ("You captured "
-          ^ get_nickname ~!bs.enemy_battler.creature
-          ^ "!")
-          false
-          (fun () ->
-            refresh_battle 0 ();
-            Ui.add_last_gameplay
-              (draw_sprite
-                 (Spritesheet.get_sprite ~!ball_anim
-                    (((5 + 27) * (~!ball_anim.columns - 1)) + ball_type))
-                 540 396))
-          ();
-        ~!bs.enemy_battler.active <- false;
+      if ~!bs.battle_type = Wild then begin
+        let ball_type = Item.get_id item mod 50 in
+        let modifier =
+          match ball_type with
+          | 1 -> 1.5
+          | 2 -> 2.0
+          | _ -> 1.0
+        in
+        let catch_results = Combat.capture ~!bs modifier in
+        Animation.animate_capture ~!ball_anim
+          (get_front_sprite ~!bs.enemy_battler.creature)
+          catch_results ball_type (refresh_battle 0);
+        if ~!bs.battle_status = Catch then begin
+          display_text_box
+            ("You captured "
+            ^ get_nickname ~!bs.enemy_battler.creature
+            ^ "!")
+            false
+            (fun () ->
+              refresh_battle 0 ();
+              Ui.add_last_gameplay
+                (draw_sprite
+                   (Spritesheet.get_sprite ~!ball_anim
+                      (((5 + 27) * (~!ball_anim.columns - 1))
+                      + ball_type))
+                   540 396))
+            ();
+          ~!bs.enemy_battler.active <- false;
 
-        handle_exp ~!bs.player_battler.creature
-          ~!bs.enemy_battler.creature ();
+          handle_exp ~!bs.player_battler.creature
+            ~!bs.enemy_battler.creature ();
 
-        captured_creature *= ~!bs.enemy_battler.creature;
+          captured_creature *= ~!bs.enemy_battler.creature;
 
-        combat_mode := End_Battle
+          combat_mode := End_Battle
+        end
+        else
+          display_text_box "Aw... So close!" false (refresh_battle 2) ();
+        true
       end
-      else
-        display_text_box "Aw... So close!" false (refresh_battle 2) ();
-      true
+      else begin
+        display_text_box
+          "You can't capture trainer creature, what are you doing?"
+          false (refresh_battle 2) ();
+        combat_mode := Commands;
+        false
+      end
   | Item.Key -> false
 
 let switch_creatures a b player =
@@ -686,6 +696,10 @@ let selected_command () =
   else if cmd_pos.y = 0 then Party
   else Run
 
+let game_over () =
+  Animation.display_text_box "You faded to black..." false
+    (refresh_battle 1) ()
+
 let rec run_tick () =
   Input.sleep Draw.tick_rate ();
   let key =
@@ -729,17 +743,26 @@ let rec run_tick () =
         | Bag -> handle_inventory ()
         | Party -> handle_party ()
         | Run ->
-            Combat.run_away ~!bs;
-            combat_mode := End_Battle;
-            if ~!bs.battle_status = Combat.Flee then
-              Animation.display_text_box "You ran away!" false
-                (refresh_battle 2) ()
+            if ~!bs.battle_type = Wild then begin
+              Combat.run_away ~!bs;
+              combat_mode := End_Battle;
+              if ~!bs.battle_status = Combat.Flee then
+                Animation.display_text_box "You ran away!" false
+                  (refresh_battle 2) ()
+              else begin
+                combat_mode := Attack;
+                Animation.display_text_box "You could not run away!"
+                  false (refresh_battle 2) ();
+
+                handle_combat None
+              end
+            end
             else begin
               combat_mode := Attack;
-              Animation.display_text_box "You could not run away!" false
+              Animation.display_text_box
+                "You can't run away in trainer battles!" false
                 (refresh_battle 2) ();
-
-              handle_combat None
+              combat_mode := Commands
             end)
   | Moves ->
       if key = Action then begin
@@ -753,21 +776,28 @@ let rec run_tick () =
       if key = Back then combat_mode := Commands
   | Attack ->
       let b = ~!bs.player_battler.creature in
-      if get_status ~!bs.player_battler.creature = Fainted then begin
-        Party_menu.init FaintedSwitch ();
-        match !Combat.switching_pending with
-        | Some c ->
-            switch_creatures b c true;
-            Combat.switch_player ~!bs c (Player.party (State.player ()));
-            combat_mode := Commands;
-            Combat.switching_pending := None;
-            cmd_pos.x <- 0;
-            cmd_pos.y <- 0;
-            update_player p_hud_stats ~!bs.player_battler.creature
-        | None -> refresh_battle 2 ()
-      end;
-      if ~!bs.enemy_battler.active then combat_mode := Commands
-      else combat_mode := End_Battle
+      if get_status ~!bs.player_battler.creature = Fainted then
+        if ~!bs.battle_status = Loss then begin
+          combat_mode := Exit;
+          game_over ()
+        end
+        else begin
+          Party_menu.init FaintedSwitch ();
+          match !Combat.switching_pending with
+          | Some c ->
+              switch_creatures b c true;
+              Combat.switch_player ~!bs c
+                (Player.party (State.player ()));
+              combat_mode := Commands;
+              Combat.switching_pending := None;
+              cmd_pos.x <- 0;
+              cmd_pos.y <- 0;
+              update_player p_hud_stats ~!bs.player_battler.creature
+          | None -> refresh_battle 2 ()
+        end;
+      if ~!bs.battle_status <> Loss then
+        if ~!bs.battle_status <> Victory then combat_mode := Commands
+        else combat_mode := End_Battle
   | End_Battle ->
       Player.set_party ~!bs.player_creatures (State.player ());
       (match !captured_creature with
@@ -804,6 +834,28 @@ let start_wild_battle c =
   in
 
   bs *= Combat.wild_init (Player.party (State.player ())) [ c ];
+  update_player p_hud_stats ~!bs.player_battler.creature;
+  update_player e_hud_stats ~!bs.enemy_battler.creature;
+
+  Player.set_party
+    (battle_party [] (Player.party (State.player ())))
+    (State.player ());
+
+  (* ========= Draw the Battle ========= *)
+  run_tick ()
+
+let start_trainer_battle creatures =
+  combat_mode := Commands;
+  (* ========= Start the Battle ========= *)
+  (* ========= Filter out the fainted creatures ========= *)
+  let rec battle_party fainted = function
+    | [] -> fainted
+    | h :: t ->
+        if get_status h = Fainted then battle_party (h :: fainted) t
+        else (h :: t) @ fainted
+  in
+
+  bs *= Combat.trainer_init (Player.party (State.player ())) creatures;
   update_player p_hud_stats ~!bs.player_battler.creature;
   update_player e_hud_stats ~!bs.enemy_battler.creature;
 
