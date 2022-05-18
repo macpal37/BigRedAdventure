@@ -295,7 +295,20 @@ let attempt_action () =
    dir = Entity.get_orientation trainer in max_sight_coords pos dir |>
    sight_len *)
 
-let rec run_tick save_preview =
+let save (save_p : Saves.save_preview) time_start =
+  Saves.save_game
+    {
+      save_p with
+      money = Player.money (State.player ());
+      time = int_of_float (Unix.time ()) - time_start + save_p.time;
+    };
+  Animation.display_text_box "Saved the game!" false
+    (fun _ ->
+      draw ();
+      Draw.draw_sprite DrawText.battle_bot 0 0 ())
+    ()
+
+let rec run_tick save_preview time_start =
   (match Input.get_ctrl_option (Input.poll_key_option ()) with
   | Some Up -> attempt_move 0 1 Player.N
   | Some Left -> attempt_move (-1) 0 Player.W
@@ -303,11 +316,12 @@ let rec run_tick save_preview =
   | Some Right -> attempt_move 1 0 Player.E
   | Some Action -> attempt_action ()
   | Some Start -> Party_menu.init OverworldMode ()
-  | Some Back -> ()
+  | Some Save -> save save_preview time_start
   | Some k -> ignore k
   | None -> ());
   redraw ();
   Input.sleep Draw.tick_rate ();
-  run_tick save_preview
+  run_tick save_preview time_start
 
-let run_overworld save_preview = run_tick save_preview
+let run_overworld save_preview =
+  run_tick save_preview (int_of_float (Unix.time ()))
