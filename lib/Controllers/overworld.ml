@@ -274,7 +274,7 @@ let init_trainers () = State.map () |> Map.get_entities |> iter_entities set_ent
 let trainer_detect e =
   let player_pos = (State.player_x (), State.player_y ()) in
   match Entity.get_trigger e with
-  | Trainer t -> if List.mem player_pos t.sight then print_endline "Stuff is working"
+  | Trainer t -> if List.mem player_pos t.sight then print_endline "Player detected"
   | _ -> ()
 
 let trainer_action () =  State.map () |> Map.get_entities |> iter_entities trainer_detect
