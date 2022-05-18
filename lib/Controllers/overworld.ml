@@ -250,13 +250,16 @@ let rec init_t e_list =
   | [] -> ()
   | (_ , e) :: t -> set_entity_sight e; init_t t
 
+(** TODO: RUN THIS METHOD WHEN THE MAP IS INITIALIZED IT WILL INITIALIZE EACH TRAINERS LINE OF SIGHT *)  
 let init_trainers () = State.map () |> Map.get_entities |> init_t
 
+(** TODO: RUN THIS ON EVERY ENTITY DURING EVERY TICK *)
 let player_check e = 
+  let e_pos = Entity.get_position e in
   let player_pos = (State.player_x (), State.player_y ()) in
   match Entity.get_trigger e with
-  | Trainer t -> failwith "Implement trainer player detection and battle init"
-  | Door _ -> failwith "Implement teleport"
+  | Trainer t -> if List.mem player_pos t.sight then failwith "TODO: INIT TRAINER BATTLE"
+  | Door _ -> if e_pos = player_pos then failwith "TODO: DO DOOR TELEPORTAION"
   | _ -> ()
 
 
