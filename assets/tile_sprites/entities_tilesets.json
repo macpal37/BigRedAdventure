@@ -216,6 +216,30 @@
                  "type":"string",
                  "value":"South"
                 }]
+        }, 
+        {
+         "id":13,
+         "properties":[
+                {
+                 "name":"dialogue",
+                 "type":"string",
+                 "value":""
+                }, 
+                {
+                 "name":"entity_type",
+                 "type":"string",
+                 "value":"Win"
+                }, 
+                {
+                 "name":"is_obstacle",
+                 "type":"bool",
+                 "value":false
+                }, 
+                {
+                 "name":"orientation",
+                 "type":"string",
+                 "value":"South"
+                }]
         }],
  "tilewidth":16,
  "type":"tileset",

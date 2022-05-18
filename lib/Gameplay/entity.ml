@@ -54,6 +54,7 @@ type entity_interaction =
   | Heal
   | Merchant
   | Door of string * coord
+  | Win
   | NoEntity
 
 type entity = {
