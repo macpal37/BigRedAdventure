@@ -399,4 +399,10 @@ let rec run_tick save_preview time_start =
   run_tick save_preview time_start
 
 let run_overworld save_preview =
+  Animation.display_text_box
+    "Press X to interact. Press Z for back. Press C to open menu." false
+    (fun _ ->
+      draw ();
+      Draw.draw_sprite Draw_text.battle_bot 0 0 ())
+    ();
   run_tick save_preview (int_of_float (Unix.time ()))

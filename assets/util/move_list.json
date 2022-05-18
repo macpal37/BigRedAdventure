@@ -60,7 +60,9 @@
     "type": "Normal",
     "description": "The foe is given an intimidating leer with sharp eyes. The target's Defense stat is reduced.",
     "effect_ids": [
-      131
+      201,
+      203,
+      4
     ],
     "effect_chance": 100
   },
@@ -206,5 +208,57 @@
       17
     ],
     "effect_chance": 50
+  },
+  "Martha's Weather Machine": {
+    "power": 100,
+    "accuracy": 100,
+    "priority": 1,
+    "pp": 10,
+    "category": "Special",
+    "type": "Ice",
+    "description": "Global Warming.",
+    "effect_ids": [
+      33
+    ],
+    "effect_chance": 50
+  },
+  "Cornell Heat": {
+    "power": 100,
+    "accuracy": 100,
+    "priority": 1,
+    "pp": 10,
+    "category": "Special",
+    "type": "Fire",
+    "description": "No AC at Okenshield:(.",
+    "effect_ids": [
+      30
+    ],
+    "effect_chance": 50
+  },
+  "Touchdown": {
+    "power": 150,
+    "accuracy": 50,
+    "priority": 1,
+    "pp": 10,
+    "category": "Physical",
+    "type": "Steel",
+    "description": "Touchdown",
+    "effect_ids": [
+      50
+    ],
+    "effect_chance": 25
+  },
+  "Martha's Wrath": {
+    "power": 0,
+    "accuracy": 50,
+    "priority": 1,
+    "pp": 10,
+    "category": "Status",
+    "type": "Steel",
+    "description": "Touchdown",
+    "effect_ids": [
+      50
+    ],
+    "effect_chance": 25
   }
 }

@@ -73,9 +73,10 @@ val get_dialogue : entity -> string
 (** [get_dialogue n] returns the dialogue [n] gives *)
 
 val is_visible : entity -> bool
+(** [is_visible e] returns true if entity [e] is visible. *)
 
 val is_obstacle : entity -> bool
-(** [is_obstacle e] *)
+(** [is_obstacle e] returns true if entity [e] is an obstacle. *)
 
 (* val update : entity -> unit *)
 (** [update npc] increments [npc]'s movement loop by one step *)
@@ -84,19 +85,15 @@ val interact : entity -> (unit -> Player.player) -> Ui.draw_func -> unit
 (** [interact n] is what happens when the player interacts with n *)
 
 val get_state : entity -> int
+(** [get_state e] returns the state of the entity. *)
+
 val set_state : entity -> int -> unit
+(** [set_state e i] sets the state of entity [e] to [i]. This mutates
+    entity. *)
+
 val set_sight : entity -> coord list -> unit
+(** [set_sight e cl] sets the sight of entity [e] to [cl]. This mutates
+    entity. *)
+
 val has_changed : entity -> bool
-
-(* val go : entity -> orientation -> int -> unit (** [go e d n] moves n
-   tiles in direction [d]. In addition, this stops [n]'s movement loop
-   until it is restarted with [restart_loop n] *)
-
-   val turn : entity -> orientation -> unit (** [turn e d] turns [e] to
-   face direction [d] *)
-
-   val wait : entity -> int -> unit (** [wait e t] makes [e] wait for
-   [t] intervals *)
-
-   val is_static : entity -> bool (** [is_static e] returns whether e
-   has a preset movement loop or not *) *)
+(** [has_changed e ] returns true if entity has changed.*)

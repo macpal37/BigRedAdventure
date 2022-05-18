@@ -8,6 +8,8 @@ val set_creature : int -> unit
     the creatuer being currently displayed by the menu. *)
 
 val draw_status : int -> int -> Creature.status -> unit -> unit
+(** [draw_status x y s ()] draws the status [s] icon onto the screen at
+    [x,y]. *)
 
 val load_assets : unit -> unit
 (** [load_assets ()] loads all the assets for the menu. *)
