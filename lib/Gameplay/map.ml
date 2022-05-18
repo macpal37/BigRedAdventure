@@ -294,6 +294,10 @@ let generate_entities h tiles objs trainers =
             let sprite =
               match name with
               | "Martha" -> Spritesheet.get_sprite trainer_sprites 3
+              | "Clarkson" -> Spritesheet.get_sprite trainer_sprites 4
+              | "Pekora" -> Spritesheet.get_sprite trainer_sprites 5
+              | "Collin" -> Spritesheet.get_sprite trainer_sprites 6
+              | "Alan" -> Spritesheet.get_sprite trainer_sprites 7
               | _ ->
                   Spritesheet.get_sprite trainer_sprites
                     (Util.rand 3 ())
