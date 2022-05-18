@@ -7,6 +7,7 @@ type save_preview = {
   id : int;
 }
 
+let _ = if not (Sys.file_exists ".saves") then Unix.mkdir ".saves" 6
 let preview_filepath i = ".saves/" ^ string_of_int i ^ "preview.json"
 
 let write_preview s =

@@ -380,6 +380,17 @@ let generate_entities h tiles objs trainers =
               sprite;
               obstacle = false;
             } )
+      | Some "Win" ->
+          ( pos,
+            {
+              e_type = Win;
+              orie = S;
+              pos;
+              dialogue = "";
+              state = 0;
+              sprite = Spritesheet.get_sprite entity_sprites 7;
+              obstacle = false;
+            } )
       | _ ->
           ( (0, 0),
             {

@@ -4,11 +4,13 @@ let tile_size = 64
 let tile_resolution = 16
 let tile_dpi = tile_size / tile_resolution
 let player_spritesheet = Util.null ()
+let win_title = Util.null ()
 
 let load_assets _ =
   player_spritesheet
   *= Spritesheet.get_spritesheet
-       "assets/entity_sprites/player_sprite_overworld.png"
+       "assets/entity_sprites/player_sprite_overworld.png";
+  win_title *= Draw.get_sprite2 "win" GUI_Folder
 
 let player_sprite_n_walk i =
   match i with
@@ -198,6 +200,61 @@ let teleport map coord dx dy =
     Input.sleep Draw.tick_rate ()
   done
 
+let rec win_loop _ =
+  match Input.pop_key_option () with
+  | Some _ ->
+      for i = 0 to 80 do
+        Draw.set_draw_color 0 0 0;
+        Draw.fill_rect 0 0 Draw.width Draw.height;
+        Draw.draw_sprite_centered ~!win_title (Draw.width / 2) 640 ();
+        DrawText.draw_string_colored
+          ((Draw.width / 2) - 170)
+          300 DrawText.Medium "Press any key to exit" Draw.white
+          Draw.text_color ();
+        Draw.set_draw_color ~a:(min (i * 4) 255) 0 0 0;
+        Draw.fill_rect 0 0 Draw.width Draw.height;
+        Draw.present ()
+      done;
+      exit 0
+  | None ->
+      Draw.set_draw_color 0 0 0;
+      Draw.fill_rect 0 0 Draw.width Draw.height;
+      Draw.draw_sprite_centered ~!win_title (Draw.width / 2) 640 ();
+      DrawText.draw_string_colored
+        ((Draw.width / 2) - 170)
+        300 DrawText.Medium "Press any key to exit" Draw.white
+        Draw.text_color ();
+      Draw.present ();
+      Input.sleep Draw.tick_rate ();
+      win_loop ()
+
+let win_fade dx dy =
+  move_scroll dx dy;
+  Player.set_coord
+    (State.player_x () + dx)
+    (State.player_y () + dy)
+    (State.player ());
+  for i = 0 to 70 do
+    draw ();
+
+    Draw.set_draw_color ~a:(min (i * 4) 255) 0 0 0;
+    Draw.fill_rect 0 0 Draw.width Draw.height;
+    Draw.draw_sprite_centered ~!win_title (Draw.width / 2)
+      (int_of_float
+         (900.
+         -. 260.
+            *. Float.pow (float_of_int (max (i - 35) 45) /. 45.) 0.5))
+      ();
+    Draw.present ();
+    Input.sleep Draw.tick_rate ()
+  done;
+  Draw.set_draw_color 0 0 0;
+  Draw.fill_rect 0 0 Draw.width Draw.height;
+  Draw.draw_sprite_centered ~!win_title (Draw.width / 2) 640 ();
+  Draw.present ();
+  Input.sleep 1. ();
+  win_loop ()
+
 let attempt_move dx dy orie =
   if Player.get_orie (State.player ()) = orie then
     let new_x, new_y =
@@ -239,6 +296,7 @@ let attempt_move dx dy orie =
     | Some e -> (
         match e.e_type with
         | Door (map, coord) -> teleport map coord dx dy
+        | Win -> win_fade dx dy
         | _ -> process_move ())
     | None -> process_move ()
   else Player.set_orie orie (State.player ())
