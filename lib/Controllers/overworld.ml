@@ -339,7 +339,6 @@ let trainer_detect e =
   let player_pos = (State.player_x (), State.player_y ()) in
   match Entity.get_trigger e with
   | Trainer t -> (
-      print_endline (Entity.get_state e |> string_of_int);
       match Entity.get_state e with
       | 0 ->
           if List.mem player_pos t.sight then (
@@ -400,7 +399,9 @@ let rec run_tick save_preview time_start =
 
 let run_overworld save_preview =
   Animation.display_text_box
-    "Press X to interact. Press Z for back. Press C to open menu." false
+    "Press X to interact. Press Z for back. Press C to open menu. \
+     Press S to save!"
+    false
     (fun _ ->
       draw ();
       Draw.draw_sprite Draw_text.battle_bot 0 0 ())

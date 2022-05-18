@@ -236,7 +236,7 @@ let use_item creature item =
     | 12 -> Creature.remove_status creature Paralyze
     | 13 -> Creature.remove_status creature (Sleep (ref 1))
     | 14 -> Creature.apply_status creature Healthy
-    | _ -> print_endline "NICE ITEM BRO :)");
+    | _ -> ());
     current_item := None
   with NoEffect -> small_text := "It has no effect"
 

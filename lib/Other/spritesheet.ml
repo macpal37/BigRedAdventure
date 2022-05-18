@@ -48,9 +48,6 @@ let little_sprite (image : Image.image) x y w h =
 
 let init_spritesheet filepath sprite_width sprite_height dpi =
   let image = ImageLib_unix.openfile filepath in
-
-  print_endline ("WIDTH :" ^ string_of_int image.width);
-  print_endline ("HEIGHT :" ^ string_of_int image.height);
   let w = image.width / sprite_width in
   let h = image.height / sprite_height in
   let sprites = Array.make (w * h) Draw.empty_sprite in
