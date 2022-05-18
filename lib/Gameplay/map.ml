@@ -174,29 +174,30 @@ let build_tile_matrix id_m tilesets =
     match tilesets with
     | (_, j) :: t ->
         let s = j |> member "firstgid" |> to_int in
-        print_int "ID: " id;
-        if id >= s then j else find_tileset id t
-    | [] -> failwith "id not within domain"
+        if id >= s then Some j else find_tileset id t
+    | [] -> None
   in
 
   matrix_map
     (fun t ->
-      let json = find_tileset t tilesets_rev in
-      (* print_endline "Worked YAY!"; *)
-      let offset, l = json_tileset json in
-      let tile_f = Util.list_index_fun l in
-      let ot = t - offset in
-      let spritesheet = json_spritesheet json in
-      let sprite = Spritesheet.get_sprite spritesheet ot in
+      match find_tileset t tilesets_rev with
+      | Some json -> (
+          (* print_endline "Worked YAY!"; *)
+          let offset, l = json_tileset json in
+          let tile_f = Util.list_index_fun l in
+          let ot = t - offset in
+          let spritesheet = json_spritesheet json in
+          let sprite = Spritesheet.get_sprite spritesheet ot in
 
-      (* Util.print_int "OT: " ot; *)
+          (* Util.print_int "OT: " ot; *)
 
-      (* Util.print_int "T: " t; *)
-      match tile_f ot with
-      | "Grass" -> { sprite; ttype = Grass [] }
-      | "Path" -> { sprite; ttype = Path }
-      | "Obstacle" -> { sprite; ttype = Obstacle }
-      | _ -> raise (Malformed_Json "Impossible tile type"))
+          (* Util.print_int "T: " t; *)
+          match tile_f ot with
+          | "Grass" -> { sprite; ttype = Grass [] }
+          | "Path" -> { sprite; ttype = Path }
+          | "Obstacle" -> { sprite; ttype = Obstacle }
+          | _ -> raise (Malformed_Json "Impossible tile type"))
+      | None -> { sprite = Draw.empty_sprite; ttype = Obstacle })
     id_m
 
 let json_encounters json =
