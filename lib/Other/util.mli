@@ -9,21 +9,37 @@ exception Out_of_Index
     being accessed. *)
 
 exception Segfault
+(** Raised when trying to dereference a null pointer. *)
 
 type 'a pointer = 'a option ref
+(** [pointer] A wrapper for an option ref and behaves similar to a null
+    pointer in oop language. *)
 
 val null : unit -> 'a pointer
+(** [null ()] returns a fresh null. *)
+
 val malloc : 'a -> 'a pointer
+(** [malloc x ()] creates a pointer with the value [x] *)
+
 val deref : 'a pointer -> 'a
+(** [deref p ] dereferences a pointer [p] to get its vale. raises
+    [Segfault] if the [p] is null.*)
+
 val assign : 'a pointer -> 'a -> unit
+(** [assign p x ] assigns the value [x] onto pointer [p], modifying it.*)
+
 val ( ~! ) : 'a pointer -> 'a
+(** [  ~!p ] Infix for [deref p].*)
+
 val ( *= ) : 'a pointer -> 'a -> unit
+(** [  p *= x ] Infix for [assign p x ].*)
 
 exception Found_None
+(** Raised when forcing a vue out of a [None].*)
 
 val ( !! ) : 'a option -> 'a
-(** Forces the value of an option to be returned. Raises [Found_None] if
-    the option is None*)
+(** [!!p] Forces the value of an option to be returned. Raises
+    [Found_None] if the option is None*)
 
 type point = {
   mutable x : int;
@@ -45,7 +61,12 @@ val boundf : float -> float -> float -> float
 (** [bound number min max] same as [bound] but for float values.*)
 
 val rand : int -> unit -> int
+(** [rand i ()] Self inits a random seed nd then generates a random int
+    from 0-[i].*)
+
 val randf : float -> unit -> float
+(** [rand f ()] Self inits a random seed nd then generates a random
+    float from 0-[f].*)
 
 val string_of_intf : float -> string
 (** [string_of_intf] Returns a string of the float as if itw as an int.*)

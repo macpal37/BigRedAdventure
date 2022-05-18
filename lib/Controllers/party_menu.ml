@@ -2,7 +2,7 @@ open Draw
 open Creature
 open Animation
 open Util
-open DrawText
+open Draw_text
 open Creature_menu
 open Input
 
@@ -26,7 +26,7 @@ let load_assets _ =
 
   move_menu *= Draw.get_sprite2 "level_up" GUI_Folder
 
-type combat_mode =
+type init_mode =
   | OverworldMode
   | BattleSwitch
   | InventoryMode
@@ -294,7 +294,7 @@ let handle_item item =
 
 let handle_inventory () =
   Inventory_menu.init ();
-  match !Inventory_menu.selected_item with
+  match !(Inventory_menu.get_item_selected ()) with
   | Some item -> handle_item item
   | None -> print_endline "None"
 

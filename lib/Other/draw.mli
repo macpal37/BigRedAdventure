@@ -32,8 +32,13 @@ val empty_sprite : sprite
 (** Represents a blank sprite that draws nothing *)
 
 val white : color
+(** Basic color: white *)
+
 val red : color
+(** Basic color: red *)
+
 val blue : color
+(** Basic color: blue *)
 
 val text_color : color
 (** Represents the color of the text.*)
@@ -156,8 +161,12 @@ val get_dpi : sprite -> int
 
 val create_sprite :
   int array -> Graphics.color list -> int -> int -> int -> sprite
+(** [create_sprite pixels palette w h dpi ] creates a sprite from the
+    [pixels], [pallete], width [w], height [h], and [dpi] provided. *)
 
 val change_color : sprite -> int -> int -> unit
+(** [change_color s c i] changes the [i]th color of the sprite [s]'s
+    color palette to [c].*)
 
 val load_sprites : unit -> unit
 (** Load the sprites into memory*)

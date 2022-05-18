@@ -491,16 +491,6 @@ let encounter_creature e =
   | Some { name; level } -> Some (Creature.create_creature name level)
 
 let get_name (m : t) = m.name
-
-let string_of_encounters e =
-  List.fold_left
-    (fun a (b : encounter) ->
-      let low, high = b.levels in
-      a ^ " ; {name = " ^ b.name ^ "; rate = " ^ string_of_float b.rate
-      ^ "; levels = " ^ string_of_int low ^ "-" ^ string_of_int high
-      ^ "}")
-    "" e
-
 let loaded_maps = Util.null ()
 
 let load_maps _ =

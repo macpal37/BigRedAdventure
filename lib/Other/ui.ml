@@ -22,12 +22,6 @@ let clear_all () =
   !renderer.gameplay <- [];
   !renderer.foreground <- []
 
-let clear_ui layer =
-  match layer with
-  | Background -> !renderer.background <- []
-  | Gameplay -> !renderer.gameplay <- []
-  | Foreground -> !renderer.foreground <- []
-
 let add_first_foreground draw_func =
   !renderer.foreground <- draw_func :: !renderer.foreground
 

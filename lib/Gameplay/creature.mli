@@ -13,8 +13,13 @@ type creature
 (** {1 Concrete types}*)
 
 exception NoEffect
+(** [NoEffect] raised when an an action on a creature has no effect *)
+
 exception MalformedJson
+(** [MalformedJson] raised when the creature json is malformed *)
+
 exception NoCreature
+(** [NoCreature] raised when no creature of the provided name exists. *)
 
 type stats = {
   mutable max_hp : float;
@@ -164,12 +169,28 @@ val get_stats : creature -> stats
     [defender] by the [attack_type].*)
 
 val get_stat : creature -> stat -> float
+(** [get_stat c s] returns the stat value of the respective stat [s]
+    from creature [c]. *)
+
 val get_ivs : creature -> stats
+(**[get_ivs c] returns the ivs of creature [c]. *)
+
 val get_evs : creature -> stats
+(**[get_evs c] returns the evs of creature [c]. *)
+
 val get_ev_gain : creature -> stat * float
+(**[get_evs c] returns the ev_gain of creature [c]. *)
+
 val add_ev_gain : creature -> stat * float -> unit
+(**[add_ev_gain c ev_gain] adds the respective [(ev_state,ev_amount)]
+   from [ev_gain] gain to creature [c] mutating it. *)
+
 val get_exp_gain : creature -> float
+(**[get_exp_gain c] returns the amount of exp earned from defeating
+   creature [c]. *)
+
 val add_hp : creature -> float -> unit
+(**[add_hp c hp] adds [hp] amount of hp to creature [c] and mutates it. *)
 
 val get_type_mod : etype -> creature -> float
 (** [get_type_mod attack_type defender] returns the damage modification

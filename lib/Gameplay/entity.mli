@@ -1,7 +1,6 @@
-open Draw
-open Creature
+(** Module that reprsent all data for entities. *)
 
-(** abstract data type representing an entity *)
+open Creature
 
 type coord = int * int
 (** type representing the coordinate of a tile on a map. (0, 0) is the
@@ -13,12 +12,17 @@ type item_props = {
   mutable disappear : bool;
 }
 
+(* [item_props]: record that stores all the properties of an item
+   entity.*)
+
 type trainer_props = {
   name : string;
   alt_dialogue : string;
   party : creature list;
   mutable sight : coord list;
 }
+(* [trainer_props]: record that stores all the properties of a trainer
+   entity.*)
 
 type entity_interaction =
   | Trainer of trainer_props (* trainer_props *)
@@ -30,6 +34,8 @@ type entity_interaction =
   | Door of string * coord
   | Win
   | NoEntity
+(* [entity_interaction]: variant that describes all interactable
+   code. *)
 
 type orientation =
   | N
@@ -42,7 +48,7 @@ type entity = {
   mutable orie : orientation;
   mutable pos : coord;
   mutable dialogue : string;
-  sprite : sprite;
+  sprite : Draw.sprite;
   mutable state : int;
   obstacle : bool;
 }
@@ -60,7 +66,7 @@ val get_orientation : entity -> orientation
 val get_position : entity -> coord
 (** [get_position n] returns [n]'s current position *)
 
-val get_sprite : entity -> sprite
+val get_sprite : entity -> Draw.sprite
 (** [get_sprite n] returns [n]'s current sprite representation *)
 
 val get_dialogue : entity -> string

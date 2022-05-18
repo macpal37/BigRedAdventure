@@ -45,7 +45,7 @@ let clear_labels _ =
 let draw ticks =
   Draw.set_draw_color 10 10 10;
   Draw.fill_rect 0 0 Draw.width Draw.height;
-  DrawText.draw_string_colored 75 75 DrawText.Medium
+  Draw_text.draw_string_colored 75 75 Draw_text.Medium
     ("Loading"
     ^
     match ticks / 45 mod 4 with

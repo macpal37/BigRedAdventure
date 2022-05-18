@@ -207,9 +207,9 @@ let rec win_loop _ =
         Draw.set_draw_color 0 0 0;
         Draw.fill_rect 0 0 Draw.width Draw.height;
         Draw.draw_sprite_centered ~!win_title (Draw.width / 2) 640 ();
-        DrawText.draw_string_colored
+        Draw_text.draw_string_colored
           ((Draw.width / 2) - 170)
-          300 DrawText.Medium "Press any key to exit" Draw.white
+          300 Draw_text.Medium "Press any key to exit" Draw.white
           Draw.text_color ();
         Draw.set_draw_color ~a:(min (i * 4) 255) 0 0 0;
         Draw.fill_rect 0 0 Draw.width Draw.height;
@@ -220,9 +220,9 @@ let rec win_loop _ =
       Draw.set_draw_color 0 0 0;
       Draw.fill_rect 0 0 Draw.width Draw.height;
       Draw.draw_sprite_centered ~!win_title (Draw.width / 2) 640 ();
-      DrawText.draw_string_colored
+      Draw_text.draw_string_colored
         ((Draw.width / 2) - 170)
-        300 DrawText.Medium "Press any key to exit" Draw.white
+        300 Draw_text.Medium "Press any key to exit" Draw.white
         Draw.text_color ();
       Draw.present ();
       Input.sleep Draw.tick_rate ();
@@ -319,41 +319,14 @@ let attempt_action () =
         (new_x + State.player_x (), new_y + State.player_y ())
         (Map.get_entities (State.map ()))
     in
-    if Entity.is_obstacle e then begin
+    if Entity.is_obstacle e then
       Entity.interact e State.player (fun () ->
           Ui.add_first_background draw;
           Ui.add_first_gameplay
-            (Draw.draw_sprite DrawText.battle_bot 0 0));
-
-      match e.e_type with
-      | Trainer t ->
-          if e.state = 0 then Battle.start_trainer_battle t.party
-      | _ -> ()
-    end
+            (Draw.draw_sprite Draw_text.battle_bot 0 0))
+    (* match e.e_type with | Trainer t -> if e.state = 0 then
+       Battle.start_trainer_battle t.party | _ -> () *)
   with Not_found -> ()
-
-(** (** [is_obstacle c] is whether there is an obstacle at [c] *) let
-    is_obstacle c = let map = State.map () in let is_obs_entity = try
-    Map.get_entities map |> List.assoc c |> Entity.is_obstacle with
-    Not_found -> false in let is_obs_tile = Map.get_type map c =
-    Map.Obstacle in is_obs_entity || is_obs_tile *)
-
-(* let orie_coords (o : Entity.orientation) = match o with | N -> (0, 1)
-   | E -> (1, 0) | S -> (0, -1) | W -> (-1, 0) *)
-
-(* let rec coord_list (x, y) (o : Entity.orientation) i = let ox, oy =
-   orie_coords o in match i with | 0 -> [] | _ -> (x + (i * ox), y + (i
-   * oy)) :: coord_list (x, y) o (i - 1) *)
-
-(* let max_sight c (o : Entity.orientation) = coord_list c o 4 |>
-   List.rev
-
-   let rec obs_sight c_list = match c_list with | [] -> c_list | h :: t
-   -> if is_obstacle h then t else obs_sight t
-
-   let set_entity_sight (e : Entity.entity) = let o =
-   Entity.get_orientation e in let pos = Entity.get_position e in
-   max_sight pos o |> obs_sight |> Entity.set_sight e *)
 
 let rec iter_entities f e_list =
   match e_list with
@@ -362,10 +335,6 @@ let rec iter_entities f e_list =
       f e;
       iter_entities f t
 
-(** let init_trainers () = State.map () |> Map.get_entities |>
-    iter_entities set_entity_sight *)
-
-(** TODO: RUN THIS ON EVERY ENTITY DURING EVERY TICK *)
 let trainer_detect e =
   let player_pos = (State.player_x (), State.player_y ()) in
   match Entity.get_trigger e with
@@ -376,18 +345,18 @@ let trainer_detect e =
           if List.mem player_pos t.sight then (
             draw ();
             let x, y = e.pos in
-            DrawText.draw_string_colored
+            Draw_text.draw_string_colored
               (((x - State.player_x ()) * tile_size)
               + (Draw.width / 2) - 12)
               (((y - State.player_y ()) * tile_size)
               + (Draw.height / 2) + 40)
-              DrawText.Huge "!" 0 0 ();
-            DrawText.draw_string_colored
+              Draw_text.Huge "!" 0 0 ();
+            Draw_text.draw_string_colored
               (((x - State.player_x ()) * tile_size)
               + (Draw.width / 2) - 10)
               (((y - State.player_y ()) * tile_size)
               + (Draw.height / 2) + 38)
-              DrawText.Huge "!" Draw.white 0 ();
+              Draw_text.Huge "!" Draw.white 0 ();
             Draw.present ();
             Input.sleep 0.8 ();
             encounter_anim ();
@@ -410,7 +379,7 @@ let save (save_p : Saves.save_preview) time_start =
   Animation.display_text_box "Saved the game!" false
     (fun _ ->
       draw ();
-      Draw.draw_sprite DrawText.battle_bot 0 0 ())
+      Draw.draw_sprite Draw_text.battle_bot 0 0 ())
     ()
 
 let rec run_tick save_preview time_start =

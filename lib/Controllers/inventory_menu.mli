@@ -1,6 +1,12 @@
-val selected_item : Item.item option ref
-val display_queue : (Item.item * int) list ref
-val get_items_from_bag : Inventory.bag -> unit
+(** Module for the menu that is displayed during events such as
+    capturing a creature or evolving one.*)
+
 val init : unit -> unit
-val run_tick : unit -> unit
+(** [init ()] initaliazes the menu for the inventory. *)
+
+val get_item_selected : unit -> Item.item Util.pointer
+(** [get_selected_item ()] returns the selected item from invetnroy to
+    be used elsewhere.*)
+
 val load_assets : unit -> unit
+(** [load_assets ()] loads all the assets for the menu. *)

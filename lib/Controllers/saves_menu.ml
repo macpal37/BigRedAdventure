@@ -29,17 +29,19 @@ let convert_hours_minutes secs =
 let write_preview (p : Saves.save_preview option) =
   match p with
   | Some p ->
-      DrawText.draw_string_colored 75 (Draw.height - 85) DrawText.Small
-        p.name Draw.white Draw.text_color ();
-      DrawText.draw_string_colored 355 (Draw.height - 85) DrawText.Small
+      Draw_text.draw_string_colored 75 (Draw.height - 85)
+        Draw_text.Small p.name Draw.white Draw.text_color ();
+      Draw_text.draw_string_colored 355 (Draw.height - 85)
+        Draw_text.Small
         ("$" ^ string_of_int p.money)
         Draw.white Draw.text_color ();
-      DrawText.draw_string_colored 605 (Draw.height - 85) DrawText.Small
+      Draw_text.draw_string_colored 605 (Draw.height - 85)
+        Draw_text.Small
         (convert_hours_minutes p.time)
         Draw.white Draw.text_color ()
   | None ->
-      DrawText.draw_string_colored 75 (Draw.height - 85) DrawText.Small
-        "Empty" Draw.white Draw.text_color ()
+      Draw_text.draw_string_colored 75 (Draw.height - 85)
+        Draw_text.Small "Empty" Draw.white Draw.text_color ()
 
 let draw_all_preview_but (saves : int -> Saves.save_preview option) not
     =
@@ -63,19 +65,20 @@ let draw_all_preview_but (saves : int -> Saves.save_preview option) not
 let rec confirm_overwrite saves mode =
   draw_all_preview_but saves position.y;
   Draw.moveto 0 ((-240 * position.y) - 2);
-  DrawText.draw_string_colored 75 (Draw.height - 85) DrawText.Small
+  Draw_text.draw_string_colored 75 (Draw.height - 85) Draw_text.Small
     (match mode with
     | New -> "Are you sure you want to overwrite this save?"
     | Load -> "Do you want to start a new game?")
     Draw.white Draw.text_color ();
 
-  DrawText.draw_string_colored 95 (Draw.height - 119) DrawText.Small
+  Draw_text.draw_string_colored 95 (Draw.height - 119) Draw_text.Small
     "Yes" Draw.white Draw.text_color ();
-  DrawText.draw_string_colored 175 (Draw.height - 119) DrawText.Small
+  Draw_text.draw_string_colored 175 (Draw.height - 119) Draw_text.Small
     "No" Draw.white Draw.text_color ();
-  DrawText.draw_string_colored
+  Draw_text.draw_string_colored
     (75 + (position.x * 80))
-    (Draw.height - 115) DrawText.Small ">" Draw.white Draw.text_color ();
+    (Draw.height - 115) Draw_text.Small ">" Draw.white Draw.text_color
+    ();
 
   Draw.moveto 0 0;
   Draw.present ();
@@ -91,9 +94,9 @@ let rec confirm_overwrite saves mode =
   | _ -> confirm_overwrite saves mode
 
 let draw_request_name name ticks =
-  DrawText.draw_string_colored 75 (Draw.height - 85) DrawText.Small
+  Draw_text.draw_string_colored 75 (Draw.height - 85) Draw_text.Small
     "Name your character: " Draw.white Draw.text_color ();
-  DrawText.draw_string_colored 75 (Draw.height - 115) DrawText.Small
+  Draw_text.draw_string_colored 75 (Draw.height - 115) Draw_text.Small
     (name ^ if ticks / 20 mod 2 = 0 then "_" else "")
     Draw.white Draw.text_color ()
 

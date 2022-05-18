@@ -1,8 +1,12 @@
-exception Out_of_Bounds
-(** Raised when accessing a coordinate on the map that is not in range *)
+(** Module that represents a map. It stores all the tiles in an array
+    and all entities in a list. All data for maps are obtaiend from
+    parsing jsons that store all the data in a map. *)
 
 exception Malformed_Json of string
 (** Raised when the inputted Yojson.Basic.t is not valid *)
+
+exception Out_of_Bounds
+(** Raised when accessing a coordinate on the map that is not in range *)
 
 type t
 (** abstract data type representing a game map *)
@@ -31,8 +35,13 @@ val get_dim : t -> int * int
     tiles in the width and height of m *)
 
 val get_width : t -> int
+(** [get_width m] returns the width of the map*)
+
 val get_height : t -> int
+(** [get_height m] returns the height of the map*)
+
 val get_entities : t -> (coord * Entity.entity) list
+(** [get_entities m] returns all the entities*)
 
 val get_type : t -> coord -> tile_type
 (** [get_type m c] is the type ([Path, Grass, Obstacle]) of the tile at
@@ -50,8 +59,6 @@ val encounter_creature : encounters -> Creature.creature option
 
 val get_name : t -> string
 (** [get_name t] is the name of [t]*)
-
-val string_of_encounters : encounters -> string
 
 val load_maps : unit -> unit
 (** Load maps into memory*)

@@ -1,24 +1,26 @@
-open Draw
-open Spritesheet
-
-type font = {
-  font_sprite : sprite_sheet;
-  hspacing : int;
-  vspacing : int;
-}
+(** Module for drawing text on screen using custom fonts.. *)
 
 type font_size =
   | Small
   | Medium
   | Large
-  | Huge
+  | Huge  (** [font_size] varaint for text font sizes. *)
 
 val box_cap : int
-val text_display : string ref
-val battle_bot : sprite
-val set_text_display : string -> unit
+(** [box_cap] max number of characters that can be displayed on the text
+    box. *)
 
-val clear_text : sprite -> unit -> unit
+val get_text_display : string ref
+(** [text_display] text_displayed on the text_box. *)
+
+val battle_bot : Draw.sprite
+(** [battle_bot] general graphic sprite for text_boxes. *)
+
+val set_text_display : string -> unit
+(** [set_text_display text] sets the current text displayed on the text
+    box to [text]. *)
+
+val clear_text : Draw.sprite -> unit -> unit
 (** [clear_text clear_sprite] Clears the text with the givn sprite. *)
 
 val get_text_transcript : string -> int -> string list

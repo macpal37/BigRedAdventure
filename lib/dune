@@ -30,9 +30,8 @@
   animation
   spritesheet
   draw
+  draw_text
   author
   ui
   util
-  input
-  loopq
-  drawText))
+  input))
