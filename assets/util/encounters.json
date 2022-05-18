@@ -52,6 +52,59 @@
       ]
     ]
   },
+  "village": {
+    "encounters": [
+      [
+        {
+          "creatures": "nuxel",
+          "level_range": "4-5",
+          "encounter_rate": 0.25
+        },
+        {
+          "creatures": "rafu",
+          "level_range": "3-4",
+          "encounter_rate": 0.25
+        },
+        {
+          "creatures": "fispie",
+          "level_range": "3-4",
+          "encounter_rate": 0.25
+        },
+        {
+          "creatures": "chumpi",
+          "level_range": "5-6",
+          "encounter_rate": 0.10
+        },
+        {
+          "creatures": "stregoom",
+          "level_range": "5-6",
+          "encounter_rate": 0.14
+        },
+        {
+          "creatures": "psyduck",
+          "level_range": "1-100",
+          "encounter_rate": 0.01
+        }
+      ],
+      [
+        {
+          "creatures": "clefairy",
+          "level_range": "3-5",
+          "encounter_rate": 0.33
+        },
+        {
+          "creatures": "chumpi",
+          "level_range": "5-6",
+          "encounter_rate": 0.34
+        },
+        {
+          "creatures": "stregoom",
+          "level_range": "3-5",
+          "encounter_rate": 0.33
+        }
+      ]
+    ]
+  },
   "route2": {
     "encounters": [
       [
@@ -219,6 +272,214 @@
           "creatures": "stregoom",
           "level_range": "3-7",
           "encounter_rate": 0.57
+        }
+      ]
+    ]
+  },
+  "path_to_dungeon": {
+    "encounters": [
+      [
+        {
+          "creatures": "nuxel",
+          "level_range": "4-5",
+          "encounter_rate": 0.25
+        },
+        {
+          "creatures": "rafu",
+          "level_range": "3-4",
+          "encounter_rate": 0.25
+        },
+        {
+          "creatures": "fispie",
+          "level_range": "3-4",
+          "encounter_rate": 0.25
+        },
+        {
+          "creatures": "chumpi",
+          "level_range": "5-6",
+          "encounter_rate": 0.10
+        },
+        {
+          "creatures": "stregoom",
+          "level_range": "5-6",
+          "encounter_rate": 0.15
+        }
+      ],
+      [
+        {
+          "creatures": "clefairy",
+          "level_range": "3-4",
+          "encounter_rate": 0.33
+        },
+        {
+          "creatures": "chumpi",
+          "level_range": "2-4",
+          "encounter_rate": 0.10
+        },
+        {
+          "creatures": "stregoom",
+          "level_range": "3-7",
+          "encounter_rate": 0.57
+        }
+      ],
+      [
+        {
+          "creatures": "clefairy",
+          "level_range": "3-4",
+          "encounter_rate": 0.33
+        },
+        {
+          "creatures": "chumpi",
+          "level_range": "2-4",
+          "encounter_rate": 0.10
+        },
+        {
+          "creatures": "stregoom",
+          "level_range": "3-7",
+          "encounter_rate": 0.57
+        }
+      ],
+      [
+        {
+          "creatures": "clefairy",
+          "level_range": "3-4",
+          "encounter_rate": 0.33
+        },
+        {
+          "creatures": "chumpi",
+          "level_range": "2-4",
+          "encounter_rate": 0.10
+        },
+        {
+          "creatures": "stregoom",
+          "level_range": "3-7",
+          "encounter_rate": 0.57
+        }
+      ]
+    ]
+  },
+  "dungeon_out": {
+    "encounters": [
+      [
+        {
+          "creatures": "nuxel",
+          "level_range": "4-5",
+          "encounter_rate": 0.25
+        },
+        {
+          "creatures": "rafu",
+          "level_range": "3-4",
+          "encounter_rate": 0.25
+        },
+        {
+          "creatures": "fispie",
+          "level_range": "3-4",
+          "encounter_rate": 0.25
+        },
+        {
+          "creatures": "chumpi",
+          "level_range": "5-6",
+          "encounter_rate": 0.10
+        },
+        {
+          "creatures": "stregoom",
+          "level_range": "5-6",
+          "encounter_rate": 0.15
+        }
+      ],
+      [
+        {
+          "creatures": "clefairy",
+          "level_range": "3-4",
+          "encounter_rate": 0.33
+        },
+        {
+          "creatures": "chumpi",
+          "level_range": "2-4",
+          "encounter_rate": 0.10
+        },
+        {
+          "creatures": "stregoom",
+          "level_range": "3-7",
+          "encounter_rate": 0.57
+        }
+      ],
+      [
+        {
+          "creatures": "clefairy",
+          "level_range": "3-4",
+          "encounter_rate": 0.33
+        },
+        {
+          "creatures": "chumpi",
+          "level_range": "2-4",
+          "encounter_rate": 0.10
+        },
+        {
+          "creatures": "stregoom",
+          "level_range": "3-7",
+          "encounter_rate": 0.57
+        }
+      ],
+      [
+        {
+          "creatures": "clefairy",
+          "level_range": "3-4",
+          "encounter_rate": 0.33
+        },
+        {
+          "creatures": "chumpi",
+          "level_range": "2-4",
+          "encounter_rate": 0.10
+        },
+        {
+          "creatures": "stregoom",
+          "level_range": "3-7",
+          "encounter_rate": 0.57
+        }
+      ]
+    ]
+  },
+  "left_house": {
+    "encounters": [
+      [
+        {
+          "creatures": "chumpi",
+          "level_range": "1-100",
+          "encounter_rate": 1.0
+        }
+      ]
+    ]
+  },
+  "mid_house": {
+    "encounters": [
+      [
+        {
+          "creatures": "chumpi",
+          "level_range": "1-100",
+          "encounter_rate": 1.0
+        }
+      ]
+    ]
+  },
+  "right_house": {
+    "encounters": [
+      [
+        {
+          "creatures": "chumpi",
+          "level_range": "1-100",
+          "encounter_rate": 1.0
+        }
+      ]
+    ]
+  },
+  "dungeon": {
+    "encounters": [
+      [
+        {
+          "creatures": "chumpi",
+          "level_range": "1-100",
+          "encounter_rate": 1.0
         }
       ]
     ]

@@ -167,20 +167,22 @@ let json_tileset json =
 
 let build_tile_matrix id_m tilesets =
   let tilesets_rev = List.rev tilesets in
-  (* Util.print_int "Tile Set LENGTH: " (List.length l); *)
+  Util.print_int "Tile Set LENGTH: " (List.length tilesets);
   let rec find_tileset id tilesets =
     (* precondition: tilesets is in order of highest to lowest
        firstgid*)
     match tilesets with
     | (_, j) :: t ->
-        if id >= (j |> member "firstgid" |> to_int) then j
-        else find_tileset id t
+        let s = j |> member "firstgid" |> to_int in
+        print_int "ID: " id;
+        if id >= s then j else find_tileset id t
     | [] -> failwith "id not within domain"
   in
 
   matrix_map
     (fun t ->
       let json = find_tileset t tilesets_rev in
+      (* print_endline "Worked YAY!"; *)
       let offset, l = json_tileset json in
       let tile_f = Util.list_index_fun l in
       let ot = t - offset in
@@ -353,7 +355,7 @@ let generate_entities h tiles objs trainers =
           obstacle = true;
         } )
     with Yojson.Basic.Util.Type_error (_, _) -> (
-      print_endline ("gid" ^ string_of_int gid);
+      (* print_endline ("gid" ^ string_of_int gid); *)
       match List.assoc_opt gid tiles with
       | Some "Grass" ->
           let sprite =

@@ -34,9 +34,9 @@
     "type": "Normal",
     "description": "The user attacks the target with a song. Others can join in the Round and make the attack do greater damage.",
     "effect_ids": [
-      17
+      34
     ],
-    "effect_chance": 10
+    "effect_chance": 50
   },
   "Growl": {
     "power": 0,
@@ -49,7 +49,7 @@
     "effect_ids": [
       34
     ],
-    "effect_chance": 100
+    "effect_chance": 10
   },
   "Leer": {
     "power": 0,
@@ -193,5 +193,18 @@
       0
     ],
     "effect_chance": 0
+  },
+  "Moonblast": {
+    "power": 90,
+    "accuracy": 100,
+    "priority": 1,
+    "pp": 10,
+    "category": "Special",
+    "type": "Fairy",
+    "description": "The user uses the moob to attack.",
+    "effect_ids": [
+      17
+    ],
+    "effect_chance": 50
   }
 }

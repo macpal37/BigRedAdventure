@@ -105,7 +105,7 @@
                 {
                  "name":"tile_id",
                  "type":"string",
-                 "value":"Obstacle"
+                 "value":"Grass"
                 }]
         }, 
         {
