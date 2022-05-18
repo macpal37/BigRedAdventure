@@ -154,7 +154,7 @@ let json_tilesets json =
 
 let json_tileset json =
   let src_path = json |> member "source" |> to_string in
-  (* print_endline src_path; *)
+
   let src_json =
     Yojson.Basic.from_file (tileset_path_parser src_path)
   in
@@ -167,7 +167,6 @@ let json_tileset json =
 
 let build_tile_matrix id_m tilesets =
   let tilesets_rev = List.rev tilesets in
-  Util.print_int "Tile Set LENGTH: " (List.length tilesets);
   let rec find_tileset id tilesets =
     (* precondition: tilesets is in order of highest to lowest
        firstgid*)
@@ -182,16 +181,12 @@ let build_tile_matrix id_m tilesets =
     (fun t ->
       match find_tileset t tilesets_rev with
       | Some json -> (
-          (* print_endline "Worked YAY!"; *)
           let offset, l = json_tileset json in
           let tile_f = Util.list_index_fun l in
           let ot = t - offset in
           let spritesheet = json_spritesheet json in
           let sprite = Spritesheet.get_sprite spritesheet ot in
 
-          (* Util.print_int "OT: " ot; *)
-
-          (* Util.print_int "T: " t; *)
           match tile_f ot with
           | "Grass" -> { sprite; ttype = Grass [] }
           | "Path" -> { sprite; ttype = Path }
@@ -340,9 +335,7 @@ let generate_entities h tiles objs trainers =
                   ( find_o props "teleport_x" to_int 0,
                     find_o props "teleport_y" to_int 0 ) ),
               Draw.empty_sprite )
-        | s ->
-            print_endline ("strange" ^ s);
-            (NoEntity, Draw.empty_sprite)
+        | _ -> (NoEntity, Draw.empty_sprite)
       in
 
       ( pos,
@@ -410,8 +403,6 @@ let generate_entities h tiles objs trainers =
 let load_map map_name =
   let json = Yojson.Basic.from_file ("assets/maps/" ^ map_name) in
   let w, h = read_dim json in
-  Util.print_int "W: " w;
-  Util.print_int "H: " h;
   match build_id_arrays json w with
   | [ tile_id_m; encounter_id_m ], entities_m ->
       let tilesets = json_tilesets json in

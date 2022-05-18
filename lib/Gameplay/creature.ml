@@ -212,17 +212,10 @@ let num_moves c : int =
       | None -> x)
     0 c.moves
 
-let add_move c m =
-  Util.print_int "C: " (num_moves c);
-  c.moves.(num_moves c) <- Some m
-
+let add_move c m = c.moves.(num_moves c) <- Some m
 let add_move_i c m i = c.moves.(i) <- Some m
 
 let get_move_i creature i =
-  (match creature.moves.(0) with
-  | Some _ -> print_endline "MVOE"
-  | None -> print_endline "Why none?");
-
   let size = Array.length creature.moves in
   if i >= size || i < 0 then None else creature.moves.(i)
 
@@ -311,10 +304,6 @@ let parse_learn_set json =
   (json |> member "level" |> to_int, create_move name)
 
 let parse_evolution json =
-  let null = json |> member "null" in
-
-  if json |> member "item" = null then print_endline "It works!";
-
   {
     name = json |> member "name" |> to_string;
     level_up = json |> member "level_up" |> to_int;

@@ -26,12 +26,11 @@ First install the following packages
 opam install -y utop odoc ounit2 qtest qcheck yojson lwt lwt_ppx menhir ansiterminal lambda-term merlin ocp-indent user-setup bisect_ppx-ocamlbuild ocaml-lsp-server ocamlformat ocamlformat-rpc imagelib
 ```
 
-Finally install graphics
+Finally install ocamlsdl2
 
 ```
 opam install -y ocamlsdl2
 ```
-
 
 ### ** Most Importantly: Make sure to restart your Mac/PC afterwards to complete the installation
 
@@ -40,6 +39,7 @@ opam install -y ocamlsdl2
 First, follow the instructions above in the Mac installation up to install SDL
 
 Then run
+
 ```
 sudo apt-get update
 sudo apt-get install -y libsdl2-dev
