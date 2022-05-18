@@ -81,8 +81,9 @@ let draw_moves creature () =
   let box_w, box_h = (370, 92) in
   let box_x, box_y = (28, 200 - box_h) in
   (* Height of Box 212 *)
-  let text_x, text_y = (38 + 376, (4 * 212 / 5) - 12 - 95) in
   let text_xdif, text_ydif = (376, 95) in
+  let text_x, text_y = (38 + 376, (4 * 212 / 5) - 12) in
+
   set_line_width 6;
   let rec draw_all_moves i j length =
     if length <= 0 then ()
@@ -90,7 +91,7 @@ let draw_moves creature () =
       let move =
         get_move_i ~!bs.player_battler.creature (i + (j * 2))
       in
-      let x, y = (text_x - (text_xdif * i), text_y + (text_ydif * j)) in
+      let x, y = (text_x - (text_xdif * i), text_y - (text_ydif * j)) in
       (match move with
       | None -> ()
       | Some m ->
@@ -831,7 +832,7 @@ let rec run_tick () =
       (if key = Action then
        let move =
          (get_move_i ~!bs.player_battler.creature)
-           (1 - moves_position.x + (2 * (1 - moves_position.y)))
+           (1 - moves_position.x + (2 * moves_position.y))
        in
        match move with
        | Some _ ->

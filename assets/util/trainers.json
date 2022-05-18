@@ -33,7 +33,7 @@
     "name": "Mary",
     "party": [
       {
-        "creature": "clefairy",
+        "creature": "stregoom",
         "level": 5
       }
     ],
@@ -66,11 +66,11 @@
     "name": "Caspie",
     "party": [
       {
-        "creature": "Clefairy",
+        "creature": "clefairy",
         "level": 4
       },
       {
-        "creature": "Clefairy",
+        "creature": "clefairy",
         "level": 10
       }
     ],

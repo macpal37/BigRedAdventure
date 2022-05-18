@@ -212,10 +212,17 @@ let num_moves c : int =
       | None -> x)
     0 c.moves
 
-let add_move c m = c.moves.(num_moves c + 1) <- Some m
+let add_move c m =
+  Util.print_int "C: " (num_moves c);
+  c.moves.(num_moves c) <- Some m
+
 let add_move_i c m i = c.moves.(i) <- Some m
 
 let get_move_i creature i =
+  (match creature.moves.(0) with
+  | Some _ -> print_endline "MVOE"
+  | None -> print_endline "Why none?");
+
   let size = Array.length creature.moves in
   if i >= size || i < 0 then None else creature.moves.(i)
 
@@ -350,7 +357,7 @@ let generate_moves learnset level =
   let moves = Array.make 4 None in
   for i = 0 to 3 do
     if i < List.length possible_moves then
-      moves.(3 - i) <- Some (snd (List.nth possible_moves i))
+      moves.(i) <- Some (snd (List.nth possible_moves i))
   done;
 
   moves
