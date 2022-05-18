@@ -243,16 +243,16 @@ let attempt_action () =
 (* let is_obstacle c = let map = State.map () in let is_obs_entity = try
    Map.get_entities map |> List.assoc c |> Entity.is_obstacle with
    Not_found -> false in let is_obs_tile = Map.get_type map c =
-   Map.Obstacle in is_obs_entity || is_obs_tile *)
+   Map.Obstacle in is_obs_entity || is_obs_tile
 
-(* let orie_coords (o : Entity.orientation) = match o with | N -> (0, 1)
-   | E -> (1, 0) | S -> (0, -1) | W -> (-1, 0) *)
+   let orie_coords (o : Entity.orientation) = match o with | N -> (0, 1)
+   | E -> (1, 0) | S -> (0, -1) | W -> (-1, 0)
 
-(* let rec coord_list (x, y) (o : Entity.orientation) i = let ox, oy =
+   let rec coord_list (x, y) (o : Entity.orientation) i = let ox, oy =
    orie_coords o in match i with | 0 -> [] | _ -> (x + (i * ox), y + (i
-   * oy)) :: coord_list (x, y) o (i - 1) *)
+   * oy)) :: coord_list (x, y) o (i - 1)
 
-(* let max_sight c (o : Entity.orientation) = coord_list c o 4 |>
+   let max_sight c (o : Entity.orientation) = coord_list c o 4 |>
    List.rev *)
 
 (* let rec obs_sight c_list = match c_list with | [] -> c_list | h :: t

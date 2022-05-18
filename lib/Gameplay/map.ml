@@ -263,7 +263,14 @@ let find_o props name f def =
 
 let grass_sprite = Util.null ()
 
-let generate_entities h tiles objs =
+let generate_party json =
+  Creature.create_creature
+    (json |> member "creature" |> to_string)
+    (json |> member "level" |> to_int)
+
+(* let generate_sight north *)
+
+let generate_entities h tiles objs trainers =
   let entity_of_json json =
     let gid = json |> member "gid" |> to_int in
 
@@ -286,7 +293,17 @@ let generate_entities h tiles objs =
               | "Eve" -> Spritesheet.get_sprite trainer_sprites 1
               | _ -> Spritesheet.get_sprite trainer_sprites 0
             in
-            ( Trainer { name; alt_dialogue = ""; party = []; sight = [] },
+            let t = trainers |> member name in
+            ( Trainer
+                {
+                  name;
+                  alt_dialogue =
+                    t |> member "defeat_dialogue" |> to_string;
+                  party =
+                    t |> member "party" |> to_list
+                    |> List.map generate_party;
+                  sight = [];
+                },
               sprite )
         | "Sign" -> (Sign, Spritesheet.get_sprite entity_sprites 1)
         | "Item" ->
@@ -391,7 +408,13 @@ let load_map map_name =
 
       set_encounters tile_m encounter_id_m encounter_l map_name;
 
-      let entities = generate_entities h entities_l entities_m in
+      let trainers =
+        Yojson.Basic.from_file "assets/util/trainers.json"
+      in
+
+      let entities =
+        generate_entities h entities_l entities_m trainers
+      in
 
       { tiles = tile_m; entities; name = map_name }
   | [], _ | _ :: _, _ -> raise (Malformed_Json "Impossible case!")
