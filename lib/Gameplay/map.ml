@@ -268,7 +268,10 @@ let generate_party json =
     (json |> member "creature" |> to_string)
     (json |> member "level" |> to_int)
 
-(* let generate_sight north *)
+let generate_sight (x, y) dir =
+  match dir with
+  | S -> Array.to_list (Array.init 4 (fun i -> (x, y - i)))
+  | _ -> []
 
 let generate_entities h tiles objs trainers =
   let entity_of_json json =
@@ -302,7 +305,7 @@ let generate_entities h tiles objs trainers =
                   party =
                     t |> member "party" |> to_list
                     |> List.map generate_party;
-                  sight = [];
+                  sight = generate_sight pos orie;
                 },
               sprite )
         | "Sign" -> (Sign, Spritesheet.get_sprite entity_sprites 1)

@@ -233,36 +233,41 @@ let attempt_action () =
         (new_x + State.player_x (), new_y + State.player_y ())
         (Map.get_entities (State.map ()))
     in
-    if Entity.is_obstacle e then
+    if Entity.is_obstacle e then begin
       Entity.interact e State.player (fun () ->
           Ui.add_first_background draw;
           Ui.add_first_gameplay
-            (Draw.draw_sprite DrawText.battle_bot 0 0))
+            (Draw.draw_sprite DrawText.battle_bot 0 0));
+
+      match e.e_type with
+      | Trainer t -> Battle.start_trainer_battle t.party
+      | _ -> ()
+    end
   with Not_found -> ()
 
 (* let is_obstacle c = let map = State.map () in let is_obs_entity = try
    Map.get_entities map |> List.assoc c |> Entity.is_obstacle with
    Not_found -> false in let is_obs_tile = Map.get_type map c =
-   Map.Obstacle in is_obs_entity || is_obs_tile
+   Map.Obstacle in is_obs_entity || is_obs_tile *)
 
-   let orie_coords (o : Entity.orientation) = match o with | N -> (0, 1)
-   | E -> (1, 0) | S -> (0, -1) | W -> (-1, 0)
+(* let orie_coords (o : Entity.orientation) = match o with | N -> (0, 1)
+   | E -> (1, 0) | S -> (0, -1) | W -> (-1, 0) *)
 
-   let rec coord_list (x, y) (o : Entity.orientation) i = let ox, oy =
+(* let rec coord_list (x, y) (o : Entity.orientation) i = let ox, oy =
    orie_coords o in match i with | 0 -> [] | _ -> (x + (i * ox), y + (i
-   * oy)) :: coord_list (x, y) o (i - 1)
+   * oy)) :: coord_list (x, y) o (i - 1) *)
 
-   let max_sight c (o : Entity.orientation) = coord_list c o 4 |>
-   List.rev *)
+(* let max_sight c (o : Entity.orientation) = coord_list c o 4 |>
+   List.rev
 
-(* let rec obs_sight c_list = match c_list with | [] -> c_list | h :: t
-   -> if is_obstacle h then t else obs_sight t *)
+   let rec obs_sight c_list = match c_list with | [] -> c_list | h :: t
+   -> if is_obstacle h then t else obs_sight t
 
-(* let set_entity_sight (e : Entity.entity) = let o =
+   let set_entity_sight (e : Entity.entity) = let o =
    Entity.get_orientation e in let pos = Entity.get_position e in
-   max_sight pos o |> obs_sight |> Entity.set_sight e *)
+   max_sight pos o |> obs_sight |> Entity.set_sight e
 
-(* let rec init_t e_list = match e_list with | [] -> () | (_, e) :: t ->
+   let rec init_t e_list = match e_list with | [] -> () | (_, e) :: t ->
    set_entity_sight e; init_t t *)
 
 (** TODO: RUN THIS METHOD WHEN THE MAP IS INITIALIZED IT WILL INITIALIZE
