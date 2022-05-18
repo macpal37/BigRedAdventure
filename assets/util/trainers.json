@@ -1,0 +1,43 @@
+{
+  "Eve": {
+    "name": "Eve",
+    "party": [
+      {
+        "creature": "rafu",
+        "level": 2
+      },
+      {
+        "creature": "rafu",
+        "level": 3
+      },
+      {
+        "creature": "rafu",
+        "level": 3
+      }
+    ],
+    "money": 500,
+    "defeat_dialogue": "Aw.. snap!"
+  },
+  "Anne": {
+    "name": "Anne",
+    "party": [
+      {
+        "creature": "nuxel",
+        "level": 4
+      }
+    ],
+    "money": 1500,
+    "defeat_dialogue": "YUMMY!"
+  },
+  "Mary": {
+    "name": "Mary",
+    "party": [
+      {
+        "creature": "clefairy",
+        "level": 5
+      }
+    ],
+    "money": 1200,
+    "defeat_dialogue": "EeeeeeK!!"
+  }
+}
