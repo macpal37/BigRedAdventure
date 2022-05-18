@@ -168,7 +168,7 @@ let player_check e =
   | _ -> ()
 
 let attempt_move dx dy orie =
-  if Player.get_orie (State.player ()) = orie then begin
+  if Player.get_orie (State.player ()) = orie then
     let new_x, new_y =
       (State.player_x () + dx, State.player_y () + dy)
     in
@@ -179,40 +179,43 @@ let attempt_move dx dy orie =
       with Not_found -> None
     in
 
-    match Map.get_type (State.map ()) (new_x, new_y) with
-    | Path -> (
-        match e_opt with
-        | Some e ->
-            if Entity.is_obstacle e = false then begin
+    let process_move _ =
+      match Map.get_type (State.map ()) (new_x, new_y) with
+      | Path -> (
+          match e_opt with
+          | Some e ->
+              if Entity.is_obstacle e = false then begin
+                move_scroll dx dy;
+                Player.set_coord new_x new_y (State.player ());
+                player_check e
+              end
+          | None ->
               move_scroll dx dy;
-              Player.set_coord new_x new_y (State.player ());
-              player_check e
-            end
-        | None ->
-            move_scroll dx dy;
-            Player.set_coord new_x new_y (State.player ()))
-    | Obstacle -> (
-        match e_opt with
-        | Some e -> (
-            match e.e_type with
-            | Door (map, coord) ->
-                let x, y = coord in
-                State.set_map (Map.get_map map);
+              Player.set_coord new_x new_y (State.player ()))
+      | Obstacle -> ()
+      | Grass e ->
+          move_scroll dx dy;
+          Player.set_coord new_x new_y (State.player ());
+          if Random.float 1. < 0.2 then (
+            encounter_anim ();
+            let c = Map.encounter_creature e in
+            match c with
+            | Some c -> Battle.start_wild_battle c
+            | None -> failwith "no creature encountered")
+    in
 
-                Player.set_x x (State.player ());
-                Player.set_y y (State.player ())
-            | _ -> ())
-        | None -> ())
-    | Grass e ->
-        move_scroll dx dy;
-        Player.set_coord new_x new_y (State.player ());
-        if Random.float 1. < 0.2 then (
-          encounter_anim ();
-          let c = Map.encounter_creature e in
-          match c with
-          | Some c -> Battle.start_wild_battle c
-          | None -> failwith "no creature encountered")
-  end
+    match e_opt with
+    | Some e -> (
+        match e.e_type with
+        | Door (map, coord) ->
+            move_scroll dx dy;
+            let x, y = coord in
+            State.set_map (Map.get_map map);
+
+            Player.set_x x (State.player ());
+            Player.set_y y (State.player ())
+        | _ -> process_move ())
+    | None -> process_move ()
   else Player.set_orie orie (State.player ())
 
 let redraw _ =
